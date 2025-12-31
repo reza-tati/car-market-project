@@ -1,4 +1,4 @@
-<!-- 4. ایجاد فایل templates/cars/car_form.html -->
+<!-- templates/cars/car_form.html -->
 {% extends 'base.html' %}
 {% load crispy_forms_tags %}
 
@@ -7,21 +7,107 @@
 {% block content %}
 <div class="container py-4">
     <div class="row justify-content-center">
-        <div class="col-md-8">
+        <div class="col-lg-10">
             <div class="card">
                 <div class="card-header bg-primary text-white">
                     <h4 class="mb-0"><i class="bi bi-plus-circle"></i> ثبت آگهی جدید</h4>
                 </div>
                 <div class="card-body">
-                    <form method="post" enctype="multipart/form-data">
+                    <form method="post" enctype="multipart/form-data" novalidate>
                         {% csrf_token %}
-                        {{ form|crispy }}
                         
+                        <!-- اطلاعات اصلی -->
+                        <h5 class="mb-3"><i class="bi bi-info-circle"></i> اطلاعات اصلی</h5>
+                        <div class="row mb-4">
+                            <div class="col-md-6">
+                                {{ form.title|as_crispy_field }}
+                            </div>
+                            <div class="col-md-3">
+                                {{ form.brand|as_crispy_field }}
+                            </div>
+                            <div class="col-md-3">
+                                {{ form.model|as_crispy_field }}
+                            </div>
+                            <div class="col-md-3">
+                                {{ form.year|as_crispy_field }}
+                            </div>
+                            <div class="col-md-3">
+                                {{ form.price|as_crispy_field }}
+                            </div>
+                            <div class="col-md-3">
+                                {{ form.mileage|as_crispy_field }}
+                            </div>
+                            <div class="col-md-3">
+                                {{ form.city|as_crispy_field }}
+                            </div>
+                        </div>
+                        
+                        <!-- مشخصات فنی -->
+                        <h5 class="mb-3"><i class="bi bi-gear"></i> مشخصات فنی</h5>
+                        <div class="row mb-4">
+                            <div class="col-md-3">
+                                {{ form.color|as_crispy_field }}
+                            </div>
+                            <div class="col-md-3">
+                                {{ form.transmission|as_crispy_field }}
+                            </div>
+                            <div class="col-md-3">
+                                {{ form.fuel_type|as_crispy_field }}
+                            </div>
+                            <div class="col-md-3">
+                                {{ form.engine_capacity|as_crispy_field }}
+                            </div>
+                            <div class="col-md-6">
+                                {{ form.condition|as_crispy_field }}
+                            </div>
+                        </div>
+                        
+                        <!-- تصاویر -->
+                        <h5 class="mb-3"><i class="bi bi-images"></i> تصاویر خودرو</h5>
+                        <div class="card mb-4">
+                            <div class="card-body">
+                                <p class="text-muted mb-3">
+                                    <i class="bi bi-info-circle"></i>
+                                    حداقل یک تصویر آپلود کنید. می‌توانید حداکثر ۱۰ تصویر آپلود کنید.
+                                    تصویر اصلی را با انتخاب گزینه "تصویر اصلی" مشخص کنید.
+                                </p>
+                                
+                                {{ formset.management_form }}
+                                <div id="image-forms">
+                                    {% for form in formset %}
+                                    <div class="image-form border p-3 rounded mb-3">
+                                        <div class="row">
+                                            <div class="col-md-10">
+                                                {{ form.image|as_crispy_field }}
+                                            </div>
+                                            <div class="col-md-2">
+                                                {{ form.is_main|as_crispy_field }}
+                                                {% if form.instance.pk %}
+                                                {{ form.DELETE|as_crispy_field }}
+                                                {% endif %}
+                                            </div>
+                                        </div>
+                                        {{ form.id }}
+                                    </div>
+                                    {% endfor %}
+                                </div>
+                                
+                                <button type="button" id="add-more" class="btn btn-outline-primary btn-sm mt-2">
+                                    <i class="bi bi-plus-circle"></i> افزودن تصویر دیگر
+                                </button>
+                            </div>
+                        </div>
+                        
+                        <!-- توضیحات -->
+                        <h5 class="mb-3"><i class="bi bi-chat-text"></i> توضیحات</h5>
+                        {{ form.description|as_crispy_field }}
+                        
+                        <!-- دکمه‌ها -->
                         <div class="mt-4">
-                            <button type="submit" class="btn btn-primary">
+                            <button type="submit" class="btn btn-primary btn-lg">
                                 <i class="bi bi-check-circle"></i> ثبت آگهی
                             </button>
-                            <a href="{% url 'cars:car_list' %}" class="btn btn-secondary">
+                            <a href="{% url 'cars:car_list' %}" class="btn btn-secondary btn-lg">
                                 <i class="bi bi-x-circle"></i> انصراف
                             </a>
                         </div>
@@ -31,4 +117,63 @@
         </div>
     </div>
 </div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+$(document).ready(function() {
+    // داینامیک لود کردن مدل‌ها
+    $('#id_brand').change(function() {
+        var brandId = $(this).val();
+        if (brandId) {
+            $.ajax({
+                url: '/api/get-models/',
+                data: { 'brand_id': brandId },
+                dataType: 'json',
+                success: function(data) {
+                    var modelSelect = $('#id_model');
+                    modelSelect.empty();
+                    modelSelect.append('<option value="">انتخاب مدل</option>');
+                    $.each(data.models, function(index, model) {
+                        modelSelect.append('<option value="' + model.id + '">' + model.name + '</option>');
+                    });
+                }
+            });
+        }
+    });
+    
+    // افزودن فرم تصویر جدید
+    $('#add-more').click(function() {
+        var formIdx = $('#id_carimage_set-TOTAL_FORMS').val();
+        var newForm = $('.image-form:first').clone();
+        
+        // پاک کردن مقادیر
+        newForm.find('input[type="file"]').val('');
+        newForm.find('input[type="checkbox"]').prop('checked', false);
+        newForm.find('.delete-checkbox').remove();
+        
+        // به‌روزرسانی ID ها
+        newForm.find(':input').each(function() {
+            var name = $(this).attr('name');
+            if (name) {
+                name = name.replace('-0-', '-' + formIdx + '-');
+                var id = 'id_' + name;
+                $(this).attr({'name': name, 'id': id});
+            }
+        });
+        
+        newForm.find('label').each(function() {
+            var forAttr = $(this).attr('for');
+            if (forAttr) {
+                var newFor = forAttr.replace('-0-', '-' + formIdx + '-');
+                $(this).attr('for', newFor);
+            }
+        });
+        
+        // اضافه کردن به لیست
+        $('#image-forms').append(newForm);
+        $('#id_carimage_set-TOTAL_FORMS').val(parseInt(formIdx) + 1);
+    });
+});
+</script>
 {% endblock %}

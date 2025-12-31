@@ -87,61 +87,62 @@ class CarListView(ListView):
         context['color_choices'] = Car.COLOR_CHOICES
         
         return context
+# فایل cars/views.py رو باز کن و کلاس CarDetailView رو پیدا کن
+# به این شکل تغییرش بده:
+
 class CarDetailView(DetailView):
-    """
-    نمایش جزئیات یک خودرو
-    """
     model = Car
     template_name = 'cars/car_detail.html'
-    context_object_name = 'car'  # در تمپلیت: {{ car }}
+    context_object_name = 'car'
     
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
         car = self.get_object()
         
-        # 🔹 افزایش تعداد بازدید
+        # 1. افزایش بازدید
         car.views += 1
-        car.save(update_fields=['views'])  # فقط فیلد views را به‌روز کن
+        car.save(update_fields=['views'])
         
-        # 🔹 بررسی آیا کاربر این خودرو را پسندیده
+        # 2. بررسی علاقه‌مندی
         if self.request.user.is_authenticated:
-            context['is_favorite'] = car.is_favorited_by(self.request.user)
+            # بررسی کن آیا کاربر این خودرو رو پسندیده
+            context['is_favorite'] = Favorite.objects.filter(
+                user=self.request.user,
+                car=car
+            ).exists()
+        else:
+            context['is_favorite'] = False
         
-        # 🔹 خودروهای مشابه (همان برند و مدل)
-        similar_cars = Car.objects.filter(
+        # 3. خودروهای مشابه
+        context['similar_cars'] = Car.objects.filter(
             brand=car.brand,
             model=car.model,
             is_active=True,
             is_verified=True
-        ).exclude(id=car.id)[:4]  # ۴ خودروی مشابه
+        ).exclude(id=car.id)[:4]
         
-        context['similar_cars'] = similar_cars
-        context['images'] = car.get_all_images()
+        # 4. تصاویر
+        context['images'] = car.images.all()
         
         return context
+# در cars/views.py، کلاس CarCreateView:
+# cars/views.py - کلاس CarCreateView را با این جایگزین کن:
 class CarCreateView(LoginRequiredMixin, CreateView):
-    """
-    ایجاد خودرو جدید
-    LoginRequiredMixin: فقط کاربران وارد شده
-    """
     model = Car
     form_class = CarForm
     template_name = 'cars/car_form.html'
     
     def form_valid(self, form):
-        """
-        پس از ارسال فرم معتبر
-        """
-        # فروشنده را کاربر جاری قرار بده
+        # تنظیم فروشنده به کاربر جاری
         form.instance.seller = self.request.user
         
         # ابتدا خودرو را ذخیره کن
         self.object = form.save()
         
-        # 🔹 مدیریت تصاویر با Formset
+        # مدیریت تصاویر با Formset
         formset = CarImageFormSet(
-            self.request.POST, 
-            self.request.FILES, 
+            self.request.POST,
+            self.request.FILES,
             instance=self.object
         )
         
@@ -154,24 +155,27 @@ class CarCreateView(LoginRequiredMixin, CreateView):
                 if first_image:
                     first_image.is_main = True
                     first_image.save()
+        else:
+            # اگر فرمست معتبر نبود
+            return self.form_invalid(form)
         
-        # پیام موفقیت
-        messages.success(
-            self.request, 
-            'آگهی شما با موفقیت ثبت شد! پس از تایید مدیر نمایش داده می‌شود.'
-        )
+        messages.success(self.request, 'آگهی شما با موفقیت ثبت شد! پس از تایید نمایش داده می‌شود.')
         return super().form_valid(form)
     
     def get_context_data(self, **kwargs):
-        """
-        اضافه کردن Formset به context
-        """
         context = super().get_context_data(**kwargs)
+        
         if self.request.POST:
             context['formset'] = CarImageFormSet(self.request.POST, self.request.FILES)
         else:
             context['formset'] = CarImageFormSet()
+        
         return context
+    
+    def form_invalid(self, form):
+        # اگر فرم معتبر نبود
+        messages.error(self.request, 'لطفا اطلاعات را با دقت پر کنید.')
+        return super().form_invalid(form)
 class CarUpdateView(LoginRequiredMixin, UserPassesTestMixin, UpdateView):
     """
     ویرایش خودرو
