@@ -1,0 +1,79 @@
+<!-- templates/cars/partials/car_card.html -->
+{% load humanize %}  <!-- برای فرمت اعداد -->
+
+<div class="card car-card h-100">
+    <!-- 🔹 نشانه‌های ویژه -->
+    <div class="position-absolute top-0 start-0 m-2">
+        {% if car.is_featured %}
+        <span class="badge badge-featured">ویژه</span>
+        {% endif %}
+        {% if car.year >= 1400|add:"-2" %}
+        <span class="badge bg-success">مدل جدید</span>
+        {% endif %}
+    </div>
+    
+    <!-- 🔹 تصویر خودرو -->
+    <div class="car-img-container">
+        {% with car.images.first as main_image %}
+        {% if main_image %}
+        <img src="{{ main_image.image.url }}" class="car-img" alt="{{ car.title }}">
+        {% else %}
+        <img src="/static/images/car-placeholder.jpg" class="car-img" alt="بدون تصویر">
+        {% endif %}
+        {% endwith %}
+    </div>
+    
+    <!-- 🔹 بدنه کارت -->
+    <div class="card-body">
+        <!-- عنوان -->
+        <h5 class="card-title">
+            <a href="{% url 'cars:car_detail' car.pk car.slug %}" class="text-decoration-none text-dark">
+                {{ car.brand.name }} {{ car.model.name }}
+            </a>
+        </h5>
+        
+        <!-- مشخصات -->
+        <div class="car-specs mb-2">
+            <small class="text-muted d-block">
+                <i class="bi bi-calendar3"></i> {{ car.year }} | 
+                <i class="bi bi-speedometer2"></i> {{ car.mileage|intcomma }} کیلومتر
+            </small>
+            <small class="text-muted d-block">
+                <i class="bi bi-gear"></i> {{ car.get_transmission_display }} | 
+                <i class="bi bi-fuel-pump"></i> {{ car.get_fuel_type_display }}
+            </small>
+            <small class="text-muted d-block">
+                <i class="bi bi-geo-alt"></i> {{ car.city }}
+            </small>
+        </div>
+        
+        <!-- قیمت و دکمه‌ها -->
+        <div class="d-flex justify-content-between align-items-center mt-3">
+            <div class="price-tag">
+                {{ car.price|intcomma }} تومان  <!-- فرمت هزارگان -->
+            </div>
+            
+            <!-- دکمه علاقه‌مندی -->
+            <div>
+                {% if user.is_authenticated %}
+                <button class="btn btn-sm {% if car.is_favorited_by user %}btn-danger{% else %}btn-outline-danger{% endif %} favorite-btn" 
+                        data-car-id="{{ car.id }}">
+                    <i class="bi {% if car.is_favorited_by user %}bi-heart-fill{% else %}bi-heart{% endif %}"></i>
+                </button>
+                {% else %}
+                <a href="{% url 'accounts:login' %}" class="btn btn-sm btn-outline-danger">
+                    <i class="bi bi-heart"></i>
+                </a>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+    
+    <!-- 🔹 فوتر کارت -->
+    <div class="card-footer bg-white border-top-0 pt-0">
+        <small class="text-muted">
+            <i class="bi bi-eye"></i> {{ car.views }} بازدید | 
+            {{ car.created_at|timesince }} قبل  <!-- زمان نسبی -->
+        </small>
+    </div>
+</div>

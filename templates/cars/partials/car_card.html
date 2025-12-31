@@ -1,0 +1,73 @@
+<!-- templates/cars/partials/car_card.html -->
+{% load custom_filters %}
+
+<div class="card car-card h-100">
+    <!-- نشانه‌های ویژه -->
+    <div class="position-absolute top-0 start-0 m-2">
+        {% if car.is_featured %}
+        <span class="badge bg-warning">ویژه</span>
+        {% endif %}
+        {% if car.is_sold %}
+        <span class="badge bg-danger">فروخته شد</span>
+        {% endif %}
+    </div>
+    
+    <!-- تصویر -->
+    <div class="car-img-container">
+        {% if car.images.first %}
+        <img src="{{ car.images.first.image.url }}" class="car-img" alt="{{ car.title }}">
+        {% else %}
+        <img src="/static/images/car-placeholder.jpg" class="car-img" alt="بدون تصویر">
+        {% endif %}
+    </div>
+    
+    <!-- محتوا -->
+    <div class="card-body">
+        <h5 class="card-title">
+            <a href="{% url 'cars:car_detail' car.pk car.slug %}" class="text-decoration-none text-dark">
+                {{ car.brand.name }} {{ car.model.name }}
+            </a>
+        </h5>
+        
+        <div class="car-specs mb-2">
+            <small class="text-muted d-block">
+                <i class="bi bi-calendar3"></i> {{ car.year }} | 
+                <i class="bi bi-speedometer2"></i> {{ car.mileage|intcomma }} کیلومتر
+            </small>
+            <small class="text-muted d-block">
+                <i class="bi bi-gear"></i> {{ car.get_transmission_display }} | 
+                <i class="bi bi-fuel-pump"></i> {{ car.get_fuel_type_display }}
+            </small>
+            <small class="text-muted d-block">
+                <i class="bi bi-geo-alt"></i> {{ car.city }}
+            </small>
+        </div>
+        
+        <div class="d-flex justify-content-between align-items-center mt-3">
+            <div class="price-tag">
+                {{ car.price|intcomma }} تومان
+            </div>
+            
+            <!-- دکمه علاقه‌مندی -->
+            <div>
+                {% if user.is_authenticated %}
+                <button class="btn btn-sm {% if car.is_favorited_by user %}btn-danger{% else %}btn-outline-danger{% endif %} favorite-btn" 
+                        data-car-id="{{ car.id }}">
+                    <i class="bi {% if car.is_favorited_by user %}bi-heart-fill{% else %}bi-heart{% endif %}"></i>
+                </button>
+                {% else %}
+                <a href="{% url 'accounts:login' %}" class="btn btn-sm btn-outline-danger">
+                    <i class="bi bi-heart"></i>
+                </a>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+    
+    <div class="card-footer bg-white border-top-0 pt-0">
+        <small class="text-muted">
+            <i class="bi bi-eye"></i> {{ car.views }} بازدید | 
+            {{ car.created_at|timesince }} قبل
+        </small>
+    </div>
+</div>

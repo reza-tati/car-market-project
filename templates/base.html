@@ -1,0 +1,366 @@
+<!-- templates/base.html -->
+{% load static %}
+<!DOCTYPE html>
+<html lang="fa" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}بازار خودرو ایران{% endblock %}</title>
+    
+    <!-- Bootstrap 5 RTL -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css">
+    
+    <!-- Font Vazir برای فارسی -->
+    <link href="https://cdn.jsdelivr.net/gh/rastikerdar/vazir-font@v30.1.0/dist/font-face.css" rel="stylesheet">
+    
+    <!-- CSS سفارشی -->
+    <link rel="stylesheet" href="{% static 'css/style.css' %}">
+    
+    {% block extra_css %}{% endblock %}
+    
+    <style>
+        /* استایل‌های داخلی */
+        body {
+            font-family: 'Vazir', sans-serif;
+            padding-top: 70px; /* برای نوار ناوبری ثابت */
+            background-color: #f8f9fa;
+        }
+        
+        .navbar-brand {
+            font-weight: bold;
+            color: #0d6efd !important;
+        }
+        
+        /* استایل کارت خودرو */
+        .car-card {
+            transition: all 0.3s ease;
+            border: 1px solid #dee2e6;
+            border-radius: 10px;
+            overflow: hidden;
+        }
+        
+        .car-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 20px rgba(0,0,0,0.1);
+        }
+        
+        .car-img-container {
+            height: 200px;
+            overflow: hidden;
+            background-color: #f8f9fa;
+        }
+        
+        .car-img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            transition: transform 0.3s ease;
+        }
+        
+        .car-card:hover .car-img {
+            transform: scale(1.05);
+        }
+        
+        .price-tag {
+            font-size: 1.2rem;
+            font-weight: bold;
+            color: #198754;
+        }
+    </style>
+</head>
+<body>
+    <!-- 🔹 نوار ناوبری -->
+    <nav class="navbar navbar-expand-lg navbar-light bg-white fixed-top shadow-sm">
+        <div class="container">
+            <!-- لوگو/نام سایت -->
+            <a class="navbar-brand" href="{% url 'cars:car_list' %}">
+                <i class="bi bi-car-front-fill"></i>
+                بازار خودرو
+            </a>
+            
+            <!-- دکمه همبرگر برای موبایل -->
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarMain">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            
+            <!-- محتوای نوار ناوبری -->
+            <div class="collapse navbar-collapse" id="navbarMain">
+                <!-- فرم جستجو -->
+                <form class="d-flex mx-auto my-2 my-lg-0" action="{% url 'search:search' %}" method="get" style="width: 100%; max-width: 500px;">
+                    <div class="input-group">
+                        <input type="text" class="form-control" name="query" placeholder="جستجوی خودرو..." value="{{ request.GET.query }}">
+                        <button class="btn btn-primary" type="submit">
+                            <i class="bi bi-search"></i>
+                        </button>
+                    </div>
+                </form>
+                
+                <!-- منوی اصلی -->
+                <ul class="navbar-nav me-auto">
+                    <li class="nav-item">
+                        <a class="nav-link" href="{% url 'cars:car_list' %}">
+                            <i class="bi bi-house"></i> خانه
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="{% url 'cars:car_create' %}">
+                            <i class="bi bi-plus-circle"></i> ثبت آگهی
+                        </a>
+                    </li>
+                    <li class="nav-item dropdown">
+                        <a class="nav-link dropdown-toggle" href="#" id="brandsDropdown" data-bs-toggle="dropdown">
+                            <i class="bi bi-tags"></i> برندها
+                        </a>
+                        <ul class="dropdown-menu">
+                            {% for brand in all_brands|slice:":10" %}
+                            <li>
+                                <a class="dropdown-item" href="{% url 'cars:car_list' %}?brand={{ brand.id }}">
+                                    {{ brand.name }}
+                                </a>
+                            </li>
+                            {% endfor %}
+                            <li><hr class="dropdown-divider"></li>
+                            <li>
+                                <a class="dropdown-item text-primary" href="{% url 'cars:car_list' %}">
+                                    مشاهده همه برندها
+                                </a>
+                            </li>
+                        </ul>
+                    </li>
+                </ul>
+                
+                <!-- منوی کاربر -->
+                <ul class="navbar-nav">
+                    {% if user.is_authenticated %}
+                    <!-- کاربر وارد شده -->
+                    <li class="nav-item dropdown">
+                        <a class="nav-link dropdown-toggle" href="#" id="userDropdown" data-bs-toggle="dropdown">
+                            <i class="bi bi-person-circle"></i>
+                            {{ user.username }}
+                        </a>
+                        <ul class="dropdown-menu">
+                            <li>
+                                <a class="dropdown-item" href="{% url 'accounts:profile' %}">
+                                    <i class="bi bi-person"></i> پروفایل
+                                </a>
+                            </li>
+                            <li>
+                                <a class="dropdown-item" href="{% url 'accounts:my_cars' %}">
+                                    <i class="bi bi-car-front"></i> خودروهای من
+                                </a>
+                            </li>
+                            <li>
+                                <a class="dropdown-item" href="{% url 'accounts:favorites' %}">
+                                    <i class="bi bi-heart"></i> علاقه‌مندی‌ها
+                                </a>
+                            </li>
+                            {% if user.is_staff %}
+                            <li>
+                                <a class="dropdown-item" href="{% url 'admin:index' %}">
+                                    <i class="bi bi-speedometer2"></i> پنل مدیریت
+                                </a>
+                            </li>
+                            {% endif %}
+                            <li><hr class="dropdown-divider"></li>
+                            <li>
+                                <a class="dropdown-item text-danger" href="{% url 'accounts:logout' %}">
+                                    <i class="bi bi-box-arrow-left"></i> خروج
+                                </a>
+                            </li>
+                        </ul>
+                    </li>
+                    {% else %}
+                    <!-- کاربر وارد نشده -->
+                    <li class="nav-item">
+                        <a class="nav-link" href="{% url 'accounts:login' %}">
+                            <i class="bi bi-box-arrow-in-right"></i> ورود
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="{% url 'accounts:register' %}">
+                            <i class="bi bi-person-plus"></i> ثبت‌نام
+                        </a>
+                    </li>
+                    {% endif %}
+                </ul>
+            </div>
+        </div>
+    </nav>
+    
+    <!-- 🔹 پیام‌های سیستم -->
+    {% if messages %}
+    <div class="container mt-3">
+        {% for message in messages %}
+        <div class="alert alert-{{ message.tags }} alert-dismissible fade show">
+            {{ message }}
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        </div>
+        {% endfor %}
+    </div>
+    {% endif %}
+    
+    <!-- 🔹 محتوای اصلی -->
+    <main>
+        {% block content %}{% endblock %}
+    </main>
+    
+    <!-- 🔹 فوتر -->
+    <footer class="footer mt-5 py-4">
+        <div class="container">
+            <div class="row">
+                <div class="col-lg-4 col-md-6 mb-4">
+                    <h5 class="mb-3">بازار خودرو ایران</h5>
+                    <p class="text-muted">
+                        بزرگ‌ترین بازار آنلاین خرید و فروش خودرو در ایران.
+                        با اطمینان کامل خرید و فروش کنید.
+                    </p>
+                </div>
+                
+                <div class="col-lg-2 col-md-6 mb-4">
+                    <h5 class="mb-3">لینک‌های مفید</h5>
+                    <ul class="list-unstyled">
+                        <li class="mb-2">
+                            <a href="#" class="text-decoration-none text-muted">
+                                <i class="bi bi-question-circle"></i> راهنما
+                            </a>
+                        </li>
+                        <li class="mb-2">
+                            <a href="#" class="text-decoration-none text-muted">
+                                <i class="bi bi-info-circle"></i> درباره ما
+                            </a>
+                        </li>
+                        <li class="mb-2">
+                            <a href="#" class="text-decoration-none text-muted">
+                                <i class="bi bi-telephone"></i> تماس با ما
+                            </a>
+                        </li>
+                        <li class="mb-2">
+                            <a href="#" class="text-decoration-none text-muted">
+                                <i class="bi bi-shield-check"></i> قوانین
+                            </a>
+                        </li>
+                    </ul>
+                </div>
+                
+                <div class="col-lg-3 col-md-6 mb-4">
+                    <h5 class="mb-3">برندهای محبوب</h5>
+                    <div class="d-flex flex-wrap gap-2">
+                        {% for brand in all_brands|slice:":6" %}
+                        <a href="{% url 'cars:car_list' %}?brand={{ brand.id }}" 
+                           class="btn btn-outline-secondary btn-sm">
+                            {{ brand.name }}
+                        </a>
+                        {% endfor %}
+                    </div>
+                </div>
+                
+                <div class="col-lg-3 col-md-6 mb-4">
+                    <h5 class="mb-3">تماس با ما</h5>
+                    <p class="mb-2">
+                        <i class="bi bi-telephone"></i> ۰۲۱-۱۲۳۴۵۶۷۸
+                    </p>
+                    <p class="mb-2">
+                        <i class="bi bi-envelope"></i> info@carmarket.ir
+                    </p>
+                    <p class="mb-2">
+                        <i class="bi bi-geo-alt"></i> تهران، خیابان ولیعصر
+                    </p>
+                </div>
+            </div>
+            
+            <hr>
+            
+            <div class="row">
+                <div class="col-md-6 text-center text-md-start">
+                    <p class="mb-0 text-muted">
+                        &copy; ۱۴۰۲ بازار خودرو ایران. تمامی حقوق محفوظ است.
+                    </p>
+                </div>
+                <div class="col-md-6 text-center text-md-end">
+                    <div class="social-links">
+                        <a href="#" class="text-muted me-3">
+                            <i class="bi bi-instagram"></i>
+                        </a>
+                        <a href="#" class="text-muted me-3">
+                            <i class="bi bi-telegram"></i>
+                        </a>
+                        <a href="#" class="text-muted me-3">
+                            <i class="bi bi-whatsapp"></i>
+                        </a>
+                        <a href="#" class="text-muted">
+                            <i class="bi bi-linkedin"></i>
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </footer>
+    
+    <!-- 🔹 اسکریپت‌ها -->
+    <!-- Bootstrap JS -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    
+    <!-- jQuery -->
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    
+    <!-- JS سفارشی -->
+    <script src="{% static 'js/main.js' %}"></script>
+    
+    {% block extra_js %}{% endblock %}
+    
+    <script>
+        // 🔹 JavaScript برای تعاملات AJAX
+        
+        $(document).ready(function() {
+            // 🔹 بارگیری پویای مدل‌ها بر اساس برند انتخاب شده
+            $('#id_brand').change(function() {
+                var brandId = $(this).val();
+                if (brandId) {
+                    $.ajax({
+                        url: '/cars/api/get-models/',
+                        data: {
+                            'brand_id': brandId
+                        },
+                        dataType: 'json',
+                        success: function(data) {
+                            var modelSelect = $('#id_model');
+                            modelSelect.empty();  // خالی کردن
+                            modelSelect.append('<option value="">همه مدل‌ها</option>');
+                            $.each(data.models, function(index, model) {
+                                modelSelect.append('<option value="' + model.id + '">' + model.name + '</option>');
+                            });
+                        }
+                    });
+                }
+            });
+            
+            // 🔹 افزودن/حذف علاقه‌مندی با AJAX
+            $('.favorite-btn').click(function(e) {
+                e.preventDefault();  // جلوگیری از رفتن به لینک
+                var btn = $(this);
+                var carId = btn.data('car-id');
+                
+                $.ajax({
+                    url: '/cars/car/' + carId + '/favorite/',
+                    method: 'POST',
+                    data: {
+                        'csrfmiddlewaretoken': '{{ csrf_token }}'  // توکن امنیتی
+                    },
+                    success: function(data) {
+                        if (data.status === 'added') {
+                            // تغییر ظاهر دکمه به حالت فعال
+                            btn.removeClass('btn-outline-danger').addClass('btn-danger');
+                            btn.html('<i class="bi bi-heart-fill"></i>');
+                        } else {
+                            // تغییر ظاهر دکمه به حالت غیرفعال
+                            btn.removeClass('btn-danger').addClass('btn-outline-danger');
+                            btn.html('<i class="bi bi-heart"></i>');
+                        }
+                    }
+                });
+            });
+        });
+    </script>
+</body>
+</html>

@@ -1,0 +1,34 @@
+<!-- 4. ایجاد فایل templates/cars/car_form.html -->
+{% extends 'base.html' %}
+{% load crispy_forms_tags %}
+
+{% block title %}ثبت آگهی جدید{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+    <div class="row justify-content-center">
+        <div class="col-md-8">
+            <div class="card">
+                <div class="card-header bg-primary text-white">
+                    <h4 class="mb-0"><i class="bi bi-plus-circle"></i> ثبت آگهی جدید</h4>
+                </div>
+                <div class="card-body">
+                    <form method="post" enctype="multipart/form-data">
+                        {% csrf_token %}
+                        {{ form|crispy }}
+                        
+                        <div class="mt-4">
+                            <button type="submit" class="btn btn-primary">
+                                <i class="bi bi-check-circle"></i> ثبت آگهی
+                            </button>
+                            <a href="{% url 'cars:car_list' %}" class="btn btn-secondary">
+                                <i class="bi bi-x-circle"></i> انصراف
+                            </a>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

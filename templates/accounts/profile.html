@@ -1,0 +1,135 @@
+<!-- templates/accounts/profile.html -->
+{% extends 'base.html' %}
+{% load crispy_forms_tags %}
+{% load static %}
+
+{% block title %}پروفایل کاربری{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+    <div class="row">
+        <!-- سایدبار -->
+        <div class="col-lg-3">
+            <div class="card mb-4">
+                <div class="card-body text-center">
+                    <!-- تصویر پروفایل -->
+                    <img src="{{ user.profile.get_avatar_url }}" 
+                         class="rounded-circle img-fluid" 
+                         style="width: 150px; height: 150px; object-fit: cover;"
+                         alt="تصویر پروفایل">
+                    
+                    <h5 class="my-3">{{ user.get_full_name|default:user.username }}</h5>
+                    
+                    <!-- اطلاعات کاربر -->
+                    <div class="text-muted mb-1">
+                        <i class="bi bi-person"></i> {{ user.username }}
+                    </div>
+                    {% if user.profile.city %}
+                    <div class="text-muted mb-1">
+                        <i class="bi bi-geo-alt"></i> {{ user.profile.city }}
+                    </div>
+                    {% endif %}
+                    {% if user.profile.phone %}
+                    <div class="text-muted mb-1">
+                        <i class="bi bi-telephone"></i> {{ user.profile.phone }}
+                    </div>
+                    {% endif %}
+                    
+                    <!-- وضعیت فروشنده -->
+                    {% if user.profile.is_seller %}
+                    <span class="badge bg-success mt-2">فروشنده تایید شده</span>
+                    <div class="mt-2">
+                        <small class="text-muted">
+                            <i class="bi bi-star-fill text-warning"></i>
+                            امتیاز: {{ user.profile.seller_rating|floatformat:1 }}
+                        </small>
+                    </div>
+                    {% endif %}
+                </div>
+                
+                <!-- منوی پروفایل -->
+                <div class="list-group list-group-flush">
+                    <a href="{% url 'accounts:profile' %}" class="list-group-item list-group-item-action active">
+                        <i class="bi bi-person"></i> پروفایل
+                    </a>
+                    <a href="{% url 'accounts:my_cars' %}" class="list-group-item list-group-item-action">
+                        <i class="bi bi-car-front"></i> خودروهای من
+                    </a>
+                    <a href="{% url 'accounts:favorites' %}" class="list-group-item list-group-item-action">
+                        <i class="bi bi-heart"></i> علاقه‌مندی‌ها
+                    </a>
+                    <a href="{% url 'accounts:password_change' %}" class="list-group-item list-group-item-action">
+                        <i class="bi bi-key"></i> تغییر رمز عبور
+                    </a>
+                </div>
+            </div>
+        </div>
+        
+        <!-- محتوای اصلی -->
+        <div class="col-lg-9">
+            <div class="card">
+                <div class="card-header bg-primary text-white">
+                    <h5 class="mb-0"><i class="bi bi-person-gear"></i> ویرایش پروفایل</h5>
+                </div>
+                <div class="card-body">
+                    <form method="post" enctype="multipart/form-data" novalidate>
+                        {% csrf_token %}
+                        
+                        <div class="row">
+                            <!-- فرم اطلاعات کاربر -->
+                            <div class="col-md-6">
+                                <h6 class="border-bottom pb-2 mb-3">اطلاعات کاربری</h6>
+                                {{ u_form|crispy }}
+                            </div>
+                            
+                            <!-- فرم پروفایل -->
+                            <div class="col-md-6">
+                                <h6 class="border-bottom pb-2 mb-3">اطلاعات تکمیلی</h6>
+                                {{ p_form|crispy }}
+                            </div>
+                        </div>
+                        
+                        <!-- دکمه‌ها -->
+                        <div class="mt-4">
+                            <button type="submit" class="btn btn-primary">
+                                <i class="bi bi-check-circle"></i> ذخیره تغییرات
+                            </button>
+                            <a href="{% url 'cars:car_list' %}" class="btn btn-outline-secondary">
+                                <i class="bi bi-x-circle"></i> انصراف
+                            </a>
+                        </div>
+                    </form>
+                    
+                    <!-- آمار کاربر -->
+                    <div class="row mt-5">
+                        <div class="col-md-4 text-center">
+                            <div class="card border-primary">
+                                <div class="card-body">
+                                    <h3>{{ user.cars.count }}</h3>
+                                    <p class="text-muted">تعداد آگهی‌ها</p>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-4 text-center">
+                            <div class="card border-success">
+                                <div class="card-body">
+                                    <h3>{{ user.cars.filter(is_sold=True).count }}</h3>
+                                    <p class="text-muted">خودروهای فروخته شده</p>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-4 text-center">
+                            <div class="card border-warning">
+                                <div class="card-body">
+                                    <h3>{{ user.favorites.count }}</h3>
+                                    <p class="text-muted">علاقه‌مندی‌ها</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

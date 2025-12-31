@@ -1,0 +1,190 @@
+<!-- templates/search/search.html -->
+{% extends 'base.html' %}
+{% load custom_filters %}
+
+{% block title %}جستجوی خودرو{% endblock %}
+
+{% block extra_css %}
+<style>
+    .filter-section {
+        background-color: #f8f9fa;
+        border-radius: 10px;
+        padding: 20px;
+        margin-bottom: 20px;
+    }
+    
+    .search-results {
+        font-size: 0.9rem;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+    <div class="row">
+        <!-- سایدبار فیلترها -->
+        <div class="col-lg-3">
+            <div class="filter-section">
+                <h5 class="mb-3"><i class="bi bi-funnel"></i> فیلترهای جستجو</h5>
+                
+                <form method="get" action="{% url 'search:search' %}">
+                    <!-- فیلد جستجو -->
+                    <div class="mb-3">
+                        <label class="form-label">کلمه کلیدی</label>
+                        <input type="text" name="query" class="form-control" 
+                               value="{{ request.GET.query }}" placeholder="جستجو...">
+                    </div>
+                    
+                    <!-- برند -->
+                    <div class="mb-3">
+                        <label class="form-label">برند</label>
+                        <select name="brand" class="form-select">
+                            <option value="">همه برندها</option>
+                            {% for brand in all_brands %}
+                            <option value="{{ brand.id }}" 
+                                {% if request.GET.brand == brand.id|stringformat:'i' %}selected{% endif %}>
+                                {{ brand.name }}
+                            </option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    
+                    <!-- محدوده قیمت -->
+                    <div class="mb-3">
+                        <label class="form-label">محدوده قیمت (تومان)</label>
+                        <div class="row g-2">
+                            <div class="col">
+                                <input type="number" name="min_price" class="form-control" 
+                                       placeholder="حداقل" value="{{ request.GET.min_price }}">
+                            </div>
+                            <div class="col">
+                                <input type="number" name="max_price" class="form-control" 
+                                       placeholder="حداکثر" value="{{ request.GET.max_price }}">
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- شهر -->
+                    <div class="mb-3">
+                        <label class="form-label">شهر</label>
+                        <input type="text" name="city" class="form-control" 
+                               value="{{ request.GET.city }}" placeholder="شهر">
+                    </div>
+                    
+                    <!-- گیربکس -->
+                    <div class="mb-3">
+                        <label class="form-label">گیربکس</label>
+                        <select name="transmission" class="form-select">
+                            <option value="">همه</option>
+                            <option value="manual" {% if request.GET.transmission == 'manual' %}selected{% endif %}>دستی</option>
+                            <option value="automatic" {% if request.GET.transmission == 'automatic' %}selected{% endif %}>اتوماتیک</option>
+                            <option value="cvt" {% if request.GET.transmission == 'cvt' %}selected{% endif %}>CVT</option>
+                        </select>
+                    </div>
+                    
+                    <!-- نوع سوخت -->
+                    <div class="mb-3">
+                        <label class="form-label">نوع سوخت</label>
+                        <select name="fuel_type" class="form-select">
+                            <option value="">همه</option>
+                            <option value="petrol" {% if request.GET.fuel_type == 'petrol' %}selected{% endif %}>بنزینی</option>
+                            <option value="diesel" {% if request.GET.fuel_type == 'diesel' %}selected{% endif %}>دیزل</option>
+                            <option value="hybrid" {% if request.GET.fuel_type == 'hybrid' %}selected{% endif %}>هیبرید</option>
+                            <option value="electric" {% if request.GET.fuel_type == 'electric' %}selected{% endif %}>الکتریکی</option>
+                        </select>
+                    </div>
+                    
+                    <button type="submit" class="btn btn-primary w-100">
+                        <i class="bi bi-search"></i> اعمال فیلترها
+                    </button>
+                    
+                    <a href="{% url 'search:search' %}" class="btn btn-outline-secondary w-100 mt-2">
+                        <i class="bi bi-x-circle"></i> حذف فیلترها
+                    </a>
+                </form>
+            </div>
+        </div>
+        
+        <!-- نتایج جستجو -->
+        <div class="col-lg-9">
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <h4>
+                    <i class="bi bi-search"></i> نتایج جستجو
+                    <small class="text-muted">({{ total_results }} نتیجه)</small>
+                </h4>
+                
+                <!-- مرتب‌سازی -->
+                <div class="dropdown">
+                    <button class="btn btn-outline-primary dropdown-toggle" type="button" 
+                            data-bs-toggle="dropdown">
+                        <i class="bi bi-sort-down"></i> مرتب‌سازی
+                    </button>
+                    <ul class="dropdown-menu">
+                        <li><a class="dropdown-item" href="?{{ request.GET.urlencode }}&sort=-created_at">جدیدترین</a></li>
+                        <li><a class="dropdown-item" href="?{{ request.GET.urlencode }}&sort=price">ارزان‌ترین</a></li>
+                        <li><a class="dropdown-item" href="?{{ request.GET.urlencode }}&sort=-price">گران‌ترین</a></li>
+                        <li><a class="dropdown-item" href="?{{ request.GET.urlencode }}&sort=mileage">کم‌کارترین</a></li>
+                    </ul>
+                </div>
+            </div>
+            
+            {% if cars %}
+            <div class="row">
+                {% for car in cars %}
+                <div class="col-md-6 col-lg-4 mb-4">
+                    {% include 'cars/partials/car_card.html' with car=car %}
+                </div>
+                {% endfor %}
+            </div>
+            
+            <!-- صفحه‌بندی -->
+            {% if page_obj.paginator.num_pages > 1 %}
+            <nav aria-label="Page navigation" class="mt-4">
+                <ul class="pagination justify-content-center">
+                    {% if page_obj.has_previous %}
+                    <li class="page-item">
+                        <a class="page-link" href="?page={{ page_obj.previous_page_number }}{% for key, value in request.GET.items %}{% if key != 'page' %}&{{ key }}={{ value }}{% endif %}{% endfor %}">
+                            <i class="bi bi-chevron-right"></i> قبلی
+                        </a>
+                    </li>
+                    {% endif %}
+                    
+                    {% for num in page_obj.paginator.page_range %}
+                        {% if page_obj.number == num %}
+                        <li class="page-item active">
+                            <span class="page-link">{{ num }}</span>
+                        </li>
+                        {% elif num > page_obj.number|add:'-3' and num < page_obj.number|add:'3' %}
+                        <li class="page-item">
+                            <a class="page-link" href="?page={{ num }}{% for key, value in request.GET.items %}{% if key != 'page' %}&{{ key }}={{ value }}{% endif %}{% endfor %}">
+                                {{ num }}
+                            </a>
+                        </li>
+                        {% endif %}
+                    {% endfor %}
+                    
+                    {% if page_obj.has_next %}
+                    <li class="page-item">
+                        <a class="page-link" href="?page={{ page_obj.next_page_number }}{% for key, value in request.GET.items %}{% if key != 'page' %}&{{ key }}={{ value }}{% endif %}{% endfor %}">
+                            بعدی <i class="bi bi-chevron-left"></i>
+                        </a>
+                    </li>
+                    {% endif %}
+                </ul>
+            </nav>
+            {% endif %}
+            
+            {% else %}
+            <div class="text-center py-5">
+                <i class="bi bi-search text-muted" style="font-size: 4rem;"></i>
+                <h4 class="mt-3 text-muted">نتیجه‌ای یافت نشد</h4>
+                <p class="text-muted">لطفاً فیلترهای جستجوی خود را تغییر دهید.</p>
+                <a href="{% url 'search:search' %}" class="btn btn-primary">
+                    جستجوی جدید
+                </a>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,91 @@
+<!-- templates/core/api_docs.html -->
+{% extends 'base.html' %}
+
+{% block title %}API Documentation{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+    <h1 class="mb-4">API Documentation</h1>
+    
+    <div class="row">
+        <div class="col-lg-3">
+            <div class="list-group">
+                <a href="#brands" class="list-group-item list-group-item-action">برندها</a>
+                <a href="#models" class="list-group-item list-group-item-action">مدل‌ها</a>
+                <a href="#cars" class="list-group-item list-group-item-action">خودروها</a>
+                <a href="#images" class="list-group-item list-group-item-action">تصاویر</a>
+            </div>
+        </div>
+        
+        <div class="col-lg-9">
+            <!-- Brands API -->
+            <section id="brands" class="mb-5">
+                <h3>برندها</h3>
+                <div class="card">
+                    <div class="card-body">
+                        <h5>GET /api/brands/</h5>
+                        <p>لیست تمام برندها</p>
+                        <pre><code>[
+    {
+        "id": 1,
+        "name": "پراید",
+        "country": "ایران",
+        "logo": "/media/brands/logos/..."
+    }
+]</code></pre>
+                        
+                        <h5 class="mt-4">POST /api/brands/</h5>
+                        <p>ایجاد برند جدید (نیاز به احراز هویت)</p>
+                        
+                        <h5 class="mt-4">GET /api/brands/{id}/</h5>
+                        <p>جزئیات یک برند</p>
+                    </div>
+                </div>
+            </section>
+            
+            <!-- Cars API -->
+            <section id="cars" class="mb-5">
+                <h3>خودروها</h3>
+                <div class="card">
+                    <div class="card-body">
+                        <h5>GET /api/cars/</h5>
+                        <p>لیست خودروها با فیلتر و جستجو</p>
+                        <p><strong>پارامترها:</strong></p>
+                        <ul>
+                            <li><code>brand</code>: فیلتر بر اساس برند</li>
+                            <li><code>city</code>: فیلتر بر اساس شهر</li>
+                            <li><code>min_price</code>, <code>max_price</code>: فیلتر قیمت</li>
+                            <li><code>search</code>: جستجو در عنوان و توضیحات</li>
+                            <li><code>ordering</code>: مرتب‌سازی (price, -price, year, ...)</li>
+                        </ul>
+                        
+                        <h5 class="mt-4">POST /api/cars/</h5>
+                        <p>ایجاد خودرو جدید</p>
+                        <pre><code>{
+    "title": "پراید ۱۱۱",
+    "brand_id": 1,
+    "model_id": 1,
+    "year": 1400,
+    "price": 150000000,
+    ...
+}</code></pre>
+                    </div>
+                </div>
+            </section>
+            
+            <!-- Authentication -->
+            <section id="auth" class="mb-5">
+                <h3>احراز هویت</h3>
+                <div class="card">
+                    <div class="card-body">
+                        <p>برای دسترسی به API های write نیاز به احراز هویت دارید.</p>
+                        <p>استفاده از Token Authentication:</p>
+                        <pre><code>curl -X GET http://127.0.0.1:8000/api/cars/ \
+    -H "Authorization: Token YOUR_TOKEN_HERE"</code></pre>
+                    </div>
+                </div>
+            </section>
+        </div>
+    </div>
+</div>
+{% endblock %}

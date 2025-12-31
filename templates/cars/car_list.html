@@ -1,0 +1,33 @@
+{% extends 'base.html' %}
+{% load humanize %}
+
+{% block title %}خودروهای موجود{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+    <h1 class="mb-4">خودروهای موجود</h1>
+    
+    {% if cars %}
+        <div class="row">
+            {% for car in cars %}
+            <div class="col-md-4 mb-4">
+                <div class="card h-100">
+                    <div class="card-body">
+                        <h5 class="card-title">{{ car.brand.name }} {{ car.model.name }}</h5>
+                        <p class="card-text">{{ car.year }} | {{ car.mileage|intcomma }} کیلومتر</p>
+                        <p class="card-text">{{ car.city }}</p>
+                        <p class="card-text text-success fw-bold">{{ car.price|intcomma }} تومان</p>
+                        <a href="{% url 'cars:car_detail' car.pk car.slug %}" class="btn btn-primary">مشاهده جزئیات</a>
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+    {% else %}
+        <div class="alert alert-info">
+            <p>هیچ خودرویی یافت نشد.</p>
+            <p>تعداد کل خودروها در دیتابیس: {{ cars.count }}</p>
+        </div>
+    {% endif %}
+</div>
+{% endblock %}
