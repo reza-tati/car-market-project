@@ -1,0 +1,120 @@
+<!-- templates/accounts/my_cars.html -->
+{% extends 'base.html' %}
+
+{% block title %}خودروهای من{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+    <!-- هدر -->
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h1><i class="bi bi-car-front"></i> خودروهای من</h1>
+        <a href="{% url 'cars:car_create' %}" class="btn btn-primary">
+            <i class="bi bi-plus-circle"></i> ثبت آگهی جدید
+        </a>
+    </div>
+    
+    <!-- آمار -->
+    <div class="row mb-4">
+        <div class="col-md-3 mb-3">
+            <div class="card bg-primary text-white">
+                <div class="card-body text-center py-3">
+                    <h3 class="mb-0">{{ stats.total }}</h3>
+                    <p class="mb-0 small">کل آگهی‌ها</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3 mb-3">
+            <div class="card bg-success text-white">
+                <div class="card-body text-center py-3">
+                    <h3 class="mb-0">{{ stats.active }}</h3>
+                    <p class="mb-0 small">آگهی‌های فعال</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3 mb-3">
+            <div class="card bg-warning text-white">
+                <div class="card-body text-center py-3">
+                    <h3 class="mb-0">{{ stats.sold }}</h3>
+                    <p class="mb-0 small">فروخته شده</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3 mb-3">
+            <div class="card bg-info text-white">
+                <div class="card-body text-center py-3">
+                    <h3 class="mb-0">{{ stats.with_views }}</h3>
+                    <p class="mb-0 small">دارای بازدید</p>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- تب‌ها برای فیلتر کردن -->
+    <div class="card mb-4">
+        <div class="card-header bg-light">
+            <ul class="nav nav-tabs card-header-tabs">
+                <li class="nav-item">
+                    <a class="nav-link active" data-bs-toggle="tab" href="#all">
+                        همه <span class="badge bg-secondary">{{ stats.total }}</span>
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" data-bs-toggle="tab" href="#active">
+                        فعال <span class="badge bg-success">{{ stats.active }}</span>
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" data-bs-toggle="tab" href="#sold">
+                        فروخته شده <span class="badge bg-warning">{{ stats.sold }}</span>
+                    </a>
+                </li>
+            </ul>
+        </div>
+        
+        <div class="card-body">
+            <div class="tab-content">
+                <!-- همه خودروها -->
+                <div class="tab-pane fade show active" id="all">
+                    {% include 'accounts/partials/cars_table.html' with car_list=cars %}
+                </div>
+                
+                <!-- خودروهای فعال -->
+                <div class="tab-pane fade" id="active">
+                    {% with cars.filter as car_list %}
+                        {% with car_list.filter|default:"" as active_cars %}
+                            {% with cars.filter|default:""|add:"filter" as test %}
+                            {% endwith %}
+                        {% endwith %}
+                    {% endwith %}
+                    
+                    <!-- راه ساده: نمایش پیام -->
+                    <div class="text-center py-4">
+                        <p class="text-muted">برای فیلتر کردن خودروهای فعال، باید در view منطق آن را پیاده‌سازی کنید.</p>
+                        <p>فعلاً از تب "همه" استفاده کنید.</p>
+                    </div>
+                </div>
+                
+                <!-- خودروهای فروخته شده -->
+                <div class="tab-pane fade" id="sold">
+                    <div class="text-center py-4">
+                        <p class="text-muted">برای فیلتر کردن خودروهای فروخته شده، باید در view منطق آن را پیاده‌سازی کنید.</p>
+                        <p>فعلاً از تب "همه" استفاده کنید.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- اگر خودرویی وجود ندارد -->
+    {% if not cars %}
+    <div class="text-center py-5">
+        <i class="bi bi-car-front text-muted" style="font-size: 4rem;"></i>
+        <h4 class="mt-3 text-muted">هیچ خودرویی ثبت نکرده‌اید</h4>
+        <p class="text-muted">اولین آگهی خود را ثبت کنید تا در اینجا نمایش داده شود.</p>
+        <a href="{% url 'cars:car_create' %}" class="btn btn-primary mt-3">
+            <i class="bi bi-plus-circle"></i> ثبت اولین آگهی
+        </a>
+    </div>
+    {% endif %}
+</div>
+{% endblock %}

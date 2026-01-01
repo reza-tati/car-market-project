@@ -14,6 +14,7 @@
     <!-- Font Vazir برای فارسی -->
     <link href="https://cdn.jsdelivr.net/gh/rastikerdar/vazir-font@v30.1.0/dist/font-face.css" rel="stylesheet">
     
+    
     <!-- CSS سفارشی -->
     <link rel="stylesheet" href="{% static 'css/style.css' %}">
     
@@ -70,6 +71,7 @@
     </style>
 </head>
 <body>
+    {% csrf_token %}
     <!-- 🔹 نوار ناوبری -->
     <nav class="navbar navbar-expand-lg navbar-light bg-white fixed-top shadow-sm">
         <div class="container">
@@ -308,59 +310,89 @@
     <script src="{% static 'js/main.js' %}"></script>
     
     {% block extra_js %}{% endblock %}
-    
-    <script>
-        // 🔹 JavaScript برای تعاملات AJAX
-        
-        $(document).ready(function() {
-            // 🔹 بارگیری پویای مدل‌ها بر اساس برند انتخاب شده
-            $('#id_brand').change(function() {
-                var brandId = $(this).val();
-                if (brandId) {
-                    $.ajax({
-                        url: '/api/get-models/',
-                        data: {
-                            'brand_id': brandId
-                        },
-                        dataType: 'json',
-                        success: function(data) {
-                            var modelSelect = $('#id_model');
-                            modelSelect.empty();  // خالی کردن
-                            modelSelect.append('<option value="">همه مدل‌ها</option>');
-                            $.each(data.models, function(index, model) {
-                                modelSelect.append('<option value="' + model.id + '">' + model.name + '</option>');
-                            });
-                        }
-                    });
+ <script>
+$(document).ready(function() {
+    // 🔹 **دریافت CSRF Token**
+    function getCookie(name) {
+        let cookieValue = null;
+        if (document.cookie && document.cookie !== '') {
+            const cookies = document.cookie.split(';');
+            for (let i = 0; i < cookies.length; i++) {
+                const cookie = cookies[i].trim();
+                if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                    cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                    break;
                 }
-            });
-            
-            // 🔹 افزودن/حذف علاقه‌مندی با AJAX
-            $('.favorite-btn').click(function(e) {
-                e.preventDefault();  // جلوگیری از رفتن به لینک
-                var btn = $(this);
-                var carId = btn.data('car-id');
+            }
+        }
+        return cookieValue;
+    }
+    
+    const csrftoken = getCookie('csrftoken');
+    
+    // 🔹 افزودن CSRF Token به همه درخواست‌های AJAX
+    $.ajaxSetup({
+        beforeSend: function(xhr, settings) {
+            if (!this.crossDomain) {
+                xhr.setRequestHeader("X-CSRFToken", csrftoken);
+            }
+        }
+    });
+    
+    // 🔹 **اصلاح شده: افزودن/حذف علاقه‌مندی**
+    $(document).on('click', '.favorite-btn', function(e) {
+        e.preventDefault();
+        
+        var btn = $(this);
+        var carId = btn.data('car-id');
+        
+        // ساخت URL صحیح
+        var url = "/car/" + carId + "/favorite/";
+        console.log('ارسال POST به:', url);
+        
+        $.ajax({
+            url: url,
+            type: 'POST',  // استفاده از type به جای method
+            contentType: 'application/json',
+            data: JSON.stringify({}),  // داده خالی
+            dataType: 'json',
+            success: function(data) {
+                console.log('پاسخ موفق:', data);
                 
-                $.ajax({
-                    url: '/cars/car/' + carId + '/favorite/',
-                    method: 'POST',
-                    data: {
-                        'csrfmiddlewaretoken': '{{ csrf_token }}'  // توکن امنیتی
-                    },
-                    success: function(data) {
-                        if (data.status === 'added') {
-                            // تغییر ظاهر دکمه به حالت فعال
-                            btn.removeClass('btn-outline-danger').addClass('btn-danger');
-                            btn.html('<i class="bi bi-heart-fill"></i>');
-                        } else {
-                            // تغییر ظاهر دکمه به حالت غیرفعال
-                            btn.removeClass('btn-danger').addClass('btn-outline-danger');
-                            btn.html('<i class="bi bi-heart"></i>');
-                        }
-                    }
-                });
-            });
+                if (data.status === 'added') {
+                    btn.removeClass('btn-outline-danger').addClass('btn-danger');
+                    btn.html('<i class="bi bi-heart-fill"></i> حذف از علاقه‌مندی‌ها');
+                    showAlert('success', data.message || 'به علاقه‌مندی‌ها اضافه شد');
+                } else if (data.status === 'removed') {
+                    btn.removeClass('btn-danger').addClass('btn-outline-danger');
+                    btn.html('<i class="bi bi-heart"></i> افزودن به علاقه‌مندی‌ها');
+                    showAlert('info', data.message || 'از علاقه‌مندی‌ها حذف شد');
+                }
+            },
+            error: function(xhr, status, error) {
+                console.error('خطای کامل:', xhr.status, xhr.responseText);
+                showAlert('danger', 'خطا: ' + xhr.status + ' - ' + error);
+            }
         });
-    </script>
+    });
+    
+    // تابع نمایش پیام
+    function showAlert(type, message) {
+        $('.favorite-alert').remove();
+        
+        var alertHtml = '<div class="alert alert-' + type + ' alert-dismissible fade show favorite-alert mt-3">' +
+                        message +
+                        '<button type="button" class="btn-close" data-bs-dismiss="alert"></button>' +
+                        '</div>';
+        
+        $('.favorite-btn').first().after(alertHtml);
+        
+        setTimeout(function() {
+            $('.favorite-alert').alert('close');
+        }, 3000);
+    }
+});
+</script>
+    
 </body>
 </html>

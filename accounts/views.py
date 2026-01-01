@@ -39,19 +39,44 @@ def profile(request):
                 p_form.save()
                 messages.success(request, 'پروفایل شما با موفقیت به روز رسانی شد!')
                 return redirect('accounts:profile')
-            else:
+        else:
                 u_form = UserUpdateForm(instance=request.user)
                 p_form = ProfileUpdateForm(instance=request.user.profile)
-            context = {
-                'u_form': u_form,
-                'p_form': p_form,
-            }
-            return render(request, 'accounts/profile.html', context)
+        
+        stats = {
+        'total_cars': request.user.cars.count(),
+        'sold_cars': request.user.cars.filter(is_sold=True).count(),
+        'active_cars': request.user.cars.filter(is_active=True, is_verified=True).count(),
+        'favorite_count': request.user.favorites.count(),
+    }
+        
+        context = {
+            'u_form': u_form,
+            'p_form': p_form,
+            'stats':stats,
+        }
+        return render(request, 'accounts/profile.html', context)
         
 @login_required
 def my_car(request):
         cars = Car.objects.filter(seller=request.user).order_by('created_at')
-        return render(request,'accounts/my_cars.html',{'cars':cars})
+        
+              # محاسبه آمار
+        stats = {
+                'total': cars.count(),
+                'active': cars.filter(is_active=True, is_verified=True).count(),
+                'sold': cars.filter(is_sold=True).count(),
+                'with_views': cars.filter(views__gt=0).count(),
+                'featured': cars.filter(is_featured=True).count(),
+        }
+    
+        # ارسال به template
+        context = {
+            'cars': cars,
+            'stats': stats,
+        }
+        
+        return render(request,'accounts/my_cars.html', context)
         
 @login_required
 def favorites(request):

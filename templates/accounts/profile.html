@@ -105,7 +105,7 @@
                         <div class="col-md-4 text-center">
                             <div class="card border-primary">
                                 <div class="card-body">
-                                    <h3>{{ user.cars.count }}</h3>
+                                    <h3>{{ stats.total_cars }}</h3>
                                     <p class="text-muted">تعداد آگهی‌ها</p>
                                 </div>
                             </div>
@@ -113,15 +113,24 @@
                         <div class="col-md-4 text-center">
                             <div class="card border-success">
                                 <div class="card-body">
-                                    <h3>{{ user.cars.filter(is_sold=True).count }}</h3>
+                                    <h3>{{ stats.sold_cars }}</h3>
                                     <p class="text-muted">خودروهای فروخته شده</p>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="col-md-3 text-center">
+                            <div class="card border-info">
+                                <div class="card-body">
+                                    <h3>{{ stats.active_cars }}</h3>
+                                    <p class="text-muted">آگهی‌های فعال</p>
                                 </div>
                             </div>
                         </div>
                         <div class="col-md-4 text-center">
                             <div class="card border-warning">
                                 <div class="card-body">
-                                    <h3>{{ user.favorites.count }}</h3>
+                                    <h3>{{ stats.favorite_count  }}</h3>
                                     <p class="text-muted">علاقه‌مندی‌ها</p>
                                 </div>
                             </div>

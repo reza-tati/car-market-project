@@ -3,7 +3,6 @@
     <table class="table table-hover">
         <thead>
             <tr>
-                <th>تصویر</th>
                 <th>عنوان</th>
                 <th>قیمت</th>
                 <th>وضعیت</th>
@@ -15,32 +14,15 @@
         <tbody>
             {% for car in car_list %}
             <tr>
-                <!-- تصویر -->
                 <td>
-                    {% if car.images.first %}
-                    <img src="{{ car.images.first.image.url }}" 
-                         style="width: 60px; height: 40px; object-fit: cover;" 
-                         alt="{{ car.title }}">
-                    {% else %}
-                    <div style="width: 60px; height: 40px; background: #eee; display: flex; align-items: center; justify-content: center;">
-                        <i class="bi bi-car-front text-muted"></i>
-                    </div>
-                    {% endif %}
-                </td>
-                
-                <!-- عنوان -->
-                <td>
-                    <a href="{% url 'cars:car_detail' car.pk car.slug %}" class="text-decoration-none">
-                        {{ car.title|truncatechars:30 }}
+                    <a href="{% url 'cars:car_detail' car.pk car.slug %}" 
+                       class="text-decoration-none">
+                        {{ car.title|truncatechars:40 }}
                     </a>
                     <br>
                     <small class="text-muted">{{ car.city }}</small>
                 </td>
-                
-                <!-- قیمت -->
-                <td class="fw-bold text-success">{{ car.price|intcomma }} تومان</td>
-                
-                <!-- وضعیت -->
+                <td class="fw-bold text-success">{{ car.price }} تومان</td>
                 <td>
                     {% if car.is_sold %}
                     <span class="badge bg-danger">فروخته شد</span>
@@ -56,24 +38,12 @@
                     <span class="badge bg-warning mt-1 d-block">ویژه</span>
                     {% endif %}
                 </td>
-                
-                <!-- بازدید -->
-                <td>
-                    {{ car.views }}
-                    {% if car.phone_views > 0 %}
-                    <br>
-                    <small class="text-muted">شماره: {{ car.phone_views }}</small>
-                    {% endif %}
-                </td>
-                
-                <!-- تاریخ -->
+                <td>{{ car.views }}</td>
                 <td>
                     {{ car.created_at|date:"Y/m/d" }}
                     <br>
                     <small class="text-muted">{{ car.created_at|timesince }} پیش</small>
                 </td>
-                
-                <!-- عملیات -->
                 <td>
                     <div class="btn-group btn-group-sm">
                         <a href="{% url 'cars:car_detail' car.pk car.slug %}" 
@@ -84,21 +54,14 @@
                            class="btn btn-outline-warning" title="ویرایش">
                             <i class="bi bi-pencil"></i>
                         </a>
-                        <a href="{% url 'cars:car_delete' car.pk %}" 
-                           class="btn btn-outline-danger" title="حذف">
-                            <i class="bi bi-trash"></i>
-                        </a>
                     </div>
                 </td>
             </tr>
             {% empty %}
             <tr>
-                <td colspan="7" class="text-center py-4">
-                    <i class="bi bi-car-front text-muted" style="font-size: 3rem;"></i>
-                    <p class="mt-2 text-muted">هیچ خودرویی یافت نشد</p>
-                    <a href="{% url 'cars:car_create' %}" class="btn btn-primary mt-2">
-                        <i class="bi bi-plus-circle"></i> ثبت اولین آگهی
-                    </a>
+                <td colspan="6" class="text-center py-4">
+                    <i class="bi bi-car-front text-muted"></i>
+                    <p class="mt-2 text-muted">خودرویی یافت نشد</p>
                 </td>
             </tr>
             {% endfor %}

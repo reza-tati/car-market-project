@@ -1,6 +1,7 @@
+from .models import Brand
 
 def brands_processor(request):
-    # اگر هنوز مدل Car نداریم، فعلاً یک لیست نمونه برگردانیم
     return {
-        "brands": ["Toyota", "BMW", "Mercedes", "Honda"]
+        'all_brands': Brand.objects.all().order_by('name')[:20],
+        # ...
     }

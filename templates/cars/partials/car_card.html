@@ -1,5 +1,5 @@
 <!-- templates/cars/partials/car_card.html -->
-{% load custom_filters %}
+{% load custom_filters %}  <!-- استفاده از custom_filters -->
 
 <div class="card car-card h-100">
     <!-- نشانه‌های ویژه -->
@@ -35,8 +35,8 @@
                 <i class="bi bi-speedometer2"></i> {{ car.mileage|intcomma }} کیلومتر
             </small>
             <small class="text-muted d-block">
-                <i class="bi bi-gear"></i> {{ car.get_transmission_display }} | 
-                <i class="bi bi-fuel-pump"></i> {{ car.get_fuel_type_display }}
+                <i class="bi bi-gear"></i> {{ car|get_choice_display:'transmission' }} | 
+                <i class="bi bi-fuel-pump"></i> {{ car|get_choice_display:'fuel_type' }}
             </small>
             <small class="text-muted d-block">
                 <i class="bi bi-geo-alt"></i> {{ car.city }}
@@ -51,12 +51,15 @@
             <!-- دکمه علاقه‌مندی -->
             <div>
                 {% if user.is_authenticated %}
-                <button class="btn btn-sm {% if car.is_favorited_by user %}btn-danger{% else %}btn-outline-danger{% endif %} favorite-btn" 
-                        data-car-id="{{ car.id }}">
-                    <i class="bi {% if car.is_favorited_by user %}bi-heart-fill{% else %}bi-heart{% endif %}"></i>
+                <button class="btn btn-sm {% if car|is_favorited_by:user %}btn-danger{% else %}btn-outline-danger{% endif %} favorite-btn" 
+                        data-car-id="{{ car.id }}"
+                        title="{% if car|is_favorited_by:user %}حذف از علاقه‌مندی‌ها{% else %}افزودن به علاقه‌مندی‌ها{% endif %}">
+                    <i class="bi {% if car|is_favorited_by:user %}bi-heart-fill{% else %}bi-heart{% endif %}"></i>
                 </button>
                 {% else %}
-                <a href="{% url 'accounts:login' %}" class="btn btn-sm btn-outline-danger">
+                <a href="{% url 'accounts:login' %}?next={{ request.path }}" 
+                   class="btn btn-sm btn-outline-danger"
+                   title="برای افزودن به علاقه‌مندی‌ها وارد شوید">
                     <i class="bi bi-heart"></i>
                 </a>
                 {% endif %}
@@ -66,7 +69,7 @@
     
     <div class="card-footer bg-white border-top-0 pt-0">
         <small class="text-muted">
-            <i class="bi bi-eye"></i> {{ car.views }} بازدید | 
+            <i class="bi bi-eye"></i> {{ car.views|intcomma }} بازدید | 
             {{ car.created_at|timesince }} قبل
         </small>
     </div>
