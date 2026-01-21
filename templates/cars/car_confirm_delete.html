@@ -1,0 +1,83 @@
+{% extends 'base.html' %}
+{% load humanize %}
+
+{% block title %}حذف خودرو - {{ car.title }}{% endblock %}
+
+{% block content %}
+<div class="container py-5">
+    <div class="row justify-content-center">
+        <div class="col-md-6">
+            <div class="card border-danger">
+                <div class="card-header bg-danger text-white">
+                    <h4 class="mb-0">
+                        <i class="bi bi-exclamation-triangle"></i> تأیید حذف خودرو
+                    </h4>
+                </div>
+                
+                <div class="card-body">
+                    <!-- هشدار -->
+                    <div class="alert alert-warning">
+                        <h5 class="alert-heading">⚠️ هشدار!</h5>
+                        <p>آیا مطمئن هستید که می‌خواهید این خودرو را حذف کنید؟</p>
+                        <p class="mb-0">این عمل <strong>غیرقابل بازگشت</strong> است.</p>
+                    </div>
+                    
+                    <!-- اطلاعات خودرو -->
+                    <div class="card mb-4">
+                        <div class="card-body">
+                            <h5 class="card-title">{{ car.title }}</h5>
+                            <div class="row">
+                                <div class="col-6">
+                                    <p class="mb-1"><strong>برند:</strong> {{ car.brand.name }}</p>
+                                    <p class="mb-1"><strong>مدل:</strong> {{ car.model.name }}</p>
+                                    <p class="mb-1"><strong>سال:</strong> {{ car.year }}</p>
+                                </div>
+                                <div class="col-6">
+                                    <p class="mb-1"><strong>قیمت:</strong> {{ car.price|intcomma }} تومان</p>
+                                    <p class="mb-1"><strong>کارکرد:</strong> {{ car.mileage|intcomma }} کیلومتر</p>
+                                    <p class="mb-1"><strong>شهر:</strong> {{ car.city }}</p>
+                                </div>
+                            </div>
+                            
+                            {% if car.images.first %}
+                            <div class="text-center mt-3">
+                                <img src="{{ car.images.first.image.url }}" 
+                                     class="img-thumbnail" 
+                                     style="max-height: 150px;" 
+                                     alt="{{ car.title }}">
+                            </div>
+                            {% endif %}
+                        </div>
+                    </div>
+                    
+                    <!-- فرم حذف -->
+                    <form method="post">
+                        {% csrf_token %}
+                        <div class="d-grid gap-2">
+                            <button type="submit" class="btn btn-danger btn-lg">
+                                <i class="bi bi-trash"></i> بله، حذف شود
+                            </button>
+                            <a href="{% url 'cars:car_detail' car.pk car.slug %}" 
+                               class="btn btn-secondary btn-lg">
+                                <i class="bi bi-x-circle"></i> انصراف
+                            </a>
+                        </div>
+                    </form>
+                    
+                    <!-- نکته -->
+                    <div class="mt-4">
+                        <div class="alert alert-info">
+                            <h6 class="alert-heading"><i class="bi bi-info-circle"></i> توجه:</h6>
+                            <ul class="mb-0">
+                                <li>تمام اطلاعات خودرو حذف خواهد شد</li>
+                                <li>تصاویر از سرور حذف می‌شوند</li>
+                                <li>این عمل در تاریخچه سیستم ثبت می‌شود</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

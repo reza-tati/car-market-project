@@ -1,0 +1,511 @@
+<!-- templates/accounts/phone_register.html -->
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}ثبت‌نام با شماره موبایل | فروشگاه خودرو{% endblock %}
+
+{% block meta %}
+<meta name="description" content="ثبت‌نام سریع و امن با شماره موبایل در فروشگاه خودرو. کد تأیید به موبایل شما ارسال خواهد شد.">
+<meta property="og:title" content="ثبت‌نام با موبایل | فروشگاه خودرو">
+<meta property="og:description" content="ثبت‌نام آسان با تأیید شماره موبایل">
+{% endblock %}
+
+{% block page_css %}
+<style>
+    .phone-register-container {
+        min-height: calc(100vh - 200px);
+        background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+    }
+    
+    .register-card {
+        border: none;
+        border-radius: 20px;
+        box-shadow: 0 10px 40px rgba(0, 0, 0, 0.1);
+        transition: transform 0.3s ease, box-shadow 0.3s ease;
+        overflow: hidden;
+    }
+    
+    .register-card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 15px 50px rgba(0, 0, 0, 0.15);
+    }
+    
+    .card-header {
+        background: linear-gradient(90deg, #4b6cb7 0%, #182848 100%);
+        border-bottom: none;
+        padding: 2rem 2rem;
+    }
+    
+    .phone-input-wrapper {
+        position: relative;
+    }
+    
+    .phone-input-wrapper .input-group-text {
+        background: linear-gradient(90deg, #4b6cb7, #182848);
+        color: white;
+        border: none;
+        font-weight: bold;
+    }
+    
+    .phone-prefix {
+        background: #f8f9fa;
+        border: 1px solid #ced4da;
+        border-right: none;
+        padding: 0.75rem 1rem;
+        border-radius: 0.375rem 0 0 0.375rem;
+        font-weight: 500;
+        color: #495057;
+    }
+    
+    .form-control-lg {
+        padding: 0.75rem 1rem;
+        font-size: 1.1rem;
+    }
+    
+    .info-box {
+        background: #f8f9fa;
+        border-radius: 10px;
+        padding: 1rem;
+        margin-top: 1rem;
+        border-right: 4px solid #4b6cb7;
+    }
+    
+    .steps-indicator {
+        display: flex;
+        justify-content: center;
+        margin-bottom: 2rem;
+        position: relative;
+    }
+    
+    .steps-indicator::before {
+        content: '';
+        position: absolute;
+        top: 50%;
+        left: 10%;
+        right: 10%;
+        height: 2px;
+        background: #dee2e6;
+        z-index: 1;
+    }
+    
+    .step {
+        width: 50px;
+        height: 50px;
+        border-radius: 50%;
+        background: #6c757d;
+        color: white;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-weight: bold;
+        position: relative;
+        z-index: 2;
+        transition: all 0.3s ease;
+    }
+    
+    .step.active {
+        background: linear-gradient(90deg, #4b6cb7, #182848);
+        transform: scale(1.1);
+        box-shadow: 0 0 15px rgba(75, 108, 183, 0.5);
+    }
+    
+    .step.completed {
+        background: #28a745;
+    }
+    
+    .step-label {
+        position: absolute;
+        top: 100%;
+        margin-top: 10px;
+        font-size: 0.9rem;
+        color: #6c757d;
+        white-space: nowrap;
+    }
+    
+    .error-animation {
+        animation: shake 0.5s ease-in-out;
+    }
+    
+    @keyframes shake {
+        0%, 100% { transform: translateX(0); }
+        10%, 30%, 50%, 70%, 90% { transform: translateX(-5px); }
+        20%, 40%, 60%, 80% { transform: translateX(5px); }
+    }
+    
+    .submit-btn {
+        background: linear-gradient(90deg, #4b6cb7, #182848);
+        border: none;
+        padding: 1rem 2rem;
+        font-size: 1.1rem;
+        font-weight: 600;
+        transition: all 0.3s ease;
+        position: relative;
+        overflow: hidden;
+    }
+    
+    .submit-btn:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 5px 15px rgba(75, 108, 183, 0.4);
+    }
+    
+    .submit-btn:disabled {
+        opacity: 0.7;
+        cursor: not-allowed;
+        transform: none !important;
+        box-shadow: none !important;
+    }
+    
+    .submit-btn .spinner-border {
+        position: absolute;
+        right: 1rem;
+        top: 50%;
+        transform: translateY(-50%);
+    }
+    
+    .terms-text {
+        font-size: 0.85rem;
+        color: #6c757d;
+        line-height: 1.5;
+    }
+    
+    .terms-text a {
+        color: #4b6cb7;
+        text-decoration: none;
+        font-weight: 500;
+    }
+    
+    .terms-text a:hover {
+        text-decoration: underline;
+    }
+    
+    @media (max-width: 768px) {
+        .register-card {
+            margin: 1rem;
+        }
+        
+        .card-header {
+            padding: 1.5rem 1rem;
+        }
+        
+        .steps-indicator::before {
+            left: 5%;
+            right: 5%;
+        }
+        
+        .step-label {
+            font-size: 0.8rem;
+        }
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="phone-register-container d-flex align-items-center">
+    <div class="container py-5">
+        <div class="row justify-content-center">
+            <div class="col-lg-6 col-md-8">
+                <!-- Steps Indicator -->
+                <div class="steps-indicator">
+                    <div class="step active">
+                        <span>۱</span>
+                        <div class="step-label">ورود شماره</div>
+                    </div>
+                    <div class="step">
+                        <span>۲</span>
+                        <div class="step-label">تأیید کد</div>
+                    </div>
+                    <div class="step">
+                        <span>۳</span>
+                        <div class="step-label">تکمیل ثبت‌نام</div>
+                    </div>
+                </div>
+                
+                <!-- Registration Card -->
+                <div class="card register-card">
+                    <!-- Card Header -->
+                    <div class="card-header text-center">
+                        <div class="d-flex justify-content-center mb-3">
+                            <div class="bg-white rounded-circle p-3">
+                                <i class="bi bi-phone text-primary" style="font-size: 2.5rem;"></i>
+                            </div>
+                        </div>
+                        <h1 class="h3 mb-2 fw-bold">ثبت‌نام با شماره موبایل</h1>
+                        <p class="mb-0 opacity-75">ثبت‌نام سریع و امن در کمتر از ۲ دقیقه</p>
+                    </div>
+                    
+                    <!-- Card Body -->
+                    <div class="card-body p-4">
+                        <!-- Flash Messages -->
+                        {% if messages %}
+                            <div class="messages">
+                                {% for message in messages %}
+                                    <div class="alert alert-{{ message.tags }} alert-dismissible fade show" role="alert">
+                                        {% if message.tags == 'success' %}
+                                            <i class="bi bi-check-circle-fill me-2"></i>
+                                        {% elif message.tags == 'error' %}
+                                            <i class="bi bi-exclamation-circle-fill me-2"></i>
+                                        {% elif message.tags == 'warning' %}
+                                            <i class="bi bi-exclamation-triangle-fill me-2"></i>
+                                        {% elif message.tags == 'info' %}
+                                            <i class="bi bi-info-circle-fill me-2"></i>
+                                        {% endif %}
+                                        {{ message }}
+                                        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                                    </div>
+                                {% endfor %}
+                            </div>
+                        {% endif %}
+                        
+                        <!-- Registration Form -->
+                        <form method="post" novalidate id="phone-register-form">
+                            {% csrf_token %}
+                            
+                            <!-- Phone Input -->
+                            <div class="mb-4">
+                                <label for="{{ form.phone.id_for_label }}" class="form-label fw-bold">
+                                    <i class="bi bi-phone me-1"></i> شماره موبایل
+                                </label>
+                                
+                                <div class="phone-input-wrapper">
+                                    <div class="input-group input-group-lg">
+                                        <span class="input-group-text" id="phone-prefix">
+                                            <i class="bi bi-phone"></i> +98
+                                        </span>
+                                        <input 
+                                            type="tel" 
+                                            name="{{ form.phone.name }}"
+                                            id="{{ form.phone.id_for_label }}"
+                                            class="form-control form-control-lg {% if form.phone.errors %}is-invalid error-animation{% endif %}"
+                                            placeholder="9123456789"
+                                            inputmode="numeric"
+                                            pattern="[0-9]*"
+                                            value="{{ form.phone.value|default_if_none:'' }}"
+                                            aria-describedby="phoneHelp"
+                                            autofocus
+                                            required
+                                        >
+                                    </div>
+                                    
+                                    {% if form.phone.errors %}
+                                        <div class="invalid-feedback d-block mt-2">
+                                            <i class="bi bi-exclamation-circle me-1"></i>
+                                            {% for error in form.phone.errors %}
+                                                {{ error }}
+                                            {% endfor %}
+                                        </div>
+                                    {% endif %}
+                                    
+                                    <div id="phoneHelp" class="form-text mt-2">
+                                        <i class="bi bi-info-circle text-primary me-1"></i>
+                                        کد تأیید ۶ رقمی به این شماره ارسال خواهد شد.
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <!-- Terms and Conditions -->
+                            <div class="mb-4">
+                                <div class="form-check">
+                                    <input class="form-check-input" type="checkbox" id="agreeTerms" required>
+                                    <label class="form-check-label terms-text" for="agreeTerms">
+                                        با <a href="{% url 'pages:terms' %}" target="_blank">قوانین و شرایط</a> 
+                                        و <a href="{% url 'pages:privacy' %}" target="_blank">سیاست حفظ حریم خصوصی</a> 
+                                        فروشگاه خودرو موافقت می‌کنم.
+                                    </label>
+                                </div>
+                            </div>
+                            
+                            <!-- Submit Button -->
+                            <div class="d-grid gap-2">
+                                <button type="submit" class="btn submit-btn btn-lg" id="submit-btn">
+                                    <span id="btn-text">
+                                        <i class="bi bi-send me-2"></i> دریافت کد تأیید
+                                    </span>
+                                    <span id="btn-loading" class="d-none">
+                                        <span class="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span>
+                                        در حال ارسال...
+                                    </span>
+                                </button>
+                            </div>
+                        </form>
+                        
+                        <!-- Divider -->
+                        <div class="position-relative my-4">
+                            <hr>
+                            <span class="position-absolute top-50 start-50 translate-middle bg-white px-3 text-muted">
+                                یا
+                            </span>
+                        </div>
+                        
+                        <!-- Alternative Options -->
+                        <div class="text-center">
+                            <p class="mb-3">روش‌های دیگر ثبت‌نام</p>
+                            <div class="d-flex justify-content-center gap-3">
+                                <a href="{% url 'accounts:register' %}" class="btn btn-outline-primary">
+                                    <i class="bi bi-envelope me-1"></i> ثبت‌نام با ایمیل
+                                </a>
+                                <a href="{% url 'accounts:login' %}" class="btn btn-outline-success">
+                                    <i class="bi bi-box-arrow-in-right me-1"></i> ورود به حساب
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Card Footer -->
+                    <div class="card-footer bg-light text-center py-3">
+                        <p class="mb-0">
+                            با ثبت‌نام موافقت می‌کنید که 
+                            <a href="{% url 'pages:sms_terms' %}" class="text-decoration-none">پیامک‌های اطلاع‌رسانی</a> 
+                            دریافت کنید.
+                        </p>
+                    </div>
+                </div>
+                
+                <!-- Info Box -->
+                <div class="info-box mt-4">
+                    <div class="d-flex">
+                        <div class="flex-shrink-0">
+                            <i class="bi bi-shield-check text-primary" style="font-size: 1.5rem;"></i>
+                        </div>
+                        <div class="flex-grow-1 ms-3">
+                            <h6 class="fw-bold mb-2">اطمینان و امنیت</h6>
+                            <p class="mb-0 small">
+                                شماره موبایل شما تنها برای تأیید هویت استفاده شده و در اختیار شخص ثالث قرار نمی‌گیرد.
+                                کلیه ارتباطات از طریق پروتکل امن SSL رمزنگاری می‌شوند.
+                            </p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block page_js %}
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const form = document.getElementById('phone-register-form');
+        const submitBtn = document.getElementById('submit-btn');
+        const btnText = document.getElementById('btn-text');
+        const btnLoading = document.getElementById('btn-loading');
+        const phoneInput = document.getElementById('{{ form.phone.id_for_label }}');
+        
+        // Format phone number input
+        phoneInput.addEventListener('input', function(e) {
+            // Remove any non-digit characters
+            let value = e.target.value.replace(/\D/g, '');
+            
+            // Limit to 10 digits (after 0)
+            if (value.length > 10) {
+                value = value.slice(0, 10);
+            }
+            
+            // Update input value
+            e.target.value = value;
+        });
+        
+        // Form submission handler
+        form.addEventListener('submit', function(e) {
+            // Validate phone number length
+            const phoneValue = phoneInput.value.trim();
+            
+            if (phoneValue.length !== 10) {
+                e.preventDefault();
+                showError('شماره موبایل باید ۱۰ رقم باشد (بدون صفر اول)');
+                return;
+            }
+            
+            // Show loading state
+            btnText.classList.add('d-none');
+            btnLoading.classList.remove('d-none');
+            submitBtn.disabled = true;
+            
+            // Add full phone number (with 0) to form
+            const hiddenInput = document.createElement('input');
+            hiddenInput.type = 'hidden';
+            hiddenInput.name = 'phone';
+            hiddenInput.value = '0' + phoneValue;
+            form.appendChild(hiddenInput);
+        });
+        
+        // Auto-focus on phone input
+        if (phoneInput.value === '') {
+            phoneInput.focus();
+        }
+        
+        // Show error message
+        function showError(message) {
+            // Remove any existing error alerts
+            const existingAlerts = document.querySelectorAll('.alert-danger');
+            existingAlerts.forEach(alert => alert.remove());
+            
+            // Create new error alert
+            const alertDiv = document.createElement('div');
+            alertDiv.className = 'alert alert-danger alert-dismissible fade show';
+            alertDiv.innerHTML = `
+                <i class="bi bi-exclamation-circle-fill me-2"></i>
+                ${message}
+                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+            `;
+            
+            // Add animation
+            alertDiv.classList.add('error-animation');
+            
+            // Insert after form
+            form.parentNode.insertBefore(alertDiv, form.nextSibling);
+            
+            // Focus on phone input
+            phoneInput.focus();
+            phoneInput.classList.add('error-animation');
+            
+            // Remove animation class after animation completes
+            setTimeout(() => {
+                phoneInput.classList.remove('error-animation');
+            }, 500);
+        }
+        
+        // Prevent resubmission on page refresh
+        if (window.history.replaceState) {
+            window.history.replaceState(null, null, window.location.href);
+        }
+        
+        // Terms checkbox validation
+        const termsCheckbox = document.getElementById('agreeTerms');
+        termsCheckbox.addEventListener('change', function() {
+            submitBtn.disabled = !this.checked;
+        });
+        
+        // Initialize submit button state
+        submitBtn.disabled = !termsCheckbox.checked;
+        
+        // Add help text for phone format
+        const helpText = document.createElement('small');
+        helpText.className = 'form-text text-muted d-block mt-1';
+        helpText.innerHTML = '<i class="bi bi-lightbulb me-1"></i> مثال: 9123456789';
+        
+        phoneInput.parentNode.parentNode.appendChild(helpText);
+        
+        // Handle phone input validation on blur
+        phoneInput.addEventListener('blur', function() {
+            const value = this.value.trim();
+            
+            if (value.length === 10) {
+                this.classList.remove('is-invalid');
+                this.classList.add('is-valid');
+            } else if (value.length > 0) {
+                this.classList.add('is-invalid');
+                this.classList.remove('is-valid');
+            } else {
+                this.classList.remove('is-invalid', 'is-valid');
+            }
+        });
+        
+        // Enter key to submit form
+        phoneInput.addEventListener('keypress', function(e) {
+            if (e.key === 'Enter' && !submitBtn.disabled) {
+                form.dispatchEvent(new Event('submit'));
+            }
+        });
+    });
+</script>
+{% endblock %}

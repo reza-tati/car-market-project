@@ -1,0 +1,757 @@
+<!-- templates/accounts/verify_code.html -->
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}تأیید کد | فروشگاه خودرو{% endblock %}
+
+{% block meta %}
+<meta name="description" content="تأیید شماره موبایل با کد ۶ رقمی ارسال شده. کد تأیید برای ثبت‌نام در فروشگاه خودرو.">
+<meta property="og:title" content="تأیید کد | فروشگاه خودرو">
+<meta property="og:description" content="تأیید شماره موبایل با کد ارسال شده">
+{% endblock %}
+
+{% block page_css %}
+<style>
+    .verify-container {
+        min-height: calc(100vh - 200px);
+        background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+    }
+    
+    .verify-card {
+        border: none;
+        border-radius: 20px;
+        box-shadow: 0 10px 40px rgba(0, 0, 0, 0.1);
+        transition: transform 0.3s ease, box-shadow 0.3s ease;
+        overflow: hidden;
+    }
+    
+    .verify-card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 15px 50px rgba(0, 0, 0, 0.15);
+    }
+    
+    .card-header {
+        background: linear-gradient(90deg, #28a745 0%, #20c997 100%);
+        border-bottom: none;
+        padding: 2rem 2rem;
+    }
+    
+    /* OTP Input Styles */
+    .otp-container {
+        display: flex;
+        justify-content: center;
+        gap: 10px;
+        margin: 2rem 0;
+    }
+    
+    .otp-input {
+        width: 60px;
+        height: 70px;
+        text-align: center;
+        font-size: 2rem;
+        font-weight: bold;
+        border: 2px solid #dee2e6;
+        border-radius: 10px;
+        background: white;
+        transition: all 0.3s ease;
+    }
+    
+    .otp-input:focus {
+        border-color: #28a745;
+        box-shadow: 0 0 0 3px rgba(40, 167, 69, 0.25);
+        outline: none;
+        transform: translateY(-2px);
+    }
+    
+    .otp-input.filled {
+        border-color: #28a745;
+        background-color: rgba(40, 167, 69, 0.05);
+    }
+    
+    .otp-input.error {
+        border-color: #dc3545;
+        animation: shake 0.5s ease-in-out;
+    }
+    
+    @keyframes shake {
+        0%, 100% { transform: translateX(0); }
+        10%, 30%, 50%, 70%, 90% { transform: translateX(-5px); }
+        20%, 40%, 60%, 80% { transform: translateX(5px); }
+    }
+    
+    .timer-container {
+        background: #f8f9fa;
+        border-radius: 10px;
+        padding: 1.5rem;
+        text-align: center;
+        margin: 2rem 0;
+        border: 2px solid #e9ecef;
+    }
+    
+    .timer-display {
+        font-size: 3rem;
+        font-weight: bold;
+        color: #28a745;
+        font-family: 'Courier New', monospace;
+    }
+    
+    .timer-label {
+        color: #6c757d;
+        font-size: 0.9rem;
+        margin-top: 0.5rem;
+    }
+    
+    .expired-timer {
+        color: #dc3545 !important;
+    }
+    
+    .phone-display {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 10px;
+        background: #e8f5e9;
+        padding: 1rem;
+        border-radius: 10px;
+        margin-bottom: 2rem;
+    }
+    
+    .phone-number {
+        font-family: 'Courier New', monospace;
+        font-size: 1.2rem;
+        font-weight: bold;
+        color: #155724;
+    }
+    
+    .btn-verify {
+        background: linear-gradient(90deg, #28a745, #20c997);
+        border: none;
+        padding: 1rem 2rem;
+        font-size: 1.1rem;
+        font-weight: 600;
+        transition: all 0.3s ease;
+        position: relative;
+        overflow: hidden;
+    }
+    
+    .btn-verify:hover:not(:disabled) {
+        transform: translateY(-2px);
+        box-shadow: 0 5px 15px rgba(40, 167, 69, 0.4);
+    }
+    
+    .btn-verify:disabled {
+        opacity: 0.7;
+        cursor: not-allowed;
+    }
+    
+    .resend-btn {
+        position: relative;
+        overflow: hidden;
+    }
+    
+    .resend-btn:disabled::after {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        height: 100%;
+        background: rgba(0, 0, 0, 0.1);
+        animation: cooldown-progress linear forwards;
+        animation-duration: var(--cooldown-duration, 60s);
+    }
+    
+    @keyframes cooldown-progress {
+        from { width: 0%; }
+        to { width: 100%; }
+    }
+    
+    .steps-indicator {
+        display: flex;
+        justify-content: center;
+        margin-bottom: 2rem;
+        position: relative;
+    }
+    
+    .steps-indicator::before {
+        content: '';
+        position: absolute;
+        top: 50%;
+        left: 10%;
+        right: 10%;
+        height: 2px;
+        background: #dee2e6;
+        z-index: 1;
+    }
+    
+    .step {
+        width: 50px;
+        height: 50px;
+        border-radius: 50%;
+        background: #6c757d;
+        color: white;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-weight: bold;
+        position: relative;
+        z-index: 2;
+        transition: all 0.3s ease;
+    }
+    
+    .step.completed {
+        background: #28a745;
+        transform: scale(1.1);
+        box-shadow: 0 0 15px rgba(40, 167, 69, 0.5);
+    }
+    
+    .step.active {
+        background: linear-gradient(90deg, #28a745, #20c997);
+        transform: scale(1.1);
+        box-shadow: 0 0 15px rgba(40, 167, 69, 0.5);
+    }
+    
+    .step-label {
+        position: absolute;
+        top: 100%;
+        margin-top: 10px;
+        font-size: 0.9rem;
+        color: #6c757d;
+        white-space: nowrap;
+    }
+    
+    .attempts-warning {
+        background: #fff3cd;
+        border: 1px solid #ffeaa7;
+        border-radius: 10px;
+        padding: 1rem;
+        margin-top: 1rem;
+    }
+    
+    .security-info {
+        background: #f8f9fa;
+        border-radius: 10px;
+        padding: 1.5rem;
+        margin-top: 2rem;
+        border-right: 4px solid #28a745;
+    }
+    
+    @media (max-width: 768px) {
+        .otp-input {
+            width: 50px;
+            height: 60px;
+            font-size: 1.5rem;
+        }
+        
+        .timer-display {
+            font-size: 2.5rem;
+        }
+        
+        .verify-card {
+            margin: 1rem;
+        }
+        
+        .steps-indicator::before {
+            left: 5%;
+            right: 5%;
+        }
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="verify-container d-flex align-items-center">
+    <div class="container py-5">
+        <div class="row justify-content-center">
+            <div class="col-lg-6 col-md-8">
+                <!-- Steps Indicator -->
+                <div class="steps-indicator">
+                    <div class="step completed">
+                        <span>۱</span>
+                        <div class="step-label">ورود شماره</div>
+                    </div>
+                    <div class="step active">
+                        <span>۲</span>
+                        <div class="step-label">تأیید کد</div>
+                    </div>
+                    <div class="step">
+                        <span>۳</span>
+                        <div class="step-label">تکمیل ثبت‌نام</div>
+                    </div>
+                </div>
+                
+                <!-- Verification Card -->
+                <div class="card verify-card">
+                    <!-- Card Header -->
+                    <div class="card-header text-center">
+                        <div class="d-flex justify-content-center mb-3">
+                            <div class="bg-white rounded-circle p-3">
+                                <i class="bi bi-shield-check text-success" style="font-size: 2.5rem;"></i>
+                            </div>
+                        </div>
+                        <h1 class="h3 mb-2 fw-bold">تأیید شماره موبایل</h1>
+                        <p class="mb-0 opacity-75">لطفاً کد ارسال شده را وارد کنید</p>
+                    </div>
+                    
+                    <!-- Card Body -->
+                    <div class="card-body p-4">
+                        <!-- Flash Messages -->
+                        {% if messages %}
+                            <div class="messages">
+                                {% for message in messages %}
+                                    <div class="alert alert-{{ message.tags }} alert-dismissible fade show" role="alert">
+                                        {% if message.tags == 'success' %}
+                                            <i class="bi bi-check-circle-fill me-2"></i>
+                                        {% elif message.tags == 'error' %}
+                                            <i class="bi bi-exclamation-circle-fill me-2"></i>
+                                        {% elif message.tags == 'warning' %}
+                                            <i class="bi bi-exclamation-triangle-fill me-2"></i>
+                                        {% elif message.tags == 'info' %}
+                                            <i class="bi bi-info-circle-fill me-2"></i>
+                                        {% endif %}
+                                        {{ message }}
+                                        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                                    </div>
+                                {% endfor %}
+                            </div>
+                        {% endif %}
+                        
+                        <!-- Phone Display -->
+                        <div class="phone-display">
+                            <i class="bi bi-phone text-success" style="font-size: 1.5rem;"></i>
+                            <span class="phone-number">{{ masked_phone }}</span>
+                            <a href="{% url 'accounts:phone_register' %}" class="btn btn-sm btn-outline-secondary">
+                                <i class="bi bi-pencil"></i> تغییر
+                            </a>
+                        </div>
+                        
+                        <!-- Timer -->
+                        <div class="timer-container">
+                            <div class="timer-display {% if remaining_seconds <= 60 %}expired-timer{% endif %}" id="timerDisplay">
+                                {{ remaining_seconds|divisibleby:60|yesno:"05,04,03,02,01,00" }}:{{ remaining_seconds|divisibleby:60|yesno:"00,59,58,57,56" }}
+                            </div>
+                            <div class="timer-label">
+                                <i class="bi bi-clock"></i>
+                                زمان باقی‌مانده تا انقضای کد
+                            </div>
+                        </div>
+                        
+                        <!-- Verification Form -->
+                        <form method="post" novalidate id="verify-form">
+                            {% csrf_token %}
+                            
+                            <!-- Hidden Input for OTP Code -->
+                            <input type="hidden" name="{{ form.code.name }}" id="hiddenOtpInput" value="">
+                            
+                            <!-- OTP Inputs -->
+                            <div class="mb-4">
+                                <label class="form-label fw-bold d-block text-center mb-3">
+                                    <i class="bi bi-key me-1"></i> کد ۶ رقمی تأیید
+                                </label>
+                                
+                                <div class="otp-container">
+                                    {% for i in "123456" %}
+                                    <input 
+                                        type="text" 
+                                        maxlength="1" 
+                                        class="otp-input form-control form-control-lg text-center" 
+                                        data-index="{{ forloop.counter0 }}"
+                                        inputmode="numeric"
+                                        pattern="[0-9]*"
+                                        autocomplete="off"
+                                    >
+                                    {% endfor %}
+                                </div>
+                                
+                                <!-- Error Display -->
+                                {% if form.code.errors %}
+                                    <div class="alert alert-danger mt-3 text-center">
+                                        <i class="bi bi-exclamation-circle me-1"></i>
+                                        {% for error in form.code.errors %}
+                                            {{ error }}
+                                        {% endfor %}
+                                    </div>
+                                {% endif %}
+                                
+                                <!-- Help Text -->
+                                <div class="text-center mt-3">
+                                    <small class="text-muted">
+                                        <i class="bi bi-info-circle me-1"></i>
+                                        کد ارسال شده به موبایل شما را در این کادرها وارد کنید
+                                    </small>
+                                </div>
+                            </div>
+                            
+                            <!-- Attempts Warning -->
+                            {% if remaining_attempts < 3 %}
+                            <div class="attempts-warning">
+                                <div class="d-flex align-items-center">
+                                    <i class="bi bi-exclamation-triangle text-warning me-2"></i>
+                                    <div>
+                                        <strong>توجه:</strong> 
+                                        {{ 3|add:-remaining_attempts }} تلاش ناموفق از ۳ تلاش مجاز
+                                    </div>
+                                </div>
+                            </div>
+                            {% endif %}
+                            
+                            <!-- Submit Button -->
+                            <div class="d-grid gap-2 mt-4">
+                                <button type="submit" class="btn btn-verify btn-lg" id="verify-btn">
+                                    <span id="btn-text">
+                                        <i class="bi bi-check-circle me-2"></i> تأیید و ادامه
+                                    </span>
+                                    <span id="btn-loading" class="d-none">
+                                        <span class="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span>
+                                        در حال تأیید...
+                                    </span>
+                                </button>
+                            </div>
+                        </form>
+                        
+                        <!-- Action Buttons -->
+                        <div class="mt-4">
+                            <div class="d-grid gap-2">
+                                <!-- Resend Button -->
+                                <button 
+                                    type="button" 
+                                    class="btn {% if can_resend %}btn-outline-primary{% else %}btn-outline-secondary{% endif %} resend-btn" 
+                                    id="resend-btn"
+                                    {% if not can_resend %}disabled{% endif %}
+                                    data-url="{% url 'accounts:resend_code' %}"
+                                    style="--cooldown-duration: {{ resend_cooldown }}s"
+                                >
+                                    {% if can_resend %}
+                                        <i class="bi bi-arrow-clockwise me-2"></i> ارسال مجدد کد
+                                    {% else %}
+                                        <i class="bi bi-clock me-2"></i>
+                                        <span id="resend-countdown">{{ resend_cooldown }}</span> ثانیه تا ارسال مجدد
+                                    {% endif %}
+                                </button>
+                                
+                                <!-- Change Phone Button -->
+                                <a href="{% url 'accounts:phone_register' %}" class="btn btn-outline-secondary">
+                                    <i class="bi bi-phone me-2"></i> تغییر شماره موبایل
+                                </a>
+                                
+                                <!-- Cancel Button -->
+                                <a href="{% url 'home' %}" class="btn btn-outline-danger">
+                                    <i class="bi bi-x-circle me-2"></i> انصراف و بازگشت
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Card Footer -->
+                    <div class="card-footer bg-light text-center py-3">
+                        <div class="security-info">
+                            <div class="d-flex align-items-start">
+                                <i class="bi bi-shield-check text-success mt-1 me-2"></i>
+                                <div class="text-start">
+                                    <h6 class="fw-bold mb-2">نکات امنیتی</h6>
+                                    <ul class="mb-0 ps-3 small">
+                                        <li>کد تأیید فقط برای شما ارسال شده است</li>
+                                        <li>کد را در اختیار دیگران قرار ندهید</li>
+                                        <li>پس از ۵ دقیقه کد منقضی می‌شود</li>
+                                        <li>حداکثر ۳ بار امکان تلاش برای وارد کردن کد وجود دارد</li>
+                                    </ul>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block page_js %}
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // Elements
+        const otpInputs = document.querySelectorAll('.otp-input');
+        const hiddenInput = document.getElementById('hiddenOtpInput');
+        const verifyForm = document.getElementById('verify-form');
+        const verifyBtn = document.getElementById('verify-btn');
+        const btnText = document.getElementById('btn-text');
+        const btnLoading = document.getElementById('btn-loading');
+        const resendBtn = document.getElementById('resend-btn');
+        const timerDisplay = document.getElementById('timerDisplay');
+        
+        // Timer Variables
+        let remainingSeconds = {{ remaining_seconds }};
+        let canResend = {{ can_resend|yesno:"true,false" }};
+        let resendCooldown = {{ resend_cooldown|default:60 }};
+        
+        // Initialize OTP Inputs
+        function initOTPInputs() {
+            // Focus on first input
+            otpInputs[0].focus();
+            
+            // Handle input for each OTP box
+            otpInputs.forEach((input, index) => {
+                // Handle input
+                input.addEventListener('input', (e) => {
+                    const value = e.target.value.replace(/\D/g, '');
+                    
+                    if (value.length === 1) {
+                        e.target.value = value;
+                        e.target.classList.add('filled');
+                        
+                        // Move to next input
+                        if (index < otpInputs.length - 1) {
+                            otpInputs[index + 1].focus();
+                        } else {
+                            // All inputs filled, focus on verify button
+                            verifyBtn.focus();
+                        }
+                        
+                        // Update hidden input
+                        updateHiddenInput();
+                    } else if (value.length === 0) {
+                        e.target.classList.remove('filled');
+                    }
+                });
+                
+                // Handle paste
+                input.addEventListener('paste', (e) => {
+                    e.preventDefault();
+                    const pastedData = e.clipboardData.getData('text');
+                    const digits = pastedData.replace(/\D/g, '').split('');
+                    
+                    // Fill all inputs with pasted digits
+                    digits.forEach((digit, idx) => {
+                        if (otpInputs[idx]) {
+                            otpInputs[idx].value = digit;
+                            otpInputs[idx].classList.add('filled');
+                        }
+                    });
+                    
+                    // Focus on next empty input or last one
+                    const firstEmptyIndex = Array.from(otpInputs).findIndex(input => !input.value);
+                    if (firstEmptyIndex !== -1) {
+                        otpInputs[firstEmptyIndex].focus();
+                    } else {
+                        otpInputs[otpInputs.length - 1].focus();
+                    }
+                    
+                    updateHiddenInput();
+                });
+                
+                // Handle backspace
+                input.addEventListener('keydown', (e) => {
+                    if (e.key === 'Backspace' && !input.value && index > 0) {
+                        otpInputs[index - 1].focus();
+                        otpInputs[index - 1].value = '';
+                        otpInputs[index - 1].classList.remove('filled');
+                        updateHiddenInput();
+                    }
+                });
+                
+                // Handle arrow keys
+                input.addEventListener('keydown', (e) => {
+                    if (e.key === 'ArrowLeft' && index > 0) {
+                        otpInputs[index - 1].focus();
+                    } else if (e.key === 'ArrowRight' && index < otpInputs.length - 1) {
+                        otpInputs[index + 1].focus();
+                    }
+                });
+                
+                // Handle focus
+                input.addEventListener('focus', (e) => {
+                    e.target.select();
+                });
+            });
+        }
+        
+        // Update hidden input with OTP code
+        function updateHiddenInput() {
+            const code = Array.from(otpInputs)
+                .map(input => input.value)
+                .join('');
+            hiddenInput.value = code;
+            
+            // Enable/disable verify button based on code length
+            verifyBtn.disabled = code.length !== 6;
+        }
+        
+        // Start OTP timer
+        function startOTPTimer() {
+            if (remainingSeconds <= 0) return;
+            
+            const timerInterval = setInterval(() => {
+                remainingSeconds--;
+                
+                // Update timer display
+                const minutes = Math.floor(remainingSeconds / 60);
+                const seconds = remainingSeconds % 60;
+                timerDisplay.textContent = `${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
+                
+                // Change color when less than 1 minute
+                if (remainingSeconds <= 60) {
+                    timerDisplay.classList.add('expired-timer');
+                }
+                
+                // Stop timer when expired
+                if (remainingSeconds <= 0) {
+                    clearInterval(timerInterval);
+                    timerDisplay.textContent = "00:00";
+                    
+                    // Show expired message
+                    showMessage('کد تأیید منقضی شده است. لطفاً کد جدید دریافت کنید.', 'warning');
+                }
+            }, 1000);
+        }
+        
+        // Start resend cooldown timer
+        function startResendTimer() {
+            if (canResend) return;
+            
+            let cooldown = resendCooldown;
+            const countdownElement = resendBtn.querySelector('#resend-countdown');
+            
+            const cooldownInterval = setInterval(() => {
+                cooldown--;
+                
+                if (countdownElement) {
+                    countdownElement.textContent = cooldown;
+                }
+                
+                // Enable resend button when cooldown ends
+                if (cooldown <= 0) {
+                    clearInterval(cooldownInterval);
+                    canResend = true;
+                    resendBtn.disabled = false;
+                    resendBtn.classList.remove('btn-outline-secondary');
+                    resendBtn.classList.add('btn-outline-primary');
+                    resendBtn.innerHTML = '<i class="bi bi-arrow-clockwise me-2"></i> ارسال مجدد کد';
+                }
+            }, 1000);
+        }
+        
+        // Handle form submission
+        verifyForm.addEventListener('submit', function(e) {
+            const code = hiddenInput.value;
+            
+            if (code.length !== 6) {
+                e.preventDefault();
+                showMessage('لطفاً کد ۶ رقمی را کامل وارد کنید.', 'danger');
+                return;
+            }
+            
+            // Show loading state
+            btnText.classList.add('d-none');
+            btnLoading.classList.remove('d-none');
+            verifyBtn.disabled = true;
+        });
+        
+        // Handle resend button click
+        resendBtn.addEventListener('click', function(e) {
+            if (!canResend) return;
+            
+            const url = this.getAttribute('data-url');
+            
+            // Show loading on resend button
+            const originalHtml = this.innerHTML;
+            this.innerHTML = '<span class="spinner-border spinner-border-sm me-2"></span> در حال ارسال...';
+            this.disabled = true;
+            
+            // Send AJAX request
+            fetch(url, {
+                method: 'GET',
+                headers: {
+                    'X-Requested-With': 'XMLHttpRequest'
+                }
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    showMessage('کد جدید با موفقیت ارسال شد.', 'success');
+                    
+                    // Reset OTP inputs
+                    otpInputs.forEach(input => {
+                        input.value = '';
+                        input.classList.remove('filled');
+                    });
+                    updateHiddenInput();
+                    otpInputs[0].focus();
+                    
+                    // Update timers
+                    if (data.remaining_seconds) {
+                        remainingSeconds = data.remaining_seconds;
+                        startOTPTimer();
+                    }
+                    
+                    // Start resend cooldown
+                    canResend = false;
+                    resendBtn.disabled = true;
+                    resendBtn.classList.remove('btn-outline-primary');
+                    resendBtn.classList.add('btn-outline-secondary');
+                    resendBtn.innerHTML = `<i class="bi bi-clock me-2"></i> <span id="resend-countdown">${resendCooldown}</span> ثانیه تا ارسال مجدد`;
+                    startResendTimer();
+                    
+                } else {
+                    showMessage(data.message || 'خطا در ارسال کد جدید.', 'danger');
+                    this.innerHTML = originalHtml;
+                    this.disabled = false;
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                showMessage('خطای شبکه. لطفاً مجدداً تلاش کنید.', 'danger');
+                this.innerHTML = originalHtml;
+                this.disabled = false;
+            });
+        });
+        
+        // Show message function
+        function showMessage(message, type) {
+            // Remove existing messages
+            const existingAlerts = document.querySelectorAll('.alert-dismissible');
+            existingAlerts.forEach(alert => alert.remove());
+            
+            // Create new alert
+            const alertDiv = document.createElement('div');
+            alertDiv.className = `alert alert-${type} alert-dismissible fade show`;
+            alertDiv.innerHTML = `
+                <i class="bi bi-${type === 'success' ? 'check-circle' : 'exclamation-circle'}-fill me-2"></i>
+                ${message}
+                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+            `;
+            
+            // Insert after form
+            verifyForm.parentNode.insertBefore(alertDiv, verifyForm);
+            
+            // Auto dismiss after 5 seconds
+            setTimeout(() => {
+                if (alertDiv.parentNode) {
+                    alertDiv.classList.remove('show');
+                    setTimeout(() => alertDiv.remove(), 150);
+                }
+            }, 5000);
+        }
+        
+        // Initialize
+        initOTPInputs();
+        startOTPTimer();
+        if (!canResend) {
+            startResendTimer();
+        }
+        
+        // Auto-submit when all inputs are filled
+        otpInputs[5]?.addEventListener('input', function() {
+            const code = hiddenInput.value;
+            if (code.length === 6) {
+                setTimeout(() => {
+                    verifyForm.dispatchEvent(new Event('submit'));
+                }, 500);
+            }
+        });
+        
+        // Prevent resubmission on page refresh
+        if (window.history.replaceState) {
+            window.history.replaceState(null, null, window.location.href);
+        }
+    });
+</script>
+{% endblock %}
