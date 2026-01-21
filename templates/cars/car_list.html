@@ -12,6 +12,24 @@
             {% for car in cars %}
             <div class="col-md-4 mb-4">
                 <div class="card h-100">
+                     <!-- ⭐⭐⭐ این قسمت جدید ⭐⭐⭐ -->
+                    <a href="{% url 'cars:car_detail' car.pk car.slug %}" class="text-decoration-none">
+                    <!-- نمایش عکس خودرو -->
+                    <div style="height: 200px; overflow: hidden;">
+                        {% if car.images.all %}
+                            <!-- اولین عکس خودرو -->
+                            <img src="{{ car.images.first.image.url }}" 
+                                 alt="{{ car.brand.name }} {{ car.model.name }}"
+                                 style="width: 100%; height: 100%; object-fit: cover;">
+                        {% else %}
+                            <!-- اگر عکس ندارد -->
+                            <div style="height: 100%; background: #f0f0f0; display: flex; align-items: center; justify-content: center;">
+                                <span style="color: #666;">بدون عکس</span>
+                            </div>
+                        {% endif %}
+                    </div>
+                      </a>
+                    <!-- ⭐⭐⭐ پایان قسمت جدید ⭐⭐⭐ -->
                     <div class="card-body">
                         <h5 class="card-title">{{ car.brand.name }} {{ car.model.name }}</h5>
                         <p class="card-text">{{ car.year }} | {{ car.mileage|intcomma }} کیلومتر</p>

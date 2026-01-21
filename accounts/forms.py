@@ -3,6 +3,34 @@ from django.contrib.auth.forms import UserCreationForm
 from django.contrib.auth.models import User
 from .models import UserProfile
 
+
+class PhoneRegisterForm(UserCreationForm):
+    # فیلدهای اضافی
+    phone = forms.CharField(
+        max_length=11,
+        required=True,
+        label='شماره موبایل',
+        widget=forms.TextInput(attrs={'placeholder': '09123456789'})
+    )
+    first_name = forms.CharField(required=True, label='نام')
+    last_name = forms.CharField(required=True, label='نام خانوادگی')
+    
+    class Meta:
+        model = User
+        fields = ['first_name', 'last_name', 'phone', 'password1', 'password2']
+    
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        # username رو مخفی کن یا برچسبش رو تغییر بده
+        self.fields['username'].label = 'ایمیل (برای ورود)'
+        self.fields['username'].help_text = 'ایمیل خود را وارد کنید'
+    
+    def clean_username(self):
+        # اگر username خالی بود، از phone استفاده کن
+        username = self.cleaned_data.get('username')
+        if not username:
+            username = self.cleaned_data.get('phone')
+        return username
 class UserRegisterForm(UserCreationForm):
     email = forms.EmailField(
         required=True,
@@ -64,7 +92,6 @@ class UserUpdateForm(forms.ModelForm):
             'first_name': forms.TextInput(attrs={'class':'form-control'}),
             'last_name':forms.TextInput(attrs={'class':'form-control'}),
         }
-
 class ProfileUpdateForm(forms.ModelForm):
     class Meta:
         model = UserProfile

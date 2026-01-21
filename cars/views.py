@@ -89,11 +89,21 @@ class CarListView(ListView):
         return context
 # فایل cars/views.py رو باز کن و کلاس CarDetailView رو پیدا کن
 # به این شکل تغییرش بده:
-
 class CarDetailView(DetailView):
     model = Car
     template_name = 'cars/car_detail.html'
     context_object_name = 'car'
+    
+    def get_queryset(self):
+        """
+        اضافه کردن select_related برای بهینه‌سازی
+        این از N+1 query مشکل جلوگیری می‌کنه
+        """
+        return Car.objects.select_related(
+            'seller__profile',  # این خط مهمه - پروفایل رو هم لود کنه
+            'brand',
+            'model'
+        ).prefetch_related('images')
     
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
@@ -105,7 +115,6 @@ class CarDetailView(DetailView):
         
         # 2. بررسی علاقه‌مندی
         if self.request.user.is_authenticated:
-            # بررسی کن آیا کاربر این خودرو رو پسندیده
             context['is_favorite'] = Favorite.objects.filter(
                 user=self.request.user,
                 car=car
@@ -113,13 +122,13 @@ class CarDetailView(DetailView):
         else:
             context['is_favorite'] = False
         
-        # 3. خودروهای مشابه
+        # 3. خودروهای مشابه (اینجا هم select_related اضافه کنیم)
         context['similar_cars'] = Car.objects.filter(
             brand=car.brand,
             model=car.model,
             is_active=True,
             is_verified=True
-        ).exclude(id=car.id)[:4]
+        ).exclude(id=car.id).select_related('seller__profile')[:4]
         
         # 4. تصاویر
         context['images'] = car.images.all()
