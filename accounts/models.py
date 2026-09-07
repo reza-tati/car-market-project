@@ -5,13 +5,23 @@ from django.db.models.signals import post_save
 from django.dispatch import receiver
 
 class UserProfile(models.Model):
+    USER_TYPE_CHOICES = [
+        ('buyer', 'خریدار'),
+        ('seller', 'فروشنده'),
+    ]
     user = models.OneToOneField(User, on_delete=models.CASCADE, related_name='profile')
-    phone = models.CharField(max_length=11, blank=True, null=True, verbose_name='شماره تلفن')
+    phone = models.CharField(max_length=20, blank=True, null=True, verbose_name='شماره تلفن')
     avatar = models.ImageField(upload_to='avatars/', blank=True, null=True, verbose_name='تصویر پروفایل')
     city = models.CharField(max_length=100, blank=True, null=True, verbose_name='شهر')
     
     # اطلاعات فروشنده
     is_seller = models.BooleanField(default=False, verbose_name='فروشنده است؟')
+    user_type = models.CharField(
+        max_length=10,
+        choices=USER_TYPE_CHOICES,
+        default='buyer',
+        verbose_name='نوع کاربری'
+    )
     seller_rating = models.FloatField(default=0.0, verbose_name='امتیاز فروشنده')
     seller_bio = models.TextField(blank=True, null=True, verbose_name='درباره فروشنده')
     
@@ -43,4 +53,3 @@ def save_user_profile(sender, instance, **kwargs):
     instance.profile.save()
 
 
-# Create your models here.

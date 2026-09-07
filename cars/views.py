@@ -6,7 +6,6 @@ from django.contrib import messages
 from django.db.models import Q, Count  # برای جستجوی پیشرفته
 from django.core.paginator import Paginator  # صفحه‌بندی
 from django.http import JsonResponse  # پاسخ JSON برای AJAX
-from django.views.decorators.http import require_POST  # فقط POST
 from django.contrib.auth.decorators import login_required
 from .models import Car, CarImage, Brand, CarModel, Favorite
 from .forms import CarForm, CarImageFormSet
@@ -87,8 +86,6 @@ class CarListView(ListView):
         context['color_choices'] = Car.COLOR_CHOICES
         
         return context
-# فایل cars/views.py رو باز کن و کلاس CarDetailView رو پیدا کن
-# به این شکل تغییرش بده:
 class CarDetailView(DetailView):
     model = Car
     template_name = 'cars/car_detail.html'
@@ -134,8 +131,6 @@ class CarDetailView(DetailView):
         context['images'] = car.images.all()
         
         return context
-# در cars/views.py، کلاس CarCreateView:
-# cars/views.py - کلاس CarCreateView را با این جایگزین کن:
 class CarCreateView(LoginRequiredMixin, CreateView):
     model = Car
     form_class = CarForm
@@ -241,34 +236,22 @@ class CarDeleteView(LoginRequiredMixin, UserPassesTestMixin, DeleteView):
     def delete(self, request, *args, **kwargs):
         messages.success(request, 'آگهی با موفقیت حذف شد!')
         return super().delete(request, *args, **kwargs)
-# 🔹 **Function-Based Views (ویوهای مبتنی بر تابع)**
-@require_POST  # فقط درخواست‌های POST پذیرفته شوند
-@login_required  # نیاز به لاگین
+
+@login_required
 def toggle_favorite(request, car_id):
-    """
-    افزودن یا حذف از علاقه‌مندی‌ها (AJAX)
-    """
     car = get_object_or_404(Car, id=car_id)
     
-    # ایجاد یا حذف رکورد Favorite
-    favorite, created = Favorite.objects.get_or_create(
-        user=request.user,
-        car=car
-    )
+    favorite = Favorite.objects.filter(user=request.user, car=car).first()
     
-    if not created:  # اگر از قبل وجود داشت (یعنی حذف شود)
+    if favorite:
         favorite.delete()
-        return JsonResponse({
-            'status': 'removed', 
-            'message': 'از علاقه‌مندی‌ها حذف شد'
-        })
-    else:  # اگر ایجاد شد (یعنی اضافه شد)
-        return JsonResponse({
-            'status': 'added', 
-            'message': 'به علاقه‌مندی‌ها اضافه شد'
-        })
-
-
+        messages.success(request, '❌ از علاقه‌مندی‌ها حذف شد.')
+    else:
+        Favorite.objects.create(user=request.user, car=car)
+        messages.success(request, '✅ به علاقه‌مندی‌ها اضافه شد.')
+    
+    # برگشت به صفحه قبلی با slug
+    return redirect('cars:car_detail', pk=car.id, slug=car.slug)
 def get_models(request):
     """
     دریافت مدل‌های یک برند (AJAX)

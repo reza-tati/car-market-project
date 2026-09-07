@@ -349,6 +349,8 @@ class Car(models.Model):
     def get_condition_display(self):
         """نمایش فارسی وضعیت بدنه"""
         return dict(self.CONDITION_CHOICES).get(self.condition, self.condition)
+
+        
 class CarImage(models.Model):
     """
     مدل تصاویر خودرو
@@ -416,7 +418,6 @@ class Favorite(models.Model):
     
     def __str__(self):
         return f"{self.user.username} - {self.car.title}"
-# cars/models.py (اضافه کردن مدل Comment)
 class Comment(models.Model):
     """مدل نظرات برای خودروها"""
     car = models.ForeignKey(Car, on_delete=models.CASCADE, related_name='comments')
@@ -437,7 +438,6 @@ class Comment(models.Model):
     
     def __str__(self):
         return f"نظر {self.user.username} برای {self.car.title}"
-# cars/models.py (اضافه کردن مدل Comparison)
 class Comparison(models.Model):
     """مدل مقایسه خودروها"""
     user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='comparisons')

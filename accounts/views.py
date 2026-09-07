@@ -3,8 +3,9 @@ from django.contrib.auth import login
 from django.contrib.auth.decorators import login_required
 from django.contrib import messages
 from django.contrib.auth.views import LoginView
-from .forms import UserRegisterForm, UserUpdateForm, ProfileUpdateForm
+from .forms import UserUpdateForm, ProfileUpdateForm, PhoneRegisterForm
 from cars.models import Car
+from django.contrib.auth.backends import ModelBackend
 
 class CustomLoginView(LoginView):
     template_name = 'accounts/login.html'
@@ -15,14 +16,15 @@ class CustomLoginView(LoginView):
     
 def register(request):
         if request.method == 'POST':
-            form = UserRegisterForm(request.POST)
+            form = PhoneRegisterForm(request.POST)
             if form.is_valid():
                 user = form.save()
+                user.backend = 'django.contrib.auth.backends.ModelBackend'
                 login(request, user)
                 messages.success(request, 'حساب کاربری شما با موفقیت ایجاد شد!') 
                 return redirect('cars:car_list')
         else:
-            form = UserRegisterForm()
+            form = PhoneRegisterForm()
         return render(request, 'accounts/register.html',{'form':form})
     
 @login_required

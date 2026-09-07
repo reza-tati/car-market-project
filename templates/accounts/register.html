@@ -1,133 +1,94 @@
+<!-- accounts/templates/accounts/register.html -->
 {% extends 'base.html' %}
 {% load static %}
 
 {% block title %}ثبت‌نام در بازار خودرو{% endblock %}
 
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'css/custom.css' %}">
+{% endblock %}
+
 {% block content %}
 <div class="container py-5">
     <div class="row justify-content-center">
-        <div class="col-md-8 col-lg-6">
-            <!-- Card -->
-            <div class="card shadow-lg border-0 rounded-4">
-                <div class="card-body p-4 p-md-5">
-                    
-                    <!-- Header -->
-                    <div class="text-center mb-5">
-                        <div class="mb-4">
-                            <i class="bi bi-car-front-fill display-4 text-primary"></i>
-                        </div>
-                        <h1 class="h2 fw-bold text-dark mb-2">ثبت‌نام در بازار خودرو</h1>
-                        <p class="text-muted">ایجاد حساب کاربری جدید برای خرید و فروش خودرو</p>
-                    </div>
-
-                    <!-- Registration Form -->
+        <div class="col-lg-7 col-md-9">
+            <div class="card register-card">
+                <div class="card-header text-black text-center">
+                    <h3 class="mb-1">🚗 ثبت‌نام در بازار خودرو</h3>
+                    <p class="mb-0">ایجاد حساب کاربری برای خرید و فروش خودرو</p>
+                </div>
+                <div class="card-body">
                     <form method="post" novalidate>
                         {% csrf_token %}
                         
-                        <!-- Display Form Errors -->
-                        {% if form.errors %}
-                        <div class="alert alert-danger alert-dismissible fade show" role="alert">
-                            <i class="bi bi-exclamation-triangle-fill me-2"></i>
-                            لطفاً خطاهای زیر را بررسی کنید:
-                            <ul class="mb-0 mt-2">
-                                {% for field in form %}
-                                    {% for error in field.errors %}
-                                        <li>{{ field.label }}: {{ error }}</li>
-                                    {% endfor %}
-                                {% endfor %}
+                        <!-- نمایش خطاهای کلی -->
+                        {% if form.non_field_errors %}
+                            <div class="alert alert-danger border-0 rounded-3">
                                 {% for error in form.non_field_errors %}
-                                    <li>{{ error }}</li>
+                                    {{ error }}
                                 {% endfor %}
-                            </ul>
-                            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
-                        </div>
+                            </div>
                         {% endif %}
-
-                        <!-- Full Name Row -->
-                        <div class="row mb-3">
-                            <div class="col-md-6 mb-3 mb-md-0">
-                                <label for="first_name" class="form-label">
-                                    <i class="bi bi-person-fill me-1"></i>نام
-                                </label>
-                                <input type="text" class="form-control form-control-lg" id="first_name" 
-                                       name="first_name" placeholder="مثال: علی" required>
-                                <div class="form-text">حداقل ۲ کاراکتر</div>
-                            </div>
+                        
+                        <!-- نام و نام خانوادگی -->
+                        <div class="row g-3">
                             <div class="col-md-6">
-                                <label for="last_name" class="form-label">
-                                    <i class="bi bi-person-fill me-1"></i>نام خانوادگی
-                                </label>
-                                <input type="text" class="form-control form-control-lg" id="last_name" 
-                                       name="last_name" placeholder="مثال: محمدی" required>
-                            </div>
-                        </div>
-                        <!-- فیلد username (که الان برچسبش ایمیل شده) -->
-                        <div class="mb-3">
-                            <label for="id_username" class="form-label">
-                                <i class="bi bi-envelope-fill me-1"></i>ایمیل برای ورود
-                            </label>
-                            <input type="email" class="form-control form-control-lg" 
-                                id="id_username" name="username" 
-                                placeholder="example@email.com" required>
-                        </div>
-
-                        <!-- Phone Number -->
-                        <div class="mb-3">
-                            <label for="id_phone" class="form-label">
-                                <i class="bi bi-phone-fill me-1"></i>شماره موبایل
-                            </label>
-                            <input type="tel" class="form-control form-control-lg" 
-                                id="id_phone" name="phone" 
-                                placeholder="09123456789" pattern="09[0-9]{9}" required>
-                        </div>
-
-                        <!-- Email -->
-                        <div class="mb-3">
-                            <label for="email" class="form-label">
-                                <i class="bi bi-envelope-fill me-1"></i>ایمیل (اختیاری)
-                            </label>
-                            <input type="email" class="form-control form-control-lg" id="email" 
-                                   name="email" placeholder="example@email.com">
-                        </div>
-
-                        <!-- Password -->
-                        <div class="row mb-3">
-                            <div class="col-md-6 mb-3 mb-md-0">
-                                <label for="password1" class="form-label">
-                                    <i class="bi bi-lock-fill me-1"></i>رمز عبور
-                                </label>
-                                <div class="input-group">
-                                    <input type="password" class="form-control form-control-lg" 
-                                           id="password1" name="password1" required>
-                                    <button class="btn btn-outline-secondary" type="button" 
-                                            onclick="togglePassword('password1')">
-                                        <i class="bi bi-eye"></i>
-                                    </button>
+                                <div class="form-group">
+                                    <label for="{{ form.last_name.id_for_label }}" class="form-label">نام خانوادگی</label>
+                                    {{ form.last_name }}
+                                    {% if form.last_name.errors %}
+                                        <div class="text-danger">{{ form.last_name.errors }}</div>
+                                    {% endif %}
+                                    <div class="form-text">حداقل ۲ کاراکتر</div>
                                 </div>
                             </div>
                             <div class="col-md-6">
-                                <label for="password2" class="form-label">
-                                    <i class="bi bi-lock-fill me-1"></i>تکرار رمز عبور
-                                </label>
-                                <div class="input-group">
-                                    <input type="password" class="form-control form-control-lg" 
-                                           id="password2" name="password2" required>
-                                    <button class="btn btn-outline-secondary" type="button" 
-                                            onclick="togglePassword('password2')">
-                                        <i class="bi bi-eye"></i>
-                                    </button>
+                                <div class="form-group">
+                                    <label for="{{ form.first_name.id_for_label }}" class="form-label">نام</label>
+                                    {{ form.first_name }}
+                                    {% if form.first_name.errors %}
+                                        <div class="text-danger">{{ form.first_name.errors }}</div>
+                                    {% endif %}
                                 </div>
                             </div>
                         </div>
-                        <div class="mb-4">
-                            <div class="form-text">
-                                <i class="bi bi-info-circle me-1"></i>
-                                رمز عبور باید حداقل ۸ کاراکتر و شامل حروف و اعداد باشد
+                        
+                        <!-- شماره موبایل -->
+                        <div class="form-group mt-3">
+                            <label for="{{ form.phone.id_for_label }}" class="form-label">📱 شماره موبایل</label>
+                            {{ form.phone }}
+                            {% if form.phone.errors %}
+                                <div class="text-danger">{{ form.phone.errors }}</div>
+                            {% endif %}
+                        </div>
+                        
+                        <!-- رمز عبور -->
+                        <div class="row g-3 mt-1">
+                            <div class="col-md-6">
+                                <div class="form-group">
+                                    <label for="{{ form.password1.id_for_label }}" class="form-label">🔒 رمز عبور</label>
+                                    {{ form.password1 }}
+                                    {% if form.password1.errors %}
+                                        <div class="text-danger">{{ form.password1.errors }}</div>
+                                    {% endif %}
+                                    <div class="form-text">{{ form.password1.help_text }}</div>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="form-group">
+                                    <label for="{{ form.password2.id_for_label }}" class="form-label">🔁 تکرار رمز عبور</label>
+                                    {{ form.password2 }}
+                                    {% if form.password2.errors %}
+                                        <div class="text-danger">{{ form.password2.errors }}</div>
+                                    {% endif %}
+                                </div>
                             </div>
                         </div>
-
-                        <!-- User Type -->
-                        <div class="mb-4">
+                        
+                        
+                        
+                        <!-- نوع حساب کاربری -->
+                       <div class="mb-4">
                             <label class="form-label">
                                 <i class="bi bi-person-badge-fill me-1"></i>نوع حساب کاربری
                             </label>
@@ -155,121 +116,34 @@
                                     </div>
                                 </div>
                             </div>
-                        </div>
-
-                        <!-- Terms & Conditions -->
-                        <div class="form-check mb-4">
-                            <input class="form-check-input" type="checkbox" id="terms" required>
-                            <label class="form-check-label" for="terms">
-                                با <a href="#" class="text-decoration-none">قوانین و مقررات</a> 
-                                و <a href="#" class="text-decoration-none">سیاست حفظ حریم خصوصی</a> 
-                                بازار خودرو موافقت می‌کنم.
-                            </label>
-                        </div>
-
-                        <!-- Submit Button -->
-                        <div class="d-grid gap-3">
-                            <button type="submit" class="btn btn-primary btn-lg py-3 fw-bold">
-                                <i class="bi bi-person-plus-fill me-2"></i>
-                                ایجاد حساب کاربری
-                            </button>
-                            
-                            <!-- Divider -->
-                            <div class="position-relative text-center my-3">
-                                <hr>
-                                <span class="position-absolute top-50 start-50 translate-middle bg-white px-3 text-muted">
-                                    یا
-                                </span>
-                            </div>
-
-                            <!-- Login Link -->
-                            <div class="text-center">
-                                <p class="mb-0">
-                                    قبلاً حساب دارید؟
-                                    <a href="{% url 'accounts:login' %}" class="fw-bold text-decoration-none">
-                                        ورود به حساب کاربری
-                                    </a>
-                                </p>
+                        </div>                       
+                        <!-- قوانین -->
+                        <div class="form-group mt-4">
+                            <div class="form-check">
+                                <input class="form-check-input" type="checkbox" id="terms" required>
+                                <label class="form-check-label" for="terms">
+                                    ✅ با <a href="#" class="login-link">قوانین و مقررات</a> و 
+                                    <a href="#" class="login-link">سیاست حفظ حریم خصوصی</a> بازار خودرو موافقت می‌کنم.
+                                </label>
                             </div>
                         </div>
+                        
+                        <!-- دکمه ثبت‌نام -->
+                        <button type="submit" class="btn btn-primary w-100 mt-4">
+                            🚀 ثبت‌نام
+                        </button>
                     </form>
+                    
+                    <!-- لینک ورود -->
+                    <div class="text-center mt-4">
+                        <p class="mb-0 text-muted">
+                            قبلاً حساب کاربری دارید؟ 
+                            <a href="{% url 'accounts:login' %}" class="login-link">وارد شوید</a>
+                        </p>
+                    </div>
                 </div>
             </div>
         </div>
     </div>
 </div>
-
-<!-- Password Toggle Script -->
-<script>
-    function togglePassword(inputId) {
-        const input = document.getElementById(inputId);
-        const button = input.nextElementSibling.querySelector('i');
-        
-        if (input.type === 'password') {
-            input.type = 'text';
-            button.classList.remove('bi-eye');
-            button.classList.add('bi-eye-slash');
-        } else {
-            input.type = 'password';
-            button.classList.remove('bi-eye-slash');
-            button.classList.add('bi-eye');
-        }
-    }
-</script>
-
-<!-- Custom Styles -->
-<style>
-    body {
-        background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
-        min-height: 100vh;
-    }
-    
-    .card {
-        border: none;
-        overflow: hidden;
-    }
-    
-    .card-hover {
-        transition: all 0.3s ease;
-        border: 2px solid #dee2e6;
-        cursor: pointer;
-    }
-    
-    .card-hover:hover {
-        border-color: #0d6efd;
-        transform: translateY(-2px);
-    }
-    
-    .form-check-input:checked + .card-hover {
-        border-color: #0d6efd;
-        background-color: rgba(13, 110, 253, 0.05);
-    }
-    
-    .form-control, .form-select, .input-group-text {
-        border-radius: 10px;
-    }
-    
-    .btn-primary {
-        background: linear-gradient(135deg, #0d6efd 0%, #0a58ca 100%);
-        border: none;
-        border-radius: 12px;
-    }
-    
-    .btn-primary:hover {
-        background: linear-gradient(135deg, #0a58ca 0%, #084298 100%);
-        transform: translateY(-1px);
-        box-shadow: 0 4px 12px rgba(13, 110, 253, 0.3);
-    }
-    
-    .form-label {
-        font-weight: 600;
-        color: #495057;
-    }
-    
-    @media (max-width: 768px) {
-        .card-body {
-            padding: 2rem !important;
-        }
-    }
-</style>
 {% endblock %}

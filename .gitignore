@@ -5,3 +5,20 @@ __pycache__/
 .idea/
 .DS_Store
 
+# Django
+*.log
+db.sqlite3
+db.sqlite3-journal
+
+# Media
+media/
+
+# Static files
+staticfiles/
+
+# Environment
+.env
+
+# Archives
+*.zip
+*.7z

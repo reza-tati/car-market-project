@@ -1,4 +1,3 @@
-# cars/forms.py را کامل بازنویسی کن با این کد:
 from django import forms
 from django.forms import inlineformset_factory
 from .models import Car, CarImage, Brand, CarModel
@@ -20,7 +19,7 @@ class CarForm(forms.ModelForm):
             'year': forms.NumberInput(attrs={
                 'class': 'form-control',
                 'min': '1360',
-                'max': '1403'
+                'max': '1405'
             }),
             'price': forms.NumberInput(attrs={
                 'class': 'form-control',
@@ -44,7 +43,7 @@ class CarForm(forms.ModelForm):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         
-        # مرتب‌سازی برندها
+        # مرتب‌سازی برندها67iop sz
         self.fields['brand'].queryset = Brand.objects.all().order_by('name')
         
         # ابتدا مدل‌ها خالی
