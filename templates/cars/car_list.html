@@ -5,37 +5,55 @@
 
 {% block content %}
 <div class="container py-4">
-    <h1 class="mb-4">خودروهای موجود</h1>
+    <h2 class="mb-4">
+        <i class="bi bi-grid-3x3-gap-fill text-primary"></i> خودروهای موجود
+        <span class="badge bg-secondary rounded-pill">{{ cars|length }}</span>
+    </h2>
     
     {% if cars %}
         <div class="row">
             {% for car in cars %}
             <div class="col-md-4 mb-4">
-                <div class="card h-100">
-                     <!-- ⭐⭐⭐ این قسمت جدید ⭐⭐⭐ -->
+                <!-- فقط کلاس‌های جدید به کارت اضافه شد -->
+                <div class="card h-100 shadow-sm border-0 rounded-4 overflow-hidden hover-card">
+                    
                     <a href="{% url 'cars:car_detail' car.pk car.slug %}" class="text-decoration-none">
-                    <!-- نمایش عکس خودرو -->
-                    <div style="height: 200px; overflow: hidden;">
-                        {% if car.images.all %}
-                            <!-- اولین عکس خودرو -->
-                            <img src="{{ car.images.first.image.url }}" 
-                                 alt="{{ car.brand.name }} {{ car.model.name }}"
-                                 style="width: 100%; height: 100%; object-fit: cover;">
-                        {% else %}
-                            <!-- اگر عکس ندارد -->
-                            <div style="height: 100%; background: #f0f0f0; display: flex; align-items: center; justify-content: center;">
-                                <span style="color: #666;">بدون عکس</span>
-                            </div>
-                        {% endif %}
-                    </div>
-                      </a>
-                    <!-- ⭐⭐⭐ پایان قسمت جدید ⭐⭐⭐ -->
+                        <div style="height: 200px; overflow: hidden; background: #f1f3f5; position: relative;">
+                            {% if car.images.all %}
+                                <img src="{{ car.images.first.image.url }}" 
+                                    alt="{{ car.brand.name }} {{ car.model.name }}"
+                                    style="width: 100%; height: 100%; object-fit: cover;">
+                            {% else %}
+                                <div style="height: 100%; display: flex; align-items: center; justify-content: center; color: #adb5bd;">
+                                    <i class="bi bi-car-front" style="font-size: 3rem;"></i>
+                                </div>
+                            {% endif %}
+                            
+                            <!-- برچسب ویژه -->
+                            {% if car.is_featured %}
+                                <span class="featured-badge">
+                                    <i class="bi bi-star-fill"></i> ویژه
+                                </span>
+                            {% endif %}
+                        </div>
+                    </a>
                     <div class="card-body">
-                        <h5 class="card-title">{{ car.brand.name }} {{ car.model.name }}</h5>
-                        <p class="card-text">{{ car.year }} | {{ car.mileage|intcomma }} کیلومتر</p>
-                        <p class="card-text">{{ car.city }}</p>
-                        <p class="card-text text-success fw-bold">{{ car.price|intcomma }} تومان</p>
-                        <a href="{% url 'cars:car_detail' car.pk car.slug %}" class="btn btn-primary">مشاهده جزئیات</a>
+                        <h5 class="card-title fw-bold">{{ car.brand.name }} {{ car.model.name }}</h5>
+                        
+                        <!-- قیمت با کلاس رنگ سبز -->
+                        <p class="card-text text-success fw-bold fs-5">{{ car.price|intcomma }} تومان</p>
+                        
+                        <!-- جزئیات با آیکون -->
+                        <p class="card-text text-muted small">
+                            <i class="bi bi-calendar"></i> {{ car.year }} | 
+                            <i class="bi bi-speedometer2"></i> {{ car.mileage|intcomma }} کیلومتر | 
+                            <i class="bi bi-geo-alt"></i> {{ car.city }}
+                        </p>
+                        
+                        <!-- دکمه با رنگ جدید -->
+                        <a href="{% url 'cars:car_detail' car.pk car.slug %}" class="btn btn-primary rounded-pill px-4">
+                            <i class="bi bi-eye"></i> مشاهده
+                        </a>
                     </div>
                 </div>
             </div>
@@ -44,7 +62,6 @@
     {% else %}
         <div class="alert alert-info">
             <p>هیچ خودرویی یافت نشد.</p>
-            <p>تعداد کل خودروها در دیتابیس: {{ cars.count }}</p>
         </div>
     {% endif %}
 </div>

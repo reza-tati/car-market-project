@@ -111,21 +111,23 @@
                         </a>
                     </li>
                     <li class="nav-item dropdown">
-                        <a class="nav-link dropdown-toggle" href="#" id="brandsDropdown" data-bs-toggle="dropdown">
+                        <a class="nav-link dropdown-toggle" href="#" id="brandsDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
                             <i class="bi bi-tags"></i> برندها
                         </a>
-                        <ul class="dropdown-menu">
-                            {% for brand in all_brands|slice:":10" %}
-                            <li>
-                                <a class="dropdown-item" href="{% url 'cars:car_list' %}?brand={{ brand.id }}">
-                                    {{ brand.name }}
-                                </a>
-                            </li>
+                        <ul class="dropdown-menu dropdown-menu-end text-end" aria-labelledby="brandsDropdown" style="max-height: 300px; overflow-y: auto;">
+                            
+                            <!-- لیست برندها -->
+                            {% for brand in all_brands %}
+                                <li><a class="dropdown-item" href="?brand={{ brand.id }}">{{ brand.name }}</a></li>
                             {% endfor %}
+                            
+                            <!-- جداکننده -->
                             <li><hr class="dropdown-divider"></li>
+                            
+                            <!-- مشاهده همه برندها -->
                             <li>
-                                <a class="dropdown-item text-primary" href="{% url 'cars:car_list' %}">
-                                    مشاهده همه برندها
+                                <a class="dropdown-item fw-bold text-primary" href="{% url 'cars:car_list' %}">
+                                    <i class="bi bi-eye"></i> مشاهده همه برندها
                                 </a>
                             </li>
                         </ul>

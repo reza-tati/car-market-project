@@ -119,7 +119,7 @@
                             data-bs-toggle="dropdown">
                         <i class="bi bi-sort-down"></i> مرتب‌سازی
                     </button>
-                    <ul class="dropdown-menu">
+                    <ul class="dropdown-menu dropdown-menu-end text-end" aria-labelledby="sortDropdown">
                         <li><a class="dropdown-item" href="?{{ request.GET.urlencode }}&sort=-created_at">جدیدترین</a></li>
                         <li><a class="dropdown-item" href="?{{ request.GET.urlencode }}&sort=price">ارزان‌ترین</a></li>
                         <li><a class="dropdown-item" href="?{{ request.GET.urlencode }}&sort=-price">گران‌ترین</a></li>

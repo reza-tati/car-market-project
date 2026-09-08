@@ -1,27 +1,78 @@
-/* استایل‌های پایه */
-body {
-    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-    background-color: #f8f9fa;
+
+.featured-badge {
+    position: absolute;
+    top: 12px;
+    left: 12px;
+    background: linear-gradient(135deg, #ffd93d 0%, #ff6b6b 100%);
+    color: #2d3436;
+    padding: 4px 14px;
+    border-radius: 30px;
+    font-size: 0.7rem;
+    font-weight: 800;
+    box-shadow: 0 4px 15px rgba(255, 107, 107, 0.4);
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    z-index: 10;
 }
 
-/* استایل گالری تصاویر */
-.car-thumbnail {
-    cursor: pointer;
-    transition: all 0.3s;
-    opacity: 0.7;
+.featured-badge i {
+    font-size: 0.65rem;
+    color: #f39c12;
+}
+/* ===== برچسب ویژه ===== */
+/* .featured-badge {
+    position: absolute;
+    top: 12px;
+    left: 12px;
+    background: linear-gradient(135deg, #f6d365 0%, #fda085 100%);
+    color: #2d3436;
+    padding: 5px 14px;
+    border-radius: 30px;
+    font-size: 0.7rem;
+    font-weight: 800;
+    letter-spacing: 0.3px;
+    box-shadow: 0 4px 12px rgba(253, 160, 133, 0.4);
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    z-index: 10;
+} */
+
+/* .featured-badge i {
+    font-size: 0.7rem;
+    color: #f39c12;
+} */
+/* ===== برچسب ویژه ===== */
+/* .featured-badge {
+    position: absolute;
+    top: 12px;
+    left: 12px;
+    background: linear-gradient(135deg, #ffd93d 0%, #ff6b6b 100%);
+    color: #2d3436;
+    padding: 4px 14px;
+    border-radius: 30px;
+    font-size: 0.7rem;
+    font-weight: 800;
+    letter-spacing: 0.3px;
+    box-shadow: 0 4px 15px rgba(255, 107, 107, 0.4);
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    z-index: 10;
+} */
+
+/* .featured-badge i {
+    font-size: 0.65rem;
+    color: #f39c12;
+} */
+/* ===== رفع چپ‌چینی منوی برندها ===== */
+.dropdown-menu,
+.dropdown-item {
+    text-align: right;
 }
 
-.car-thumbnail:hover {
-    opacity: 1;
-    transform: scale(1.05);
-}
-
-.car-thumbnail.active {
-    border: 3px solid #0d6efd !important;
-    opacity: 1;
-}
-
-.main-image {
-    max-height: 500px;
-    object-fit: contain;
+.dropdown-menu {
+    right: 0;
+    left: auto;
 }

@@ -60,26 +60,43 @@ def profile(request):
         return render(request, 'accounts/profile.html', context)
         
 @login_required
+@login_required
 def my_car(request):
-        cars = Car.objects.filter(seller=request.user).order_by('created_at')
-        
-              # محاسبه آمار
-        stats = {
-                'total': cars.count(),
-                'active': cars.filter(is_active=True, is_verified=True).count(),
-                'sold': cars.filter(is_sold=True).count(),
-                'with_views': cars.filter(views__gt=0).count(),
-                'featured': cars.filter(is_featured=True).count(),
-        }
+    # دریافت پارامتر فیلتر از URL (مثلاً ?filter=active)
+    filter_type = request.GET.get('filter', 'all')
     
-        # ارسال به template
-        context = {
-            'cars': cars,
-            'stats': stats,
-        }
-        
-        return render(request,'accounts/my_cars.html', context)
-        
+    # دریافت خودروهای کاربر
+    cars = Car.objects.filter(seller=request.user)
+    
+    # اعمال فیلتر
+    if filter_type == 'active':
+        cars = cars.filter(is_active=True, is_verified=True)
+    elif filter_type == 'sold':
+        cars = cars.filter(is_sold=True)
+    elif filter_type == 'inactive':
+        cars = cars.filter(is_active=False)
+    elif filter_type == 'pending':
+        cars = cars.filter(is_active=True, is_verified=False)
+    
+    # مرتب‌سازی (جدیدترین اول)
+    cars = cars.order_by('-created_at')
+    
+    # محاسبه آمار
+    stats = {
+        'total': Car.objects.filter(seller=request.user).count(),
+        'active': Car.objects.filter(seller=request.user, is_active=True, is_verified=True).count(),
+        'sold': Car.objects.filter(seller=request.user, is_sold=True).count(),
+        'with_views': Car.objects.filter(seller=request.user, views__gt=0).count(),
+        'pending': Car.objects.filter(seller=request.user, is_active=True, is_verified=False).count(),
+    }
+    
+    context = {
+        'cars': cars,
+        'stats': stats,
+        'current_filter': filter_type,
+    }
+    
+    return render(request, 'accounts/my_cars.html', context)  
 @login_required
 def favorites(request):
         favorite_cars = Car.objects.filter(favorited_by__user=request.user)
