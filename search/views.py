@@ -1,7 +1,7 @@
 # search/views.py
 from django.shortcuts import render
 from django.db.models import Q  # برای جستجوی OR
-from cars.models import Car
+from cars.models import Car, Favorite
 from .forms import AdvancedSearchForm
 
 def search_view(request):
@@ -75,7 +75,13 @@ def search_view(request):
     sort = request.GET.get('sort', '-created_at')
     if sort in ['price', '-price', 'year', '-year', 'mileage', '-mileage', '-created_at']:
         cars = cars.order_by(sort)
-    
+
+       # ✅ اضافه کردن لیست favorite_ids
+    if request.user.is_authenticated:
+        favorite_ids = Favorite.objects.filter(user=request.user).values_list('car_id', flat=True)
+    else:
+        favorite_ids = []
+
     # 🔹 **صفحه‌بندی**
     from django.core.paginator import Paginator
     paginator = Paginator(cars, 12)  # ۱۲ آیتم در صفحه
@@ -87,6 +93,7 @@ def search_view(request):
         'cars': page_obj,
         'page_obj': page_obj,
         'total_results': cars.count(),
+        'favorite_ids': favorite_ids,
     }
     
     return render(request, 'search/search.html', context)

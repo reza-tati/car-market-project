@@ -132,7 +132,7 @@
             <div class="row">
                 {% for car in cars %}
                 <div class="col-md-6 col-lg-4 mb-4">
-                    {% include 'cars/partials/car_card.html' with car=car %}
+                    {% include 'cars/partials/car_card.html' with car=car   favorite_ids=favorite_ids  %}
                 </div>
                 {% endfor %}
             </div>

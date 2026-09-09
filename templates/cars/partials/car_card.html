@@ -50,18 +50,19 @@
             
             <!-- دکمه علاقه‌مندی -->
             <div>
+                <!-- دکمه علاقه‌مندی (فرم ساده) -->
                 {% if user.is_authenticated %}
-                <button class="btn btn-sm {% if car|is_favorited_by:user %}btn-danger{% else %}btn-outline-danger{% endif %} favorite-btn" 
-                        data-car-id="{{ car.id }}"
-                        title="{% if car|is_favorited_by:user %}حذف از علاقه‌مندی‌ها{% else %}افزودن به علاقه‌مندی‌ها{% endif %}">
-                    <i class="bi {% if car|is_favorited_by:user %}bi-heart-fill{% else %}bi-heart{% endif %}"></i>
-                </button>
+                    <form method="post" action="{% url 'cars:toggle_favorite' car.id %}" style="display: inline;">
+                        {% csrf_token %}
+                        <button type="submit" 
+                                class="btn {% if car.id in favorite_ids %}btn-danger{% else %}btn-outline-danger{% endif %} btn-sm rounded-pill">
+                            <i class="bi {% if car.id in favorite_ids %}bi-heart-fill{% else %}bi-heart{% endif %}"></i>
+                        </button>
+                    </form>
                 {% else %}
-                <a href="{% url 'accounts:login' %}?next={{ request.path }}" 
-                   class="btn btn-sm btn-outline-danger"
-                   title="برای افزودن به علاقه‌مندی‌ها وارد شوید">
-                    <i class="bi bi-heart"></i>
-                </a>
+                    <a href="{% url 'accounts:login' %}?next={{ request.path }}" class="btn btn-outline-danger btn-sm rounded-pill">
+                        <i class="bi bi-heart"></i>
+                    </a>
                 {% endif %}
             </div>
         </div>
