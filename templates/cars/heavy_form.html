@@ -1,0 +1,204 @@
+{% extends 'base.html' %}
+{% load crispy_forms_tags %}
+
+{% block title %}
+    {% if form.instance.pk %}ویرایش ماشین سنگین{% else %}ثبت ماشین سنگین{% endif %}
+{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+    <div class="row justify-content-center">
+        <div class="col-lg-10">
+
+            <div class="card border-0 shadow-sm rounded-4 overflow-hidden">
+
+                <!-- هدر -->
+                <div class="card-header text-dark py-3" style="background: linear-gradient(135deg, #f6d365 0%, #fda085 100%); border: none;">
+                    <h4 class="mb-0">
+                        <i class="bi bi-truck"></i>
+                        {% if form.instance.pk %}
+                            ویرایش ماشین سنگین
+                        {% else %}
+                            ثبت ماشین سنگین
+                        {% endif %}
+                    </h4>
+                    <p class="mb-0 opacity-75 small">اطلاعات ماشین سنگین را با دقت وارد کنید</p>
+                </div>
+
+                <div class="card-body p-4">
+
+                    <form method="post" enctype="multipart/form-data" novalidate>
+                        {% csrf_token %}
+
+                        <!-- ===== اطلاعات اصلی ===== -->
+                        <div class="form-section">
+                            <h5 class="form-section-title">
+                                <i class="bi bi-info-circle text-warning"></i> اطلاعات اصلی
+                            </h5>
+                            <div class="row g-3">
+                                <div class="col-md-12">{{ form.title|as_crispy_field }}</div>
+                                <div class="col-md-4">{{ form.heavy_type|as_crispy_field }}</div>
+                                <div class="col-md-4">{{ form.brand|as_crispy_field }}</div>
+                                <div class="col-md-4">{{ form.model_name|as_crispy_field }}</div>
+                                <div class="col-md-4">{{ form.year|as_crispy_field }}</div>
+                                <div class="col-md-4">{{ form.price|as_crispy_field }}</div>
+                                <div class="col-md-4">{{ form.city|as_crispy_field }}</div>
+                            </div>
+                        </div>
+
+                        <!-- ===== مشخصات فنی ===== -->
+                        <div class="form-section mt-4">
+                            <h5 class="form-section-title">
+                                <i class="bi bi-gear text-warning"></i> مشخصات فنی
+                            </h5>
+                            <div class="row g-3">
+                                <div class="col-md-4">{{ form.load_capacity|as_crispy_field }}</div>
+                                <div class="col-md-4">{{ form.has_crane|as_crispy_field }}</div>
+                                <div class="col-md-4">{{ form.is_imported|as_crispy_field }}</div>
+                            </div>
+                        </div>
+
+                        <!-- ===== تصاویر ===== -->
+                        <div class="form-section mt-4">
+                            <h5 class="form-section-title">
+                                <i class="bi bi-images text-warning"></i> تصاویر ماشین سنگین
+                            </h5>
+
+                            <div class="card border-dashed rounded-3 p-3">
+                                <p class="text-muted small mb-3">
+                                    <i class="bi bi-info-circle"></i>
+                                    حداقل یک تصویر آپلود کنید. حداکثر ۷ تصویر مجاز است.
+                                    تصویر اصلی را با تیک زدن گزینه "تصویر اصلی" مشخص کنید.
+                                </p>
+
+                                {{ formset.management_form }}
+                                <div id="image-forms" class="row g-3">
+                                    {% for form in formset %}
+                                    <div class="col-md-6 image-form">
+                                        <div class="card border rounded-3 p-3 h-100">
+                                            <div class="row g-2">
+                                                <div class="col-8">
+                                                    {{ form.image|as_crispy_field }}
+                                                </div>
+                                                <div class="col-4">
+                                                    <div class="form-check mt-4">
+                                                        {{ form.is_main }}
+                                                        <label class="form-check-label small" for="{{ form.is_main.id_for_label }}">
+                                                            تصویر اصلی
+                                                        </label>
+                                                    </div>
+                                                    {% if form.instance.pk %}
+                                                        <div class="form-check">
+                                                            {{ form.DELETE }}
+                                                            <label class="form-check-label small text-danger" for="{{ form.DELETE.id_for_label }}">
+                                                                حذف
+                                                            </label>
+                                                        </div>
+                                                    {% endif %}
+                                                </div>
+                                            </div>
+                                            {{ form.id }}
+                                        </div>
+                                    </div>
+                                    {% endfor %}
+                                </div>
+
+                                <button type="button" id="add-more" class="btn btn-outline-warning rounded-pill btn-sm mt-3 align-self-start">
+                                    <i class="bi bi-plus-circle"></i> افزودن تصویر دیگر
+                                </button>
+                            </div>
+                        </div>
+
+                        <!-- ===== توضیحات ===== -->
+                        <div class="form-section mt-4">
+                            <h5 class="form-section-title">
+                                <i class="bi bi-chat-text text-warning"></i> توضیحات
+                            </h5>
+                            {{ form.description|as_crispy_field }}
+                        </div>
+
+                        <!-- ===== دکمه‌ها ===== -->
+                        <div class="mt-4 d-flex gap-2">
+                            <button type="submit" class="btn-gradient-success px-5 py-2 rounded-pill">
+                                <i class="bi bi-check-circle"></i>
+                                {% if form.instance.pk %}به‌روزرسانی{% else %}ثبت{% endif %}
+                            </button>
+                            <a href="{% url 'cars:heavy_list' %}" class="btn btn-outline-secondary rounded-pill px-4 py-2">
+                                <i class="bi bi-x-circle"></i> انصراف
+                            </a>
+                        </div>
+
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // ===== افزودن فرم تصویر جدید =====
+    const addBtn = document.getElementById('add-more');
+    const MAX_IMAGES = 7;
+    
+    if (addBtn) {
+        addBtn.addEventListener('click', function(e) {
+            e.preventDefault();
+            
+            const totalForms = document.querySelector('input[name$="-TOTAL_FORMS"]');
+            
+            if (!totalForms) {
+                alert('خطا: TOTAL_FORMS پیدا نشد!');
+                return;
+            }
+            
+            const formIdx = parseInt(totalForms.value);
+            
+            if (formIdx >= MAX_IMAGES) {
+                alert(`حداکثر ${MAX_IMAGES} تصویر مجاز است!`);
+                return;
+            }
+            
+            const container = document.getElementById('image-forms');
+            const firstForm = container.querySelector('.image-form');
+            
+            if (!firstForm) {
+                alert('خطا: فرم تصویر پیدا نشد!');
+                return;
+            }
+            
+            const newForm = firstForm.cloneNode(true);
+            
+            newForm.querySelectorAll('input').forEach(input => {
+                if (input.type === 'file') input.value = '';
+                if (input.type === 'checkbox') input.checked = false;
+                if (input.type === 'hidden' && input.name.includes('id')) input.value = '';
+            });
+            
+            newForm.querySelectorAll('[name]').forEach(el => {
+                const name = el.getAttribute('name').replace(/-0-/g, `-${formIdx}-`);
+                el.setAttribute('name', name);
+                el.id = `id_${name}`;
+            });
+            
+            newForm.querySelectorAll('label').forEach(label => {
+                const forAttr = label.getAttribute('for');
+                if (forAttr) {
+                    label.setAttribute('for', forAttr.replace(/-0-/g, `-${formIdx}-`));
+                }
+            });
+            
+            container.appendChild(newForm);
+            totalForms.value = formIdx + 1;
+            
+            if (formIdx + 1 >= MAX_IMAGES) {
+                addBtn.disabled = true;
+                addBtn.textContent = 'حداکثر تعداد تصویر رسیده';
+            }
+        });
+    }
+});
+</script>
+{% endblock %}

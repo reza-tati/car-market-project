@@ -1,0 +1,117 @@
+{% extends 'base.html' %}
+{% load humanize %}
+
+{% block title %}ماشین‌های سنگین{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+
+    <!-- هدر صفحه -->
+    <div class="page-header d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <h2 class="mb-0">
+                <i class="bi bi-truck text-warning"></i> ماشین‌های سنگین
+            </h2>
+            <p class="text-muted small mt-1">{{ heavies|length }} ماشین سنگین پیدا شد</p>
+        </div>
+        {% if user.is_authenticated %}
+            <a href="{% url 'cars:heavy_create' %}" class="btn-gradient-success rounded-pill px-4 py-2">
+                <i class="bi bi-plus-circle"></i> ثبت ماشین سنگین
+            </a>
+        {% endif %}
+    </div>
+
+    {% if heavies %}
+        <div class="row g-4">
+            {% for heavy in heavies %}
+            <div class="col-md-4 col-lg-3">
+                <div class="car-card">
+                    <a href="{% url 'cars:heavy_detail' heavy.pk heavy.slug %}" class="text-decoration-none">
+                        <div style="height: 200px; overflow: hidden; background: #f1f3f5; position: relative;">
+                            {% if heavy.heavy_images.first %}
+                                <img src="{{ heavy.heavy_images.first.image.url }}" 
+                                     alt="{{ heavy.title }}"
+                                     style="width: 100%; height: 100%; object-fit: cover;">
+                            {% else %}
+                                <div style="height: 100%; display: flex; align-items: center; justify-content: center; color: #adb5bd;">
+                                    <i class="bi bi-truck" style="font-size: 3rem;"></i>
+                                </div>
+                            {% endif %}
+                            
+                            {% if heavy.is_featured %}
+                                <span class="featured-badge">
+                                    <i class="bi bi-star-fill"></i> ویژه
+                                </span>
+                            {% endif %}
+                        </div>
+                    </a>
+                    
+                    <div class="card-body">
+                        <h5 class="card-title fw-bold">{{ heavy.brand }} {{ heavy.model_name }}</h5>
+                        
+                        <p class="card-text text-success fw-bold fs-5">{{ heavy.price|intcomma }} تومان</p>
+                        
+                        <p class="card-text text-muted small">
+                            <i class="bi bi-calendar"></i> {{ heavy.year }} | 
+                            <i class="bi bi-box-seam"></i> {{ heavy.load_capacity }} تن | 
+                            <i class="bi bi-geo-alt"></i> {{ heavy.city }}
+                        </p>
+                        
+                        <div class="d-flex gap-2">
+                            <a href="{% url 'cars:heavy_detail' heavy.pk heavy.slug %}" class="btn btn-warning rounded-pill px-4 flex-grow-1">
+                                <i class="bi bi-eye"></i> مشاهده
+                            </a>
+                            {% if user.is_authenticated %}
+                                <form method="post" action="{% url 'cars:toggle_favorite' heavy.id %}">
+                                    {% csrf_token %}
+                                    <input type="hidden" name="vehicle_type" value="heavy">
+                                    <button type="submit" 
+                                            class="btn {% if heavy.id in favorite_ids %}btn-danger{% else %}btn-outline-danger{% endif %} rounded-pill">
+                                        <i class="bi {% if heavy.id in favorite_ids %}bi-heart-fill{% else %}bi-heart{% endif %}"></i>
+                                    </button>
+                                </form>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+
+        <!-- صفحه‌بندی -->
+        {% if is_paginated %}
+        <nav class="mt-4">
+            <ul class="pagination justify-content-center">
+                {% if page_obj.has_previous %}
+                    <li class="page-item">
+                        <a class="page-link" href="?page={{ page_obj.previous_page_number }}">قبلی</a>
+                    </li>
+                {% endif %}
+                {% for num in page_obj.paginator.page_range %}
+                    <li class="page-item {% if page_obj.number == num %}active{% endif %}">
+                        <a class="page-link" href="?page={{ num }}">{{ num }}</a>
+                    </li>
+                {% endfor %}
+                {% if page_obj.has_next %}
+                    <li class="page-item">
+                        <a class="page-link" href="?page={{ page_obj.next_page_number }}">بعدی</a>
+                    </li>
+                {% endif %}
+            </ul>
+        </nav>
+        {% endif %}
+
+    {% else %}
+        <!-- حالت خالی -->
+        <div class="empty-state text-center py-5">
+            <i class="bi bi-truck" style="font-size: 4rem; color: #adb5bd;"></i>
+            <p class="text-muted mt-3">هیچ ماشین سنگینی یافت نشد.</p>
+            {% if user.is_authenticated %}
+                <a href="{% url 'cars:heavy_create' %}" class="btn-gradient-success rounded-pill px-4 py-2 mt-2">
+                    <i class="bi bi-plus-circle"></i> ثبت اولین ماشین سنگین
+                </a>
+            {% endif %}
+        </div>
+    {% endif %}
+</div>
+{% endblock %}

@@ -4,8 +4,10 @@ from django.contrib.auth.decorators import login_required
 from django.contrib import messages
 from django.contrib.auth.views import LoginView
 from .forms import UserUpdateForm, ProfileUpdateForm, PhoneRegisterForm
-from cars.models import Car
 from django.contrib.auth.backends import ModelBackend
+from cars.models import Favorite, Car, Motorcycle, HeavyVehicle
+
+
 
 class CustomLoginView(LoginView):
     template_name = 'accounts/login.html'
@@ -46,10 +48,14 @@ def profile(request):
                 p_form = ProfileUpdateForm(instance=request.user.profile)
         
         stats = {
-        'total_cars': request.user.cars.count(),
-        'sold_cars': request.user.cars.filter(is_sold=True).count(),
-        'active_cars': request.user.cars.filter(is_active=True, is_verified=True).count(),
-        'favorite_count': request.user.favorites.count(),
+        'total_cars': Car.objects.filter(seller=request.user).count(),
+        'active_cars': Car.objects.filter(seller=request.user, is_active=True, is_verified=True).count(),
+        'sold_cars': Car.objects.filter(seller=request.user, is_sold=True).count(),
+        'favorite_count': Favorite.objects.filter(user=request.user).count(),
+        
+        # اگه موتور و سنگین هم میخوای:
+        'total_motorcycles': Motorcycle.objects.filter(seller=request.user).count(),
+        'total_heavies': HeavyVehicle.objects.filter(seller=request.user).count(),
     }
         
         context = {
@@ -59,7 +65,6 @@ def profile(request):
         }
         return render(request, 'accounts/profile.html', context)
         
-@login_required
 @login_required
 def my_car(request):
     # دریافت پارامتر فیلتر از URL (مثلاً ?filter=active)
@@ -97,11 +102,38 @@ def my_car(request):
     }
     
     return render(request, 'accounts/my_cars.html', context)  
+
+
 @login_required
 def favorites(request):
-        favorite_cars = Car.objects.filter(favorited_by__user=request.user)
-        return render(request, 'accounts/favorites.html', {'favorite_cars':favorite_cars})
+    user_favorites = Favorite.objects.filter(user=request.user).order_by('-created_at')
     
-
-
-# Create your views here.
+    favorite_cars = []
+    favorite_motorcycles = []
+    favorite_heavies = []
+    
+    for fav in user_favorites:
+        if fav.vehicle_type == 'car':
+            # ✅ prefetch_related برای car_images
+            car = Car.objects.filter(id=fav.vehicle_id).prefetch_related('car_images').first()
+            if car:
+                favorite_cars.append(car)
+        elif fav.vehicle_type == 'motorcycle':
+            # ✅ prefetch_related برای motorcycle_images
+            moto = Motorcycle.objects.filter(id=fav.vehicle_id).prefetch_related('motorcycle_images').first()
+            if moto:
+                favorite_motorcycles.append(moto)
+        elif fav.vehicle_type == 'heavy':
+            # ✅ prefetch_related برای heavy_images
+            heavy = HeavyVehicle.objects.filter(id=fav.vehicle_id).prefetch_related('heavy_images').first()
+            if heavy:
+                favorite_heavies.append(heavy)
+    
+    context = {
+        'favorite_cars': favorite_cars,
+        'favorite_motorcycles': favorite_motorcycles,
+        'favorite_heavies': favorite_heavies,
+        'total_favorites': user_favorites.count(),
+    }
+    
+    return render(request, 'accounts/favorites.html', context)

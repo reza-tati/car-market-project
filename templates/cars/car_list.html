@@ -1,67 +1,157 @@
 {% extends 'base.html' %}
 {% load humanize %}
 
-{% block title %}خودروهای موجود{% endblock %}
+{% block title %}وسایل نقلیه موجود{% endblock %}
 
 {% block content %}
 <div class="container py-4">
-    <h2 class="mb-4">
-        <i class="bi bi-grid-3x3-gap-fill text-primary"></i> خودروهای موجود
-        <span class="badge bg-secondary rounded-pill">{{ cars|length }}</span>
-    </h2>
-    
+
+    <!-- هدر -->
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h2 class="mb-0">
+            <i class="bi bi-grid-3x3-gap-fill text-primary"></i> وسایل نقلیه موجود
+            <span class="badge bg-secondary rounded-pill">{{ cars|length }}</span>
+        </h2>
+    </div>
+
     {% if cars %}
-        <div class="row">
-            {% for car in cars %}
-            <div class="col-md-4 mb-4">
-                <!-- فقط کلاس‌های جدید به کارت اضافه شد -->
+        <div class="row g-4">
+            {% for vehicle in cars %}
+            <div class="col-md-4 col-lg-3">
                 <div class="card h-100 shadow-sm border-0 rounded-4 overflow-hidden hover-card">
-                    
-                    <a href="{% url 'cars:car_detail' car.pk car.slug %}" class="text-decoration-none">
+
+                    <!-- ✅ لینک بر اساس نوع وسیله نقلیه -->
+                    <a href="{% if vehicle.vehicle_type == 'car' %}{% url 'cars:car_detail' vehicle.pk vehicle.slug %}{% elif vehicle.vehicle_type == 'motorcycle' %}{% url 'cars:motorcycle_detail' vehicle.pk vehicle.slug %}{% else %}{% url 'cars:heavy_detail' vehicle.pk vehicle.slug %}{% endif %}" 
+                       class="text-decoration-none">
                         <div style="height: 200px; overflow: hidden; background: #f1f3f5; position: relative;">
-                            {% if car.images.all %}
-                                <img src="{{ car.images.first.image.url }}" 
-                                    alt="{{ car.brand.name }} {{ car.model.name }}"
-                                    style="width: 100%; height: 100%; object-fit: cover;">
+                            {% if vehicle.vehicle_type == 'car' and vehicle.car_images.first %}
+                                <img src="{{ vehicle.car_images.first.image.url }}" 
+                                     alt="{{ vehicle.title }}"
+                                     style="width: 100%; height: 100%; object-fit: cover;">
+                            {% elif vehicle.vehicle_type == 'motorcycle' and vehicle.motorcycle_images.first %}
+                                <img src="{{ vehicle.motorcycle_images.first.image.url }}" 
+                                     alt="{{ vehicle.title }}"
+                                     style="width: 100%; height: 100%; object-fit: cover;">
+                            {% elif vehicle.vehicle_type == 'heavy' and vehicle.heavy_images.first %}
+                                <img src="{{ vehicle.heavy_images.first.image.url }}" 
+                                     alt="{{ vehicle.title }}"
+                                     style="width: 100%; height: 100%; object-fit: cover;">
                             {% else %}
                                 <div style="height: 100%; display: flex; align-items: center; justify-content: center; color: #adb5bd;">
-                                    <i class="bi bi-car-front" style="font-size: 3rem;"></i>
+                                    {% if vehicle.vehicle_type == 'car' %}
+                                        <i class="bi bi-car-front" style="font-size: 3rem;"></i>
+                                    {% elif vehicle.vehicle_type == 'motorcycle' %}
+                                        <i class="bi bi-bicycle" style="font-size: 3rem;"></i>
+                                    {% else %}
+                                        <i class="bi bi-truck" style="font-size: 3rem;"></i>
+                                    {% endif %}
                                 </div>
                             {% endif %}
-                            
+
                             <!-- برچسب ویژه -->
-                            {% if car.is_featured %}
+                            {% if vehicle.is_featured %}
                                 <span class="featured-badge">
                                     <i class="bi bi-star-fill"></i> ویژه
                                 </span>
                             {% endif %}
+
+                            <!-- برچسب نوع وسیله نقلیه -->
+                            <span class="position-absolute top-0 start-0 m-2 badge 
+                                {% if vehicle.vehicle_type == 'car' %}bg-primary
+                                {% elif vehicle.vehicle_type == 'motorcycle' %}bg-success
+                                {% else %}bg-warning text-dark{% endif %} rounded-pill">
+                                {% if vehicle.vehicle_type == 'car' %}
+                                    🚗 سواری
+                                {% elif vehicle.vehicle_type == 'motorcycle' %}
+                                    🏍️ موتورسیکلت
+                                {% else %}
+                                    🚚 سنگین
+                                {% endif %}
+                            </span>
                         </div>
                     </a>
+
                     <div class="card-body">
-                        <h5 class="card-title fw-bold">{{ car.brand.name }} {{ car.model.name }}</h5>
-                        
-                        <!-- قیمت با کلاس رنگ سبز -->
-                        <p class="card-text text-success fw-bold fs-5">{{ car.price|intcomma }} تومان</p>
-                        
-                        <!-- جزئیات با آیکون -->
+                        <!-- عنوان -->
+                        <h5 class="card-title fw-bold">
+                            {% if vehicle.vehicle_type == 'car' %}
+                                {{ vehicle.brand.name }} {{ vehicle.model.name }}
+                            {% else %}
+                                {{ vehicle.brand }} {{ vehicle.model_name }}
+                            {% endif %}
+                        </h5>
+
+                        <!-- قیمت -->
+                        <p class="card-text text-success fw-bold fs-5">{{ vehicle.price|intcomma }} تومان</p>
+
+                        <!-- جزئیات -->
                         <p class="card-text text-muted small">
-                            <i class="bi bi-calendar"></i> {{ car.year }} | 
-                            <i class="bi bi-speedometer2"></i> {{ car.mileage|intcomma }} کیلومتر | 
-                            <i class="bi bi-geo-alt"></i> {{ car.city }}
+                            <i class="bi bi-calendar"></i> {{ vehicle.year }}
+                            {% if vehicle.mileage %}
+                                | <i class="bi bi-speedometer2"></i> {{ vehicle.mileage|intcomma }} کیلومتر
+                            {% endif %}
+                            | <i class="bi bi-geo-alt"></i> {{ vehicle.city }}
                         </p>
-                        
-                        <!-- دکمه با رنگ جدید -->
-                        <a href="{% url 'cars:car_detail' car.pk car.slug %}" class="btn btn-primary rounded-pill px-4">
-                            <i class="bi bi-eye"></i> مشاهده
-                        </a>
+
+                        <!-- دکمه‌ها -->
+                        <div class="d-flex gap-2">
+                            <a href="{% if vehicle.vehicle_type == 'car' %}{% url 'cars:car_detail' vehicle.pk vehicle.slug %}{% elif vehicle.vehicle_type == 'motorcycle' %}{% url 'cars:motorcycle_detail' vehicle.pk vehicle.slug %}{% else %}{% url 'cars:heavy_detail' vehicle.pk vehicle.slug %}{% endif %}" 
+                               class="btn rounded-pill px-4 flex-grow-1
+                                {% if vehicle.vehicle_type == 'car' %}btn-primary
+                                {% elif vehicle.vehicle_type == 'motorcycle' %}btn-success
+                                {% else %}btn-warning{% endif %}">
+                                <i class="bi bi-eye"></i> مشاهده
+                            </a>
+
+                            {% if user.is_authenticated %}
+                                <form method="post" action="{% url 'cars:toggle_favorite' vehicle.id %}">
+                                    {% csrf_token %}
+                                    <input type="hidden" name="vehicle_type" value="{{ vehicle.vehicle_type }}">
+                                    <button type="submit" 
+                                            class="btn {% if vehicle.id in favorite_ids %}btn-danger{% else %}btn-outline-danger{% endif %} rounded-pill">
+                                        <i class="bi {% if vehicle.id in favorite_ids %}bi-heart-fill{% else %}bi-heart{% endif %}"></i>
+                                    </button>
+                                </form>
+                            {% endif %}
+                        </div>
                     </div>
                 </div>
             </div>
             {% endfor %}
         </div>
+
+        <!-- صفحه‌بندی -->
+        {% if is_paginated %}
+        <nav class="mt-4">
+            <ul class="pagination justify-content-center">
+                {% if page_obj.has_previous %}
+                    <li class="page-item">
+                        <a class="page-link" href="?page={{ page_obj.previous_page_number }}">قبلی</a>
+                    </li>
+                {% endif %}
+                {% for num in page_obj.paginator.page_range %}
+                    <li class="page-item {% if page_obj.number == num %}active{% endif %}">
+                        <a class="page-link" href="?page={{ num }}">{{ num }}</a>
+                    </li>
+                {% endfor %}
+                {% if page_obj.has_next %}
+                    <li class="page-item">
+                        <a class="page-link" href="?page={{ page_obj.next_page_number }}">بعدی</a>
+                    </li>
+                {% endif %}
+            </ul>
+        </nav>
+        {% endif %}
+
     {% else %}
-        <div class="alert alert-info">
-            <p>هیچ خودرویی یافت نشد.</p>
+        <div class="alert alert-info text-center py-5">
+            <i class="bi bi-car-front" style="font-size: 4rem; color: #adb5bd;"></i>
+            <p class="mt-3 text-muted">هیچ وسیله نقلیه‌ای یافت نشد.</p>
+            {% if user.is_authenticated %}
+                <a href="{% url 'cars:car_create' %}" class="btn-gradient-success rounded-pill px-4 py-2 mt-2">
+                    <i class="bi bi-plus-circle"></i> ثبت اولین آگهی
+                </a>
+            {% endif %}
         </div>
     {% endif %}
 </div>

@@ -2,29 +2,30 @@
 from django import forms
 from cars.models import Brand, CarModel, Car
 
+
+
 class AdvancedSearchForm(forms.Form):
     """
     فرم جستجوی پیشرفته با فیلترهای متعدد
     """
     query = forms.CharField(
-        required=False,  # اجباری نیست
+        required=False,
         widget=forms.TextInput(attrs={
             'class': 'form-control',
             'placeholder': 'جستجوی خودرو...',
-            'id': 'search-input'
         }),
-        label=''  # بدون لیبل
+        label=''
     )
     
     brand = forms.ModelChoiceField(
-        queryset=Brand.objects.all(),
+        queryset=Brand.objects.none(),  # ← ابتدا خالی
         required=False,
         empty_label="همه برندها",
         widget=forms.Select(attrs={'class': 'form-select'})
     )
     
     model = forms.ModelChoiceField(
-        queryset=CarModel.objects.none(),  # ابتدا خالی
+        queryset=CarModel.objects.none(),
         required=False,
         empty_label="همه مدل‌ها",
         widget=forms.Select(attrs={'class': 'form-select'})
@@ -33,7 +34,7 @@ class AdvancedSearchForm(forms.Form):
     min_year = forms.IntegerField(
         required=False,
         min_value=1360,
-        max_value=1403,
+        max_value=1410,  # ✅ حداکثر رو به ۱۴۱۰ تغییر دادم
         widget=forms.NumberInput(attrs={
             'class': 'form-control',
             'placeholder': 'از سال'
@@ -43,7 +44,7 @@ class AdvancedSearchForm(forms.Form):
     max_year = forms.IntegerField(
         required=False,
         min_value=1360,
-        max_value=1403,
+        max_value=1410,  # ✅ حداکثر رو به ۱۴۱۰ تغییر دادم
         widget=forms.NumberInput(attrs={
             'class': 'form-control',
             'placeholder': 'تا سال'
@@ -74,7 +75,6 @@ class AdvancedSearchForm(forms.Form):
         })
     )
     
-    # استفاده از CHOICES های مدل Car
     transmission = forms.ChoiceField(
         choices=[('', 'همه')] + list(Car.TRANSMISSION_CHOICES),
         required=False,
@@ -86,3 +86,7 @@ class AdvancedSearchForm(forms.Form):
         required=False,
         widget=forms.Select(attrs={'class': 'form-select'})
     )
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        # ✅ اینجا برندها رو دوباره لود کن (هر بار که فرم ساخته میشه)
+        self.fields['brand'].queryset = Brand.objects.all().order_by('name')

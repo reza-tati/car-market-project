@@ -166,11 +166,11 @@
 {% block extra_js %}
 <script>
 document.addEventListener('DOMContentLoaded', function() {
-    // انتخاب برند → بارگذاری مدل‌ها
+    // ===== انتخاب برند → بارگذاری مدل‌ها =====
     const brandSelect = document.getElementById('id_brand');
     const modelSelect = document.getElementById('id_model');
 
-    if (brandSelect) {
+    if (brandSelect && modelSelect) {
         brandSelect.addEventListener('change', function() {
             const brandId = this.value;
             if (brandId) {
@@ -188,46 +188,58 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     }
 
-    // افزودن فرم تصویر جدید
+    // ===== افزودن فرم تصویر جدید با محدودیت =====
     const addBtn = document.getElementById('add-more');
+    const MAX_IMAGES = 10;  // ← حداکثر تعداد
+    
     if (addBtn) {
-        addBtn.addEventListener('click', function() {
-            const totalForms = document.getElementById('id_carimage_set-TOTAL_FORMS');
+        addBtn.addEventListener('click', function(e) {
+            e.preventDefault();
+            
+            const totalForms = document.getElementById('id_car_images-TOTAL_FORMS');
             const formIdx = parseInt(totalForms.value);
+            
+            // ✅ چک کردن محدودیت
+            if (formIdx >= MAX_IMAGES) {
+                alert(`حداکثر ${MAX_IMAGES} تصویر مجاز است!`);
+                return;
+            }
+            
             const container = document.getElementById('image-forms');
-
-            // گرفتن اولین فرم به عنوان الگو
             const firstForm = container.querySelector('.image-form');
             if (!firstForm) return;
-
+            
             const newForm = firstForm.cloneNode(true);
-
+            
             // پاک کردن مقادیر
             newForm.querySelectorAll('input').forEach(input => {
                 if (input.type === 'file') input.value = '';
                 if (input.type === 'checkbox') input.checked = false;
-                if (input.type === 'hidden' && input.name.includes('DELETE')) {
-                    input.checked = false;
-                }
+                if (input.type === 'hidden' && input.name.includes('id')) input.value = '';
             });
-
+            
             // به‌روزرسانی name و id
             newForm.querySelectorAll('[name]').forEach(el => {
                 const name = el.getAttribute('name').replace(/-0-/g, `-${formIdx}-`);
                 el.setAttribute('name', name);
                 el.id = `id_${name}`;
             });
-
+            
             newForm.querySelectorAll('label').forEach(label => {
                 const forAttr = label.getAttribute('for');
                 if (forAttr) {
                     label.setAttribute('for', forAttr.replace(/-0-/g, `-${formIdx}-`));
                 }
             });
-
-            // اضافه کردن به container
+            
             container.appendChild(newForm);
             totalForms.value = formIdx + 1;
+            
+            // اگه به محدودیت رسید، دکمه رو غیرفعال کن
+            if (formIdx + 1 >= MAX_IMAGES) {
+                addBtn.disabled = true;
+                addBtn.textContent = 'حداکثر تعداد تصویر رسیده';
+            }
         });
     }
 });

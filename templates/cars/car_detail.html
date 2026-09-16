@@ -42,7 +42,7 @@
             <div class="card border-0 shadow-sm rounded-4 overflow-hidden">
                 <div id="carGallery" class="carousel slide" data-bs-ride="carousel">
                     <div class="carousel-indicators">
-                        {% for image in car.images.all %}
+                        {% for image in car.car_images.all %}
                             <button type="button" data-bs-target="#carGallery" 
                                     data-bs-slide-to="{{ forloop.counter0 }}" 
                                     {% if forloop.first %}class="active"{% endif %}>
@@ -50,7 +50,7 @@
                         {% endfor %}
                     </div>
                     <div class="carousel-inner">
-                        {% for image in car.images.all %}
+                        {% for image in car.car_images.all %}
                             <div class="carousel-item {% if forloop.first %}active{% endif %}">
                                 <img src="{{ image.image.url }}" 
                                      class="d-block w-100" 
@@ -66,7 +66,7 @@
                             </div>
                         {% endfor %}
                     </div>
-                    {% if car.images.count > 1 %}
+                    {% if car.car_images.count > 1 %}
                         <button class="carousel-control-prev" type="button" data-bs-target="#carGallery" data-bs-slide="prev">
                             <span class="carousel-control-prev-icon"></span>
                         </button>
@@ -121,7 +121,7 @@
                             <td class="py-2 px-3">{{ car.get_transmission_display }}</td>
                         </tr>
                         <tr>
-                            <td class="py-2 px-3 text-muted"><i class="bi bi-fuel-pump"></i> نوع سوخت</td>
+                            <td class="py-2 px-3 text-muted"><i class="bi bi-droplet"></i> نوع سوخت</td>
                             <td class="py-2 px-3">{{ car.get_fuel_type_display }}</td>
                         </tr>
                         <tr>
@@ -138,6 +138,8 @@
                     {% if user.is_authenticated %}
                         <form method="post" action="{% url 'cars:toggle_favorite' car.id %}">
                             {% csrf_token %}
+                            
+                            <input type="hidden" name="vehicle_type" value="car">
                             <button type="submit" 
                                     class="btn {% if is_favorite %}btn-danger{% else %}btn-outline-danger{% endif %} w-100 rounded-pill py-2 mb-2">
                                 <i class="bi {% if is_favorite %}bi-heart-fill{% else %}bi-heart{% endif %}"></i>
@@ -150,18 +152,18 @@
                         </form>
                     {% else %}
                         <a href="{% url 'accounts:login' %}?next={{ request.path }}" 
-                           class="btn btn-outline-danger w-100 rounded-pill py-2 mb-2">
+                        class="btn btn-outline-danger w-100 rounded-pill py-2 mb-2">
                             <i class="bi bi-heart"></i> افزودن به علاقه‌مندی‌ها (ورود)
                         </a>
                     {% endif %}
 
                     {% if user == car.seller %}
                         <a href="{% url 'cars:car_update' car.pk %}" 
-                           class="btn btn-warning w-100 rounded-pill py-2 mb-2">
+                        class="btn btn-warning w-100 rounded-pill py-2 mb-2">
                             <i class="bi bi-pencil"></i> ویرایش آگهی
                         </a>
                         <a href="{% url 'cars:car_delete' car.pk %}" 
-                           class="btn btn-outline-danger w-100 rounded-pill py-2">
+                        class="btn btn-outline-danger w-100 rounded-pill py-2">
                             <i class="bi bi-trash"></i> حذف آگهی
                         </a>
                     {% endif %}
@@ -216,7 +218,7 @@
             {% for similar_car in similar_cars %}
             <div class="col-md-3 col-sm-6">
                 <div class="card border-0 shadow-sm rounded-4 h-100 hover-card">
-                    <img src="{{ similar_car.images.first.image.url|default:'#' }}" 
+                    <img src="{{ similar_car.car_images.first.image.url|default:'#' }}" 
                          class="card-img-top rounded-top-4" 
                          style="height: 150px; object-fit: cover;"
                          alt="{{ similar_car.title }}">

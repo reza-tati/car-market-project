@@ -1,0 +1,176 @@
+{% extends 'base.html' %}
+{% load humanize %}
+
+{% block title %}{{ heavy.title }}{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+
+    <!-- هدر صفحه -->
+    <div class="page-header mb-4">
+        <h2 class="mb-1">
+            <i class="bi bi-truck text-warning"></i> {{ heavy.title }}
+        </h2>
+        <div class="d-flex gap-3 text-muted small">
+            <span><i class="bi bi-calendar"></i> {{ heavy.created_at|date:"Y/m/d" }}</span>
+            <span><i class="bi bi-eye"></i> {{ heavy.views }} بازدید</span>
+            {% if heavy.is_sold %}
+                <span class="badge bg-danger rounded-pill">فروخته شده</span>
+            {% elif heavy.is_featured %}
+                <span class="badge bg-warning text-dark rounded-pill">ویژه</span>
+            {% endif %}
+        </div>
+    </div>
+
+    <div class="row g-4">
+
+        <!-- ========== ستون تصاویر ========== -->
+        <div class="col-lg-8">
+
+            <!-- کاروسل تصاویر -->
+            <div class="card border-0 shadow-sm rounded-4 overflow-hidden">
+                <div id="heavyGallery" class="carousel slide" data-bs-ride="carousel">
+                    <div class="carousel-indicators">
+                        {% for image in heavy.heavy_images.all %}
+                            <button type="button" data-bs-target="#heavyGallery" 
+                                    data-bs-slide-to="{{ forloop.counter0 }}" 
+                                    {% if forloop.first %}class="active"{% endif %}>
+                            </button>
+                        {% endfor %}
+                    </div>
+                    <div class="carousel-inner">
+                        {% for image in heavy.heavy_images.all %}
+                            <div class="carousel-item {% if forloop.first %}active{% endif %}">
+                                <img src="{{ image.image.url }}" 
+                                     class="d-block w-100" 
+                                     style="height: 450px; object-fit: cover;"
+                                     alt="{{ heavy.title }}">
+                            </div>
+                        {% empty %}
+                            <div class="carousel-item active">
+                                <div class="text-center py-5 bg-light" style="height: 450px; display: flex; align-items: center; justify-content: center; flex-direction: column;">
+                                    <i class="bi bi-truck" style="font-size: 4rem; color: #adb5bd;"></i>
+                                    <p class="mt-2 text-muted">بدون تصویر</p>
+                                </div>
+                            </div>
+                        {% endfor %}
+                    </div>
+                    {% if heavy.heavy_images.count > 1 %}
+                        <button class="carousel-control-prev" type="button" data-bs-target="#heavyGallery" data-bs-slide="prev">
+                            <span class="carousel-control-prev-icon"></span>
+                        </button>
+                        <button class="carousel-control-next" type="button" data-bs-target="#heavyGallery" data-bs-slide="next">
+                            <span class="carousel-control-next-icon"></span>
+                        </button>
+                    {% endif %}
+                </div>
+            </div>
+
+            <!-- توضیحات -->
+            <div class="card border-0 shadow-sm rounded-4 mt-4">
+                <div class="card-body">
+                    <h5><i class="bi bi-text-paragraph text-warning"></i> توضیحات</h5>
+                    <p class="text-muted">{{ heavy.description|linebreaks }}</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- ========== ستون اطلاعات ========== -->
+        <div class="col-lg-4">
+
+            <!-- مشخصات فنی -->
+            <div class="card border-0 shadow-sm rounded-4">
+                <div class="card-header bg-warning text-dark rounded-top-4 border-0 py-3">
+                    <h5 class="mb-0"><i class="bi bi-list-ul"></i> مشخصات فنی</h5>
+                </div>
+                <div class="card-body p-0">
+                    <table class="table table-borderless mb-0">
+                        <tr>
+                            <td class="py-2 px-3 text-muted"><i class="bi bi-coin text-success"></i> قیمت</td>
+                            <td class="py-2 px-3 fw-bold text-success">{{ heavy.price|intcomma }} تومان</td>
+                        </tr>
+                        <tr>
+                            <td class="py-2 px-3 text-muted"><i class="bi bi-truck"></i> نوع</td>
+                            <td class="py-2 px-3">{{ heavy.get_heavy_type_display }}</td>
+                        </tr>
+                        <tr>
+                            <td class="py-2 px-3 text-muted"><i class="bi bi-tag"></i> برند</td>
+                            <td class="py-2 px-3">{{ heavy.brand }}</td>
+                        </tr>
+                        <tr>
+                            <td class="py-2 px-3 text-muted"><i class="bi bi-tag"></i> مدل</td>
+                            <td class="py-2 px-3">{{ heavy.model_name }}</td>
+                        </tr>
+                        <tr>
+                            <td class="py-2 px-3 text-muted"><i class="bi bi-calendar"></i> سال ساخت</td>
+                            <td class="py-2 px-3">{{ heavy.year }}</td>
+                        </tr>
+                        <tr>
+                            <td class="py-2 px-3 text-muted"><i class="bi bi-box-seam"></i> ظرفیت بار</td>
+                            <td class="py-2 px-3">{{ heavy.load_capacity }} تن</td>
+                        </tr>
+                        <tr>
+                            <td class="py-2 px-3 text-muted"><i class="bi bi-gear"></i> جرثقیل</td>
+                            <td class="py-2 px-3">{% if heavy.has_crane %}✅ دارد{% else %}❌ ندارد{% endif %}</td>
+                        </tr>
+                        <tr>
+                            <td class="py-2 px-3 text-muted"><i class="bi bi-globe"></i> وارداتی</td>
+                            <td class="py-2 px-3">{% if heavy.is_imported %}✅ بله{% else %}❌ خیر{% endif %}</td>
+                        </tr>
+                        <tr>
+                            <td class="py-2 px-3 text-muted"><i class="bi bi-geo-alt"></i> شهر</td>
+                            <td class="py-2 px-3">{{ heavy.city }}</td>
+                        </tr>
+                    </table>
+                </div>
+            </div>
+
+            <!-- دکمه‌ها -->
+            <div class="card border-0 shadow-sm rounded-4 mt-4">
+                <div class="card-body">
+                    {% if user.is_authenticated %}
+                        <form method="post" action="{% url 'cars:toggle_favorite' heavy.id %}">
+                            {% csrf_token %}
+                            <input type="hidden" name="vehicle_type" value="heavy">
+                            <button type="submit" 
+                                    class="btn {% if is_favorite %}btn-danger{% else %}btn-outline-danger{% endif %} w-100 rounded-pill py-2 mb-2">
+                                <i class="bi {% if is_favorite %}bi-heart-fill{% else %}bi-heart{% endif %}"></i>
+                                {% if is_favorite %}حذف از علاقه‌مندی‌ها{% else %}افزودن به علاقه‌مندی‌ها{% endif %}
+                            </button>
+                        </form>
+                    {% else %}
+                        <a href="{% url 'accounts:login' %}?next={{ request.path }}" 
+                           class="btn btn-outline-danger w-100 rounded-pill py-2 mb-2">
+                            <i class="bi bi-heart"></i> افزودن به علاقه‌مندی‌ها (ورود)
+                        </a>
+                    {% endif %}
+
+                    {% if user == heavy.seller %}
+                        <a href="{% url 'cars:heavy_update' heavy.pk %}" class="btn btn-warning w-100 rounded-pill py-2 mb-2">
+                            <i class="bi bi-pencil"></i> ویرایش
+                        </a>
+                        <a href="{% url 'cars:heavy_delete' heavy.pk %}" class="btn btn-outline-danger w-100 rounded-pill py-2">
+                            <i class="bi bi-trash"></i> حذف
+                        </a>
+                    {% endif %}
+                </div>
+            </div>
+
+            <!-- اطلاعات فروشنده -->
+            <div class="card border-0 shadow-sm rounded-4 mt-4">
+                <div class="card-header bg-info text-white rounded-top-4 border-0 py-3">
+                    <h5 class="mb-0"><i class="bi bi-person-circle"></i> اطلاعات فروشنده</h5>
+                </div>
+                <div class="card-body text-center">
+                    <h6 class="fw-bold">{{ heavy.seller.get_full_name|default:heavy.seller.username }}</h6>
+                    <p class="text-muted small"><i class="bi bi-geo-alt"></i> {{ heavy.seller.profile.city|default:"نامشخص" }}</p>
+                    
+                    {% if heavy.seller.profile.phone %}
+                        <p class="fs-5 fw-bold text-success">{{ heavy.seller.profile.phone }}</p>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

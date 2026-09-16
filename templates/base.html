@@ -101,14 +101,71 @@
                 <!-- منوی اصلی -->
                 <ul class="navbar-nav me-auto">
                     <li class="nav-item">
-                        <a class="nav-link" href="{% url 'cars:car_list' %}">
-                            <i class="bi bi-house"></i> خانه
+                        <a class="nav-link d-flex align-items-center gap-1" href="{% url 'cars:car_list' %}">
+                            <i class="bi bi-house-door"></i>
+                            <span>خانه</span>
                         </a>
                     </li>
-                    <li class="nav-item">
-                        <a class="nav-link" href="{% url 'cars:car_create' %}">
+                    <li class="nav-item dropdown">
+                        <a class="nav-link dropdown-toggle" href="#" id="addDropdown" data-bs-toggle="dropdown" aria-expanded="false">
                             <i class="bi bi-plus-circle"></i> ثبت آگهی
                         </a>
+                        <ul class="dropdown-menu dropdown-menu-end text-end" aria-labelledby="addDropdown">
+                            <li>
+                                <a class="dropdown-item d-flex align-items-center gap-2" href="{% url 'cars:car_create' %}">
+                                    <span class="badge bg-primary rounded-circle p-2">
+                                        <i class="bi bi-car-front text-white"></i>
+                                    </span>
+                                    <span>ثبت سواری</span>
+                                </a>
+                            </li>
+                            <li>
+                                <a class="dropdown-item d-flex align-items-center gap-2" href="{% url 'cars:motorcycle_create' %}">
+                                    <span class="badge bg-success rounded-circle p-2">
+                                        <i class="bi bi-bicycle text-white"></i>
+                                    </span>
+                                    <span>ثبت موتورسیکلت</span>
+                                </a>
+                            </li>
+                            <li>
+                                <a class="dropdown-item d-flex align-items-center gap-2" href="{% url 'cars:heavy_create' %}">
+                                    <span class="badge bg-warning rounded-circle p-2">
+                                        <i class="bi bi-truck text-white"></i>
+                                    </span>
+                                    <span>ثبت سنگین</span>
+                                </a>
+                            </li>
+                        </ul>
+                    </li>
+                    
+                    <!-- در بخش منوی اصلی -->
+                    <li class="nav-item dropdown">
+                        <a class="nav-link dropdown-toggle" href="#" id="vehiclesDropdown" data-bs-toggle="dropdown">
+                            <i class="bi bi-grid"></i> وسایل نقلیه
+                        </a>
+                        <ul class="dropdown-menu dropdown-menu-end text-end">
+                            <li>
+                                <a class="dropdown-item" href="{% url 'cars:car_list' %}">
+                                    <i class="bi bi-grid"></i> همه
+                                </a>
+                            </li>
+                            <li><hr class="dropdown-divider"></li>
+                            <li>
+                                <a class="dropdown-item" href="{% url 'cars:car_list' %}?type=car">
+                                    <i class="bi bi-car-front"></i> سواری
+                                </a>
+                            </li>
+                            <li>
+                                <a class="dropdown-item" href="{% url 'cars:motorcycle_list' %}">
+                                    <i class="bi bi-bicycle"></i> موتورسیکلت
+                                </a>
+                            </li>
+                            <li>
+                                <a class="dropdown-item" href="{% url 'cars:heavy_list' %}">
+                                    <i class="bi bi-truck"></i> سنگین
+                                </a>
+                            </li>
+                        </ul>
                     </li>
                     <li class="nav-item dropdown">
                         <a class="nav-link dropdown-toggle" href="#" id="brandsDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
@@ -118,7 +175,7 @@
                             
                             <!-- لیست برندها -->
                             {% for brand in all_brands %}
-                                <li><a class="dropdown-item" href="?brand={{ brand.id }}">{{ brand.name }}</a></li>
+                                <a class="dropdown-item" href="{% url 'cars:car_list' %}?brand={{ brand.id }}">{{ brand.name }}</a>
                             {% endfor %}
                             
                             <!-- جداکننده -->

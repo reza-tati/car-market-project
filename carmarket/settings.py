@@ -89,15 +89,15 @@ LOGOUT_REDIRECT_URL = 'cars:car_list'
 # Database
 # https://docs.djangoproject.com/en/4.2/ref/settings/#databases
 
+# settings.py
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.postgresql',
-        'NAME': config('DB_NAME'),
-        'USER': config('DB_USER'),
-        'PASSWORD': config('DB_PASSWORD'),
-        'HOST': config('DB_HOST', default = 'localhost'),
-        'PORT': config('DB_PORT', default = '5432'),
-
+        'NAME': 'carmarket_db',
+        'USER': 'postgres',
+        'PASSWORD': '123',  # ← پسورد خودت رو بذار
+        'HOST': 'localhost',
+        'PORT': '5432',
     }
 }
 
