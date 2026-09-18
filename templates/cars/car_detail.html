@@ -14,7 +14,6 @@
             <i class="bi bi-arrow-right"></i> بازگشت به لیست خودروها
         </a>
     </div>
-
     {% else %}
 
     <!-- هدر صفحه -->
@@ -33,12 +32,11 @@
         </div>
     </div>
 
+    <!-- ===== ردیف اصلی: تصاویر + اطلاعات ===== -->
     <div class="row g-4">
 
-        <!-- ========== ستون تصاویر ========== -->
+        <!-- ستون تصاویر -->
         <div class="col-lg-8">
-
-            <!-- کاروسل تصاویر -->
             <div class="card border-0 shadow-sm rounded-4 overflow-hidden">
                 <div id="carGallery" class="carousel slide" data-bs-ride="carousel">
                     <div class="carousel-indicators">
@@ -86,7 +84,7 @@
             </div>
         </div>
 
-        <!-- ========== ستون اطلاعات ========== -->
+        <!-- ستون اطلاعات -->
         <div class="col-lg-4">
 
             <!-- مشخصات فنی -->
@@ -138,33 +136,26 @@
                     {% if user.is_authenticated %}
                         <form method="post" action="{% url 'cars:toggle_favorite' car.id %}">
                             {% csrf_token %}
-                            
                             <input type="hidden" name="vehicle_type" value="car">
                             <button type="submit" 
                                     class="btn {% if is_favorite %}btn-danger{% else %}btn-outline-danger{% endif %} w-100 rounded-pill py-2 mb-2">
                                 <i class="bi {% if is_favorite %}bi-heart-fill{% else %}bi-heart{% endif %}"></i>
-                                {% if is_favorite %}
-                                    حذف از علاقه‌مندی‌ها
-                                {% else %}
-                                    افزودن به علاقه‌مندی‌ها
-                                {% endif %}
+                                {% if is_favorite %}حذف از علاقه‌مندی‌ها{% else %}افزودن به علاقه‌مندی‌ها{% endif %}
                             </button>
                         </form>
                     {% else %}
                         <a href="{% url 'accounts:login' %}?next={{ request.path }}" 
-                        class="btn btn-outline-danger w-100 rounded-pill py-2 mb-2">
+                           class="btn btn-outline-danger w-100 rounded-pill py-2 mb-2">
                             <i class="bi bi-heart"></i> افزودن به علاقه‌مندی‌ها (ورود)
                         </a>
                     {% endif %}
 
                     {% if user == car.seller %}
-                        <a href="{% url 'cars:car_update' car.pk %}" 
-                        class="btn btn-warning w-100 rounded-pill py-2 mb-2">
-                            <i class="bi bi-pencil"></i> ویرایش آگهی
+                        <a href="{% url 'cars:car_update' car.pk %}" class="btn btn-warning w-100 rounded-pill py-2 mb-2">
+                            <i class="bi bi-pencil"></i> ویرایش
                         </a>
-                        <a href="{% url 'cars:car_delete' car.pk %}" 
-                        class="btn btn-outline-danger w-100 rounded-pill py-2">
-                            <i class="bi bi-trash"></i> حذف آگهی
+                        <a href="{% url 'cars:car_delete' car.pk %}" class="btn btn-outline-danger w-100 rounded-pill py-2">
+                            <i class="bi bi-trash"></i> حذف
                         </a>
                     {% endif %}
                 </div>
@@ -182,9 +173,6 @@
                     <h6 class="fw-bold">{{ car.seller.get_full_name|default:car.seller.username }}</h6>
                     <p class="text-muted small">
                         <i class="bi bi-geo-alt"></i> {{ car.seller.profile.city|default:"نامشخص" }}
-                    </p>
-                    <p class="text-muted small">
-                        <i class="bi bi-car-front"></i> {{ car.seller.cars.count }} آگهی
                     </p>
 
                     <button id="show-phone-btn" class="btn btn-primary w-100 rounded-pill"
@@ -210,23 +198,35 @@
         </div>
     </div>
 
-    <!-- ========== خودروهای مشابه ========== -->
+    <!-- ===== خودروهای مشابه ===== -->
     {% if similar_cars %}
     <div class="mt-5">
-        <h4 class="mb-4"><i class="bi bi-grid-3x3-gap-fill text-primary"></i> خودروهای مشابه</h4>
+        <h4 class="mb-4">
+            <i class="bi bi-grid-3x3-gap-fill text-primary"></i> خودروهای مشابه
+        </h4>
         <div class="row g-3">
-            {% for similar_car in similar_cars %}
+            {% for similar in similar_cars %}
             <div class="col-md-3 col-sm-6">
                 <div class="card border-0 shadow-sm rounded-4 h-100 hover-card">
-                    <img src="{{ similar_car.car_images.first.image.url|default:'#' }}" 
-                         class="card-img-top rounded-top-4" 
-                         style="height: 150px; object-fit: cover;"
-                         alt="{{ similar_car.title }}">
+                    {% if similar.car_images.first %}
+                        <img src="{{ similar.car_images.first.image.url }}" 
+                             class="card-img-top rounded-top-4" 
+                             style="height: 150px; object-fit: cover;"
+                             alt="{{ similar.title }}">
+                    {% else %}
+                        <div class="d-flex align-items-center justify-content-center bg-light rounded-top-4" 
+                             style="height: 150px;">
+                            <i class="bi bi-car-front text-muted" style="font-size: 2rem;"></i>
+                        </div>
+                    {% endif %}
                     <div class="card-body text-center">
-                        <h6 class="fw-bold">{{ similar_car.brand.name }} {{ similar_car.model.name }}</h6>
-                        <p class="text-muted small">{{ similar_car.year }} | {{ similar_car.mileage|intcomma }} کیلومتر</p>
-                        <p class="text-success fw-bold">{{ similar_car.price|intcomma }} تومان</p>
-                        <a href="{% url 'cars:car_detail' similar_car.pk similar_car.slug %}" 
+                        <h6 class="fw-bold">{{ similar.brand.name }} {{ similar.model.name }}</h6>
+                        <p class="text-muted small mb-1">
+                            <i class="bi bi-calendar"></i> {{ similar.year }} | 
+                            <i class="bi bi-speedometer2"></i> {{ similar.mileage|intcomma }} km
+                        </p>
+                        <p class="text-success fw-bold mb-2">{{ similar.price|intcomma }} تومان</p>
+                        <a href="{% url 'cars:car_detail' similar.pk similar.slug %}" 
                            class="btn btn-outline-primary rounded-pill btn-sm w-100">
                             <i class="bi bi-eye"></i> مشاهده
                         </a>

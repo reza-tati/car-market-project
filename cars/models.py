@@ -188,7 +188,13 @@ class Motorcycle(BaseVehicle):
         ('iranian', 'ایرانی'),
     ]
 
-    brand = models.CharField(max_length=50, choices=MOTORCYCLE_BRAND_CHOICES, verbose_name='برند')
+    brand = models.ForeignKey(
+        Brand,
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        verbose_name='برند'
+    )
     model_name = models.CharField(max_length=100, verbose_name='مدل')
     year = models.PositiveIntegerField(verbose_name='سال ساخت')
     mileage = models.PositiveIntegerField(verbose_name='کارکرد (کیلومتر)')
@@ -226,7 +232,13 @@ class HeavyVehicle(BaseVehicle):
     ]
 
     heavy_type = models.CharField(max_length=50, choices=HEAVY_TYPE_CHOICES, verbose_name='نوع ماشین سنگین')
-    brand = models.CharField(max_length=100, verbose_name='برند')
+    brand = models.ForeignKey(
+        Brand,
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        verbose_name='برند'
+    )
     model_name = models.CharField(max_length=100, verbose_name='مدل')
     year = models.PositiveIntegerField(verbose_name='سال ساخت')
     load_capacity = models.PositiveIntegerField(verbose_name='ظرفیت بار (تن)')

@@ -56,9 +56,8 @@ def search_view(request):
         # چون موتور و سنگین برندشون متن (CharField) هست نه FK
         if brand:
             cars = cars.filter(brand=brand)
-            brand_name=brand.name
-            motorcycles = motorcycles.filter(brand__iexact=brand.name)
-            heavies = heavies.filter(brand__iexact=brand.name)
+            motorcycles = motorcycles.filter(brand=brand)
+            heavies = heavies.filter(brand=brand)
         
         # ===== فیلتر مدل (فقط سواری) =====
         if model:

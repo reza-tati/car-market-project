@@ -175,7 +175,7 @@
                             
                             <!-- لیست برندها -->
                             {% for brand in all_brands %}
-                                <a class="dropdown-item" href="{% url 'cars:car_list' %}?brand={{ brand.id }}">{{ brand.name }}</a>
+                                <li><a class="dropdown-item" href="{% url 'search:search' %}?brand={{ brand.id }}">{{ brand.name }}</a></li>
                             {% endfor %}
                             
                             <!-- جداکننده -->
@@ -306,14 +306,18 @@
                 
                 <div class="col-lg-3 col-md-6 mb-4">
                     <h5 class="mb-3">برندهای محبوب</h5>
-                    <div class="d-flex flex-wrap gap-2">
-                        {% for brand in all_brands|slice:":6" %}
-                        <a href="{% url 'cars:car_list' %}?brand={{ brand.id }}" 
-                           class="btn btn-outline-secondary btn-sm">
-                            {{ brand.name }}
-                        </a>
-                        {% endfor %}
-                    </div>
+                    <!-- برندهای محبوب -->
+                        <div class="col-lg-3 col-md-6 mb-4">
+                            <h5 class="mb-3">برندهای محبوب</h5>
+                            <div class="d-flex flex-wrap gap-2">
+                                {% for brand in all_brands|slice:":6" %}
+                                <a href="{% url 'search:search' %}?brand={{ brand.id }}" 
+                                class="btn btn-outline-secondary btn-sm rounded-pill">
+                                    {{ brand.name }}
+                                </a>
+                                {% endfor %}
+                            </div>
+                        </div>
                 </div>
                 
                 <div class="col-lg-3 col-md-6 mb-4">

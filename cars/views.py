@@ -197,9 +197,11 @@ class CarDetailView(DetailView):
         context = super().get_context_data(**kwargs)
         car = self.get_object()
         
+        # افزایش بازدید
         car.views += 1
         car.save(update_fields=['views'])
         
+        # بررسی علاقه‌مندی
         if self.request.user.is_authenticated:
             context['is_favorite'] = Favorite.objects.filter(
                 user=self.request.user,
@@ -209,13 +211,38 @@ class CarDetailView(DetailView):
         else:
             context['is_favorite'] = False
         
-        context['similar_cars'] = Car.objects.filter(
+        # ✅ خودروهای مشابه: اول هم‌برند و هم‌مدل، بعد هم‌برند
+        similar_cars = Car.objects.filter(
             brand=car.brand,
             model=car.model,
             is_active=True,
             is_verified=True
         ).exclude(id=car.id)[:4]
-        
+
+        # اگه کمتر از ۴ تا بود، از هم‌برندها پر کن
+        if similar_cars.count() < 4:
+            more_cars = Car.objects.filter(
+                brand=car.brand,
+                is_active=True,
+                is_verified=True
+            ).exclude(id=car.id).exclude(
+                id__in=similar_cars.values_list('id', flat=True)
+            )[:4 - similar_cars.count()]
+            
+            similar_cars = list(similar_cars) + list(more_cars)
+
+        # اگه بازم کمتر از ۴ تا بود، از همه خودروها پر کن
+        if len(similar_cars) < 4:
+            more_cars = Car.objects.filter(
+                is_active=True,
+                is_verified=True
+            ).exclude(id=car.id).exclude(
+                id__in=[c.id for c in similar_cars]
+            )[:4 - len(similar_cars)]
+            
+            similar_cars = list(similar_cars) + list(more_cars)
+
+        context['similar_cars'] = similar_cars
         context['images'] = car.car_images.all()
         
         return context

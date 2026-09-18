@@ -4,6 +4,7 @@ from django.forms import inlineformset_factory
 from .models import Car, Motorcycle, HeavyVehicle, CarImage, Brand, CarModel, MotorcycleImage, HeavyVehicleImage
 
 
+
 class CarForm(forms.ModelForm):
     class Meta:
         model = Car
@@ -38,9 +39,6 @@ class CarForm(forms.ModelForm):
         elif self.instance.pk and self.instance.brand:
             self.fields['model'].queryset = self.instance.brand.models.all().order_by('name')
 
-
-# cars/forms.py
-
 class MotorcycleForm(forms.ModelForm):
     class Meta:
         model = Motorcycle
@@ -68,37 +66,26 @@ class MotorcycleForm(forms.ModelForm):
             'price': forms.NumberInput(attrs={'class': 'form-control', 'placeholder': 'قیمت به تومان'}),
         }
 
-
 class HeavyVehicleForm(forms.ModelForm):
     class Meta:
         model = HeavyVehicle
-        # ✅ همه فیلدهای خودکار و غیرضروری رو exclude کن
         exclude = [
-            'seller',
-            'vehicle_type',
-            'slug',
-            'views',
-            'phone_views',
-            'created_at',       # ✅ این خیلی مهمه
-            'updated_at',       # ✅ این هم همینطور
-            'is_sold',
-            'is_active',
-            'is_verified',
-            'is_featured',
+            'seller', 'vehicle_type', 'slug', 'views', 'phone_views',
+            'created_at', 'updated_at',
+            'is_sold', 'is_active', 'is_verified', 'is_featured',
         ]
         widgets = {
             'title': forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'مثال: کامیون ولوو'}),
-            'year': forms.NumberInput(attrs={'class': 'form-control', 'min': '1360', 'max': '1405'}),
-            'load_capacity': forms.NumberInput(attrs={'class': 'form-control', 'placeholder': 'ظرفیت بار به تن'}),
+            'year': forms.NumberInput(attrs={'class': 'form-control', 'min': '1360', 'max': '1410'}),
+            'load_capacity': forms.NumberInput(attrs={
+                'class': 'form-control',
+                'placeholder': 'فقط عدد (مثال: 10)',
+                'min': '0',
+            }),
             'description': forms.Textarea(attrs={'class': 'form-control', 'rows': 4}),
             'city': forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'شهر'}),
             'price': forms.NumberInput(attrs={'class': 'form-control', 'placeholder': 'قیمت به تومان'}),
         }
-
-
-# cars/forms.py
-from .models import Car, Motorcycle, HeavyVehicle, CarImage, MotorcycleImage, HeavyVehicleImage, Brand, CarModel
-
 
 # ===== فرم‌های تصویر =====
 class CarImageForm(forms.ModelForm):
@@ -110,7 +97,6 @@ class CarImageForm(forms.ModelForm):
             'is_main': forms.CheckboxInput(attrs={'class': 'form-check-input'})
         }
 
-
 class MotorcycleImageForm(forms.ModelForm):
     class Meta:
         model = MotorcycleImage
@@ -120,7 +106,6 @@ class MotorcycleImageForm(forms.ModelForm):
             'is_main': forms.CheckboxInput(attrs={'class': 'form-check-input'})
         }
 
-
 class HeavyVehicleImageForm(forms.ModelForm):
     class Meta:
         model = HeavyVehicleImage
@@ -129,7 +114,6 @@ class HeavyVehicleImageForm(forms.ModelForm):
             'image': forms.FileInput(attrs={'class': 'form-control', 'accept': 'image/*'}),
             'is_main': forms.CheckboxInput(attrs={'class': 'form-check-input'})
         }
-
 
 # ===== Formsets =====
 CarImageFormSet = inlineformset_factory(
