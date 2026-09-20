@@ -216,6 +216,11 @@
                                     <i class="bi bi-heart"></i> علاقه‌مندی‌ها
                                 </a>
                             </li>
+                            <li>
+                                <a class="dropdown-item" href="{% url 'chat:chat_list' %}">
+                                    <i class="bi bi-chat-dots"></i> چت‌های من
+                                </a>
+                            </li>
                             {% if user.is_staff %}
                             <li>
                                 <a class="dropdown-item" href="{% url 'admin:index' %}">

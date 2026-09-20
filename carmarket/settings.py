@@ -32,6 +32,8 @@ ALLOWED_HOSTS = ['localhost', '127.0.0.1']
 # Application definition
 
 INSTALLED_APPS = [
+    'daphne', 
+    'channels',  
     'django.contrib.admin',
     'django.contrib.auth',
     'django.contrib.contenttypes',
@@ -40,9 +42,14 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
     'accounts.apps.AccountsConfig',
     'django.contrib.humanize',
+
+      # اپ‌های پروژه
     'cars',
     'search',
     'core',
+    'chat',
+
+    # پکیج‌های خارجی
     'crispy_forms',
     'crispy_bootstrap5',
     'rest_framework',
@@ -159,3 +166,14 @@ AUTHENTICATION_BACKENDS = [
     'accounts.backends.PhoneBackend',  # Backend سفارشی برای ورود با شماره موبایل
     'django.contrib.auth.backends.ModelBackend',  # Backend پیش‌فرض (برای لاگین با username)
 ]
+
+
+# ============================================
+# تنظیمات Channels (برای چت)
+# ============================================
+ASGI_APPLICATION = 'carmarket.asgi.application'
+CHANNEL_LAYERS = {
+    'default': {
+        'BACKEND': 'channels.layers.InMemoryChannelLayer',
+    },
+}

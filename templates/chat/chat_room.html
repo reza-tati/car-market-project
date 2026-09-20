@@ -1,0 +1,467 @@
+{% extends 'base.html' %}
+{% load humanize %}
+
+{% block title %}چت با {{ other_user.get_full_name|default:other_user.username }}{% endblock %}
+
+{% block content %}
+<div class="chat-container">
+
+    <!-- هدر چت -->
+    <div class="chat-header">
+        <a href="{% url 'chat:chat_list' %}" class="btn btn-sm btn-outline-secondary rounded-circle me-3">
+            <i class="bi bi-arrow-right"></i>
+        </a>
+        
+        <div class="position-relative me-3">
+            <div class="avatar-circle" style="width: 45px; height: 45px; background: linear-gradient(135deg, #667eea, #764ba2);">
+                <i class="bi bi-person-fill text-white" style="font-size: 1.3rem;"></i>
+            </div>
+            <span class="position-absolute bottom-0 end-0 bg-success rounded-circle border border-2 border-white" 
+                  style="width: 12px; height: 12px;"></span>
+        </div>
+        
+        <div class="flex-grow-1">
+            <h6 class="mb-0 fw-bold">{{ other_user.get_full_name|default:other_user.username }}</h6>
+            <small class="text-muted">
+                <i class="bi bi-circle-fill text-success" style="font-size: 0.5rem;"></i> آنلاین
+            </small>
+        </div>
+        
+        <div class="dropdown">
+            <button class="btn btn-sm btn-outline-secondary rounded-circle" data-bs-toggle="dropdown">
+                <i class="bi bi-three-dots-vertical"></i>
+            </button>
+            <ul class="dropdown-menu dropdown-menu-end text-end">
+                <li>
+                    <a class="dropdown-item" href="#">
+                        <i class="bi bi-person"></i> مشاهده پروفایل
+                    </a>
+                </li>
+                <li>
+                    <a class="dropdown-item text-danger" href="#">
+                        <i class="bi bi-trash"></i> حذف چت
+                    </a>
+                </li>
+            </ul>
+        </div>
+    </div>
+
+    <!-- نوار اطلاعات وسیله نقلیه -->
+    {% if room.vehicle_type %}
+    <div class="chat-info-bar">
+        <small class="text-muted">
+            <i class="bi bi-info-circle"></i>
+            گفتگو درباره:
+            {% if room.vehicle_type == 'car' %}
+                <span class="badge bg-primary">سواری</span>
+            {% elif room.vehicle_type == 'motorcycle' %}
+                <span class="badge bg-success">موتورسیکلت</span>
+            {% elif room.vehicle_type == 'heavy' %}
+                <span class="badge bg-warning text-dark">سنگین</span>
+            {% endif %}
+        </small>
+    </div>
+    {% endif %}
+
+    <!-- پیام‌ها -->
+    <div id="chat-messages" class="chat-messages">
+        <!-- پیام‌ها به صورت داینامیک اضافه میشن -->
+    </div>
+    
+    <!-- فرم ارسال -->
+    <div class="chat-footer">
+        <form id="chat-form" class="d-flex gap-2 align-items-end">
+            {% csrf_token %}
+            <div class="flex-grow-1">
+                <textarea id="chat-message-input" 
+                          class="form-control rounded-4" 
+                          placeholder="پیام خود را بنویسید..." 
+                          rows="1"
+                          style="resize: none; max-height: 100px;"
+                          autocomplete="off"></textarea>
+            </div>
+            <button type="submit" class="btn btn-primary rounded-circle" 
+                    style="width: 45px; height: 45px; flex-shrink: 0;">
+                <i class="bi bi-send-fill"></i>
+            </button>
+        </form>
+    </div>
+</div>
+
+<!-- ✅ CSS چت -->
+<style>
+    /* ===== کانتینر اصلی چت ===== */
+    .chat-container {
+        display: flex;
+        flex-direction: column;
+        height: calc(100vh - 120px);  /* ارتفاع کل صفحه منهای هدر و فوتر */
+        max-height: 800px;
+        background: #ffffff;
+        border-radius: 16px;
+        box-shadow: 0 4px 20px rgba(0,0,0,0.06);
+        overflow: hidden;
+        margin: 1rem auto;
+        max-width: 900px;
+    }
+    
+    /* ===== هدر چت ===== */
+    .chat-header {
+        display: flex;
+        align-items: center;
+        padding: 12px 16px;
+        background: #ffffff;
+        border-bottom: 1px solid #f1f3f5;
+        flex-shrink: 0;
+    }
+    
+    /* ===== نوار اطلاعات ===== */
+    .chat-info-bar {
+        padding: 6px 16px;
+        background: #f8f9fa;
+        border-bottom: 1px solid #f1f3f5;
+        flex-shrink: 0;
+    }
+    
+    /* ===== کانتینر پیام‌ها ===== */
+    .chat-messages {
+        flex: 1;  /* ✅ فضای باقی‌مانده رو پر می‌کنه */
+        display: flex;
+        flex-direction: column;
+        gap: 8px;
+        padding: 1rem;
+        overflow-y: auto;
+        background: #f8f9fa;
+        min-height: 0;  /* ✅ مهم برای flexbox */
+    }
+    
+    /* ===== حباب پیام ===== */
+    .message {
+        max-width: 65%;
+        padding: 8px 14px;
+        border-radius: 18px;
+        word-wrap: break-word;
+        animation: fadeIn 0.3s ease;
+        font-size: 0.9rem;
+        line-height: 1.5;
+    }
+    
+    .message.sent {
+        align-self: flex-start;
+        background: linear-gradient(135deg, #667eea, #764ba2);
+        color: white;
+        border-bottom-left-radius: 4px;
+    }
+    
+    .message.received {
+        align-self: flex-end;
+        background: #ffffff;
+        color: #333;
+        border-bottom-right-radius: 4px;
+        box-shadow: 0 2px 6px rgba(0,0,0,0.08);
+    }
+    
+    .message-time {
+        font-size: 0.65rem;
+        opacity: 0.75;
+        margin-top: 3px;
+    }
+    
+    .message.sent .message-time {
+        color: rgba(255,255,255,0.85);
+    }
+    
+    .message.received .message-time {
+        color: #999;
+    }
+    
+    /* ===== فرم ارسال ===== */
+    .chat-footer {
+        padding: 12px 16px;
+        background: #ffffff;
+        border-top: 1px solid #f1f3f5;
+        flex-shrink: 0;  /* ✅ فرم همیشه پایین می‌مونه */
+    }
+    
+    /* ===== حالت خالی ===== */
+    .empty-chat {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        height: 100%;
+        color: #adb5bd;
+    }
+    
+    .empty-chat i {
+        font-size: 3rem;
+        margin-bottom: 1rem;
+    }
+    
+    /* ===== اسکرول‌بار ===== */
+    .chat-messages::-webkit-scrollbar {
+        width: 6px;
+    }
+    
+    .chat-messages::-webkit-scrollbar-track {
+        background: #f1f3f5;
+    }
+    
+    .chat-messages::-webkit-scrollbar-thumb {
+        background: #ced4da;
+        border-radius: 3px;
+    }
+    
+    .chat-messages::-webkit-scrollbar-thumb:hover {
+        background: #adb5bd;
+    }
+    
+    /* ===== انیمیشن ===== */
+    @keyframes fadeIn {
+        from { opacity: 0; transform: translateY(8px); }
+        to { opacity: 1; transform: translateY(0); }
+    }
+    
+    /* ===== textarea ===== */
+    #chat-message-input {
+        overflow-y: hidden;
+        padding: 10px 15px;
+        border-radius: 20px;
+        border: 2px solid #e9ecef;
+        font-size: 0.9rem;
+        transition: all 0.3s;
+    }
+    
+    #chat-message-input:focus {
+        border-color: #667eea;
+        box-shadow: 0 0 0 4px rgba(102, 126, 234, 0.1);
+    }
+    
+    /* ===== دکمه ارسال ===== */
+    #chat-form button[type="submit"] {
+        background: linear-gradient(135deg, #667eea, #764ba2);
+        border: none;
+        transition: all 0.3s;
+    }
+    
+    #chat-form button[type="submit"]:hover {
+        transform: scale(1.05);
+        box-shadow: 0 4px 15px rgba(102, 126, 234, 0.4);
+    }
+    
+    /* ===== نشانگر تایپ ===== */
+    .typing-indicator {
+        display: flex;
+        gap: 4px;
+        padding: 12px 16px;
+        background: #ffffff;
+        border-radius: 18px;
+        border-bottom-right-radius: 4px;
+        align-self: flex-end;
+        box-shadow: 0 2px 6px rgba(0,0,0,0.08);
+        animation: fadeIn 0.3s ease;
+        width: fit-content;
+    }
+    
+    .typing-indicator span {
+        width: 7px;
+        height: 7px;
+        background: #adb5bd;
+        border-radius: 50%;
+        animation: typing 1.4s infinite ease-in-out;
+    }
+    
+    .typing-indicator span:nth-child(2) { animation-delay: 0.2s; }
+    .typing-indicator span:nth-child(3) { animation-delay: 0.4s; }
+    
+    @keyframes typing {
+        0%, 60%, 100% { transform: translateY(0); opacity: 0.4; }
+        30% { transform: translateY(-6px); opacity: 1; }
+    }
+    
+    /* ===== ریسپانسیو ===== */
+    @media (max-width: 768px) {
+        .chat-container {
+            height: calc(100vh - 80px);
+            margin: 0;
+            border-radius: 0;
+            max-width: 100%;
+        }
+        
+        .message {
+            max-width: 80%;
+        }
+    }
+</style>
+
+<!-- ✅ JavaScript WebSocket -->
+<script>
+console.log('✅ Chat room script loaded!');
+
+document.addEventListener('DOMContentLoaded', function() {
+    const roomId = {{ room.id }};
+    const currentUserId = {{ request.user.id }};
+    const messagesContainer = document.getElementById('chat-messages');
+    const messageInput = document.getElementById('chat-message-input');
+    const chatForm = document.getElementById('chat-form');
+    
+    const wsProtocol = window.location.protocol === 'https:' ? 'wss://' : 'ws://';
+    const wsUrl = wsProtocol + window.location.host + '/ws/chat/' + roomId + '/';
+    const chatSocket = new WebSocket(wsUrl);
+    
+    let typingTimer = null;
+    const typingDelay = 1000;
+    let isCurrentlyTyping = false;
+    
+    chatSocket.onopen = function(e) {
+        console.log('✅ WebSocket connected!');
+    };
+    
+    chatSocket.onmessage = function(e) {
+        const data = JSON.parse(e.data);
+        
+        if (data.type === 'old_messages') {
+            if (data.messages.length === 0) {
+                showEmptyChat();
+            } else {
+                data.messages.forEach(msg => {
+                    displayMessage(msg.text, msg.sender_id, msg.timestamp);
+                });
+            }
+            scrollToBottom();
+        } 
+        else if (data.type === 'new_message') {
+            removeEmptyChat();
+            removeTypingIndicator();
+            displayMessage(data.message, data.sender_id, data.timestamp);
+            scrollToBottom();
+        }
+        else if (data.type === 'typing_status') {
+            if (data.is_typing) {
+                showTypingIndicator(data.username);
+            } else {
+                removeTypingIndicator();
+            }
+        }
+    };
+    
+    chatSocket.onerror = function(e) {
+        console.error('❌ WebSocket error:', e);
+    };
+    
+    chatSocket.onclose = function(e) {
+        console.log('❌ WebSocket closed:', e.code, e.reason);
+    };
+    
+    chatForm.addEventListener('submit', function(e) {
+        e.preventDefault();
+        const message = messageInput.value.trim();
+        
+        if (message && chatSocket.readyState === WebSocket.OPEN) {
+            chatSocket.send(JSON.stringify({
+                'type': 'message',
+                'message': message
+            }));
+            messageInput.value = '';
+            messageInput.style.height = 'auto';
+            
+            sendTypingStatus(false);
+            isCurrentlyTyping = false;
+        }
+    });
+    
+    messageInput.addEventListener('keydown', function(e) {
+        if (e.key === 'Enter' && !e.shiftKey) {
+            e.preventDefault();
+            chatForm.dispatchEvent(new Event('submit'));
+        }
+    });
+    
+    messageInput.addEventListener('input', function() {
+        this.style.height = 'auto';
+        this.style.height = Math.min(this.scrollHeight, 100) + 'px';
+        
+        if (!isCurrentlyTyping) {
+            sendTypingStatus(true);
+            isCurrentlyTyping = true;
+        }
+        
+        clearTimeout(typingTimer);
+        typingTimer = setTimeout(function() {
+            sendTypingStatus(false);
+            isCurrentlyTyping = false;
+        }, typingDelay);
+    });
+    
+    function sendTypingStatus(isTyping) {
+        if (chatSocket.readyState === WebSocket.OPEN) {
+            chatSocket.send(JSON.stringify({
+                'type': 'typing',
+                'is_typing': isTyping
+            }));
+        }
+    }
+    
+    function showTypingIndicator(username) {
+        removeTypingIndicator();
+        
+        const indicator = document.createElement('div');
+        indicator.id = 'typing-indicator';
+        indicator.className = 'typing-indicator';
+        indicator.innerHTML = `
+            <span></span>
+            <span></span>
+            <span></span>
+        `;
+        messagesContainer.appendChild(indicator);
+        scrollToBottom();
+    }
+    
+    function removeTypingIndicator() {
+        const indicator = document.getElementById('typing-indicator');
+        if (indicator) {
+            indicator.remove();
+        }
+    }
+    
+    function displayMessage(text, senderId, timestamp) {
+        const isSent = senderId === currentUserId;
+        const messageDiv = document.createElement('div');
+        messageDiv.className = 'message ' + (isSent ? 'sent' : 'received');
+        messageDiv.innerHTML = `
+            <div>${escapeHtml(text)}</div>
+            <div class="message-time">${timestamp || ''}</div>
+        `;
+        messagesContainer.appendChild(messageDiv);
+    }
+    
+    function showEmptyChat() {
+        messagesContainer.innerHTML = `
+            <div class="empty-chat">
+                <i class="bi bi-chat-dots"></i>
+                <p>هنوز پیامی رد و بدل نشده</p>
+                <small>اولین پیام رو بفرست!</small>
+            </div>
+        `;
+    }
+    
+    function removeEmptyChat() {
+        const emptyChat = messagesContainer.querySelector('.empty-chat');
+        if (emptyChat) {
+            emptyChat.remove();
+        }
+    }
+    
+    function scrollToBottom() {
+        messagesContainer.scrollTop = messagesContainer.scrollHeight;
+    }
+    
+    function escapeHtml(text) {
+        const div = document.createElement('div');
+        div.textContent = text;
+        return div.innerHTML;
+    }
+    
+    messageInput.focus();
+});
+</script>
+{% endblock %}

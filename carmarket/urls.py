@@ -9,6 +9,7 @@ urlpatterns = [
     path('', include('cars.urls', namespace='cars')),
     path('accounts/', include('accounts.urls', namespace='accounts')),
     path('search/', include('search.urls', namespace='search')),
+     path('chat/', include('chat.urls', namespace='chat')),
     
     # API
     path('api/', include('cars.api_urls')),

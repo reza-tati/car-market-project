@@ -1,0 +1,104 @@
+{% extends 'base.html' %}
+{% load humanize %}
+
+{% block title %}چت‌های من{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+
+    <!-- هدر -->
+    <div class="page-header d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <h2 class="mb-0">
+                <i class="bi bi-chat-dots-fill text-primary"></i> چت‌های من
+            </h2>
+            <p class="text-muted small mt-1">{{ total_chats }} گفتگو</p>
+        </div>
+    </div>
+
+    {% if rooms_data %}
+        <div class="row g-3">
+            {% for data in rooms_data %}
+            <div class="col-md-6">
+                <a href="{% url 'chat:chat_room' data.room.id %}" class="text-decoration-none">
+                    <div class="card border-0 shadow-sm rounded-4 hover-card position-relative">
+                        {% if data.unread_count > 0 %}
+                            <span class="badge bg-danger rounded-pill position-absolute top-0 end-0 m-2">
+                                {{ data.unread_count }}
+                            </span>
+                        {% endif %}
+                        <div class="card-body">
+                            <div class="d-flex align-items-center">
+                                
+                                <!-- آواتار با وضعیت آنلاین -->
+                                <div class="position-relative me-3">
+                                    <div class="avatar-circle" style="width: 60px; height: 60px; background: linear-gradient(135deg, #667eea, #764ba2);">
+                                        <i class="bi bi-person-fill text-white" style="font-size: 1.8rem;"></i>
+                                    </div>
+                                    <span class="position-absolute bottom-0 end-0 bg-success rounded-circle border border-2 border-white" 
+                                          style="width: 14px; height: 14px;"></span>
+                                </div>
+                                
+                                <!-- اطلاعات -->
+                                <div class="flex-grow-1 min-width-0">
+                                    <div class="d-flex justify-content-between align-items-center mb-1">
+                                        <h6 class="mb-0 fw-bold text-dark text-truncate">
+                                            {{ data.other_user.get_full_name|default:data.other_user.username }}
+                                        </h6>
+                                    </div>
+                                    
+                                    <!-- نوع وسیله نقلیه -->
+                                    {% if data.room.vehicle_type %}
+                                        <div class="mb-1">
+                                            {% if data.room.vehicle_type == 'car' %}
+                                                <span class="badge bg-primary" style="font-size: 0.65rem;">
+                                                    <i class="bi bi-car-front"></i> سواری
+                                                </span>
+                                            {% elif data.room.vehicle_type == 'motorcycle' %}
+                                                <span class="badge bg-success" style="font-size: 0.65rem;">
+                                                    <i class="bi bi-bicycle"></i> موتورسیکلت
+                                                </span>
+                                            {% elif data.room.vehicle_type == 'heavy' %}
+                                                <span class="badge bg-warning text-dark" style="font-size: 0.65rem;">
+                                                    <i class="bi bi-truck"></i> سنگین
+                                                </span>
+                                            {% endif %}
+                                        </div>
+                                    {% endif %}
+                                    
+                                    {% if data.last_message %}
+                                        <p class="text-muted small mb-1 text-truncate">
+                                            {% if data.last_message.sender == request.user %}
+                                                <span class="text-primary fw-bold">شما:</span>
+                                            {% endif %}
+                                            {{ data.last_message.text|truncatechars:40 }}
+                                        </p>
+                                        <small class="text-muted">
+                                            <i class="bi bi-clock"></i> {{ data.last_message.timestamp|date:"Y/m/d H:i" }}
+                                        </small>
+                                    {% else %}
+                                        <p class="text-muted small mb-0">هنوز پیامی رد و بدل نشده</p>
+                                    {% endif %}
+                                </div>
+                                
+                                <i class="bi bi-chevron-left text-muted"></i>
+                            </div>
+                        </div>
+                    </div>
+                </a>
+            </div>
+            {% endfor %}
+        </div>
+    {% else %}
+        <!-- حالت خالی -->
+        <div class="text-center py-5">
+            <i class="bi bi-chat-dots text-muted" style="font-size: 5rem;"></i>
+            <h4 class="mt-3 text-muted">هنوز چتی ندارید</h4>
+            <p class="text-muted">برای شروع چت، به صفحه جزئیات یک آگهی بروید و روی دکمه "چت با فروشنده" کلیک کنید.</p>
+            <a href="{% url 'cars:car_list' %}" class="btn btn-primary rounded-pill px-4">
+                <i class="bi bi-car-front"></i> مشاهده آگهی‌ها
+            </a>
+        </div>
+    {% endif %}
+</div>
+{% endblock %}
