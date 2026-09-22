@@ -5,6 +5,11 @@ from django.contrib.auth.models import User
 from django.db.models import Q
 from django.contrib import messages
 from .models import ChatRoom, Message
+from django.http import JsonResponse
+from django.views.decorators.http import require_POST
+from django.core.files.storage import default_storage
+from django.core.files.base import ContentFile
+import os
 
 
 @login_required
@@ -108,3 +113,44 @@ def start_chat(request, vehicle_type, vehicle_id):
         messages.success(request, 'چت جدید ایجاد شد!')
     
     return redirect('chat:chat_room', room_id=room.id)
+
+
+
+@login_required
+@require_POST
+def upload_chat_image(request, room_id):
+    """
+    آپلود عکس توی چت (AJAX)
+    """
+    room = get_object_or_404(ChatRoom, id=room_id)
+    
+    # بررسی دسترسی
+    if request.user != room.user1 and request.user != room.user2:
+        return JsonResponse({'error': 'دسترسی ندارید'}, status=403)
+    
+    image = request.FILES.get('image')
+    if not image:
+        return JsonResponse({'error': 'عکسی انتخاب نشده'}, status=400)
+    
+    # بررسی حجم (حداکثر ۵ مگابایت)
+    if image.size > 5 * 1024 * 1024:
+        return JsonResponse({'error': 'حجم عکس نباید بیشتر از ۵ مگابایت باشه'}, status=400)
+    
+    # بررسی نوع فایل
+    if not image.content_type.startswith('image/'):
+        return JsonResponse({'error': 'فقط فایل عکس مجاز است'}, status=400)
+    
+    # ذخیره عکس
+    from .models import Message
+    message = Message.objects.create(
+        room=room,
+        sender=request.user,
+        image=image,
+    )
+    room.save()
+    
+    return JsonResponse({
+        'status': 'success',
+        'image_url': message.image.url,
+        'message_id': message.id,
+    })

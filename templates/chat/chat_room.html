@@ -72,6 +72,14 @@
     <div class="chat-footer">
         <form id="chat-form" class="d-flex gap-2 align-items-end">
             {% csrf_token %}
+            
+            <!-- ✅ دکمه آپلود عکس -->
+            <input type="file" id="image-input" accept="image/*" style="display: none;">
+            <button type="button" id="image-btn" class="btn btn-outline-primary rounded-circle" 
+                    style="width: 45px; height: 45px; flex-shrink: 0;">
+                <i class="bi bi-image"></i>
+            </button>
+            
             <div class="flex-grow-1">
                 <textarea id="chat-message-input" 
                           class="form-control rounded-4" 
@@ -94,7 +102,7 @@
     .chat-container {
         display: flex;
         flex-direction: column;
-        height: calc(100vh - 120px);  /* ارتفاع کل صفحه منهای هدر و فوتر */
+        height: calc(100vh - 120px);
         max-height: 800px;
         background: #ffffff;
         border-radius: 16px;
@@ -124,14 +132,14 @@
     
     /* ===== کانتینر پیام‌ها ===== */
     .chat-messages {
-        flex: 1;  /* ✅ فضای باقی‌مانده رو پر می‌کنه */
+        flex: 1;
         display: flex;
         flex-direction: column;
         gap: 8px;
         padding: 1rem;
         overflow-y: auto;
         background: #f8f9fa;
-        min-height: 0;  /* ✅ مهم برای flexbox */
+        min-height: 0;
     }
     
     /* ===== حباب پیام ===== */
@@ -179,7 +187,7 @@
         padding: 12px 16px;
         background: #ffffff;
         border-top: 1px solid #f1f3f5;
-        flex-shrink: 0;  /* ✅ فرم همیشه پایین می‌مونه */
+        flex-shrink: 0;
     }
     
     /* ===== حالت خالی ===== */
@@ -278,6 +286,26 @@
         30% { transform: translateY(-6px); opacity: 1; }
     }
     
+    /* ===== عکس توی پیام ===== */
+    .message-image {
+        margin-bottom: 6px;
+        border-radius: 12px;
+        overflow: hidden;
+    }
+    
+    .message-image img {
+        max-width: 100%;
+        max-height: 300px;
+        display: block;
+        cursor: pointer;
+        transition: transform 0.3s;
+        border-radius: 12px;
+    }
+    
+    .message-image img:hover {
+        transform: scale(1.02);
+    }
+    
     /* ===== ریسپانسیو ===== */
     @media (max-width: 768px) {
         .chat-container {
@@ -303,6 +331,8 @@ document.addEventListener('DOMContentLoaded', function() {
     const messagesContainer = document.getElementById('chat-messages');
     const messageInput = document.getElementById('chat-message-input');
     const chatForm = document.getElementById('chat-form');
+    const imageInput = document.getElementById('image-input');
+    const imageBtn = document.getElementById('image-btn');
     
     const wsProtocol = window.location.protocol === 'https:' ? 'wss://' : 'ws://';
     const wsUrl = wsProtocol + window.location.host + '/ws/chat/' + roomId + '/';
@@ -324,7 +354,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 showEmptyChat();
             } else {
                 data.messages.forEach(msg => {
-                    displayMessage(msg.text, msg.sender_id, msg.timestamp);
+                    displayMessage(msg.text, msg.sender_id, msg.timestamp, msg.image_url);
                 });
             }
             scrollToBottom();
@@ -332,8 +362,25 @@ document.addEventListener('DOMContentLoaded', function() {
         else if (data.type === 'new_message') {
             removeEmptyChat();
             removeTypingIndicator();
-            displayMessage(data.message, data.sender_id, data.timestamp);
+            displayMessage(data.message, data.sender_id, data.timestamp, data.image_url);
             scrollToBottom();
+            
+            // ✅ اگه پیام از طرف مقابل باشه
+            if (data.sender_id !== currentUserId) {
+                playNotificationSound();
+                
+                // تغییر عنوان صفحه
+                const originalTitle = document.title;
+                document.title = '💬 پیام جدید!';
+                setTimeout(() => {
+                    document.title = originalTitle;
+                }, 3000);
+                
+                // نوتیفیکیشن مرورگر (اگه صفحه مخفی باشه)
+                if (document.hidden) {
+                    showBrowserNotification(data.sender_username, data.message || '📷 تصویر فرستاد');
+                }
+            }
         }
         else if (data.type === 'typing_status') {
             if (data.is_typing) {
@@ -352,6 +399,7 @@ document.addEventListener('DOMContentLoaded', function() {
         console.log('❌ WebSocket closed:', e.code, e.reason);
     };
     
+    // ارسال پیام متنی
     chatForm.addEventListener('submit', function(e) {
         e.preventDefault();
         const message = messageInput.value.trim();
@@ -368,6 +416,64 @@ document.addEventListener('DOMContentLoaded', function() {
             isCurrentlyTyping = false;
         }
     });
+    
+    // ✅ آپلود عکس
+    imageBtn.addEventListener('click', function() {
+        imageInput.click();
+    });
+    
+    imageInput.addEventListener('change', function() {
+        const file = this.files[0];
+        if (!file) return;
+        
+        // بررسی حجم
+        if (file.size > 5 * 1024 * 1024) {
+            alert('حجم عکس نباید بیشتر از ۵ مگابایت باشه');
+            this.value = '';
+            return;
+        }
+        
+        // نمایش پیش‌نمایش
+        if (confirm('عکس ارسال بشه؟')) {
+            uploadImage(file);
+        }
+        
+        this.value = '';
+    });
+    
+    function uploadImage(file) {
+        const formData = new FormData();
+        formData.append('image', file);
+        
+        const uploadUrl = '/chat/room/' + roomId + '/upload/';
+        
+        fetch(uploadUrl, {
+            method: 'POST',
+            headers: {
+                'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value,
+            },
+            body: formData
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.status === 'success') {
+                console.log('✅ Image uploaded:', data.image_url);
+                
+                // ارسال پیام عکس از طریق WebSocket
+                chatSocket.send(JSON.stringify({
+                    'type': 'image_message',
+                    'image_url': data.image_url,
+                    'caption': ''
+                }));
+            } else {
+                alert('خطا: ' + (data.error || 'مشکل در آپلود'));
+            }
+        })
+        .catch(error => {
+            console.error('Upload error:', error);
+            alert('خطا در آپلود عکس');
+        });
+    }
     
     messageInput.addEventListener('keydown', function(e) {
         if (e.key === 'Enter' && !e.shiftKey) {
@@ -423,14 +529,31 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     }
     
-    function displayMessage(text, senderId, timestamp) {
+    // ✅ نمایش پیام (با پشتیبانی از عکس)
+    function displayMessage(text, senderId, timestamp, imageUrl) {
         const isSent = senderId === currentUserId;
         const messageDiv = document.createElement('div');
         messageDiv.className = 'message ' + (isSent ? 'sent' : 'received');
-        messageDiv.innerHTML = `
-            <div>${escapeHtml(text)}</div>
-            <div class="message-time">${timestamp || ''}</div>
-        `;
+        
+        let content = '';
+        
+        // اگه عکس داره
+        if (imageUrl) {
+            content += `
+                <div class="message-image">
+                    <img src="${imageUrl}" alt="تصویر" onclick="window.open('${imageUrl}', '_blank')">
+                </div>
+            `;
+        }
+        
+        // اگه متن داره
+        if (text) {
+            content += `<div>${escapeHtml(text)}</div>`;
+        }
+        
+        content += `<div class="message-time">${timestamp || ''}</div>`;
+        
+        messageDiv.innerHTML = content;
         messagesContainer.appendChild(messageDiv);
     }
     
@@ -460,6 +583,50 @@ document.addEventListener('DOMContentLoaded', function() {
         div.textContent = text;
         return div.innerHTML;
     }
+    
+    // ✅ پخش صدای نوتیفیکیشن
+    function playNotificationSound() {
+        try {
+            const audio = new Audio('/static/sounds/notification.wav');
+            audio.volume = 0.5;
+            audio.play()
+                .then(() => console.log('🔊 صدا پخش شد'))
+                .catch(e => console.log('❌ صدا پخش نشد:', e));
+        } catch (e) {
+            console.log('❌ خطا در پخش صدا:', e);
+        }
+    }
+    // ✅ نوتیفیکیشن مرورگر
+    function showBrowserNotification(senderName, messageText) {
+        if (!('Notification' in window)) return;
+        
+        if (Notification.permission === 'granted') {
+            new Notification('پیام جدید از ' + senderName, {
+                body: messageText,
+            });
+        }
+    }
+    
+    // ✅ درخواست مجوز نوتیفیکیشن
+    if ('Notification' in window && Notification.permission === 'default') {
+        Notification.requestPermission();
+    }
+    
+// ✅ فعال‌سازی صدا با اولین کلیک کاربر
+    let audioEnabled = false;
+
+    document.addEventListener('click', function enableAudio() {
+        if (!audioEnabled) {
+            const silentAudio = new Audio('/static/sounds/notification.wav');
+            silentAudio.volume = 0;
+            silentAudio.play().then(() => {
+                audioEnabled = true;
+                console.log('✅ صدا فعال شد');
+            }).catch(e => console.log('خطا:', e));
+            
+            document.removeEventListener('click', enableAudio);
+        }
+    });
     
     messageInput.focus();
 });

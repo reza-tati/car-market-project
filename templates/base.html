@@ -196,9 +196,15 @@
                     {% if user.is_authenticated %}
                     <!-- کاربر وارد شده -->
                     <li class="nav-item dropdown">
-                        <a class="nav-link dropdown-toggle" href="#" id="userDropdown" data-bs-toggle="dropdown">
+                        <a class="nav-link dropdown-toggle position-relative" href="#" id="userDropdown" data-bs-toggle="dropdown">
                             <i class="bi bi-person-circle"></i>
                             {{ user.username }}
+                            {% if unread_messages_count > 0 %}
+                                <span class="position-absolute top-0 start-0 translate-middle badge rounded-pill bg-danger" 
+                                    style="font-size: 0.6rem;">
+                                    {{ unread_messages_count }}
+                                </span>
+                            {% endif %}
                         </a>
                         <ul class="dropdown-menu">
                             <li>
@@ -217,8 +223,13 @@
                                 </a>
                             </li>
                             <li>
-                                <a class="dropdown-item" href="{% url 'chat:chat_list' %}">
-                                    <i class="bi bi-chat-dots"></i> چت‌های من
+                                <a class="dropdown-item d-flex justify-content-between align-items-center" href="{% url 'chat:chat_list' %}">
+                                    <span>
+                                        <i class="bi bi-chat-dots"></i> چت‌های من
+                                    </span>
+                                    {% if unread_messages_count > 0 %}
+                                        <span class="badge bg-danger rounded-pill">{{ unread_messages_count }}</span>
+                                    {% endif %}
                                 </a>
                             </li>
                             {% if user.is_staff %}
