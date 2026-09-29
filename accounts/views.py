@@ -137,3 +137,9 @@ def favorites(request):
     }
     
     return render(request, 'accounts/favorites.html', context)
+
+from django.shortcuts import render
+
+def csrf_failure(request, reason=""):
+    """صفحه خطای CSRF سفارشی"""
+    return render(request, 'accounts/csrf_failure.html', status=403)

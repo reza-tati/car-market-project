@@ -6,6 +6,7 @@
 {% block content %}
 <div class="container py-4">
 
+    <!-- هدر -->
     <div class="page-header d-flex justify-content-between align-items-center mb-4">
         <div>
             <h2 class="mb-0">
@@ -17,113 +18,297 @@
 
     <!-- ===== خودروهای سواری ===== -->
     {% if favorite_cars %}
-    <h4 class="mb-3"><i class="bi bi-car-front text-primary"></i> خودروهای سواری</h4>
-    <div class="row g-4 mb-5">
-        {% for car in favorite_cars %}
-        <div class="col-md-4 col-lg-3">
-            <div class="card h-100 shadow-sm border-0 rounded-4 overflow-hidden hover-card">
-                <a href="{% url 'cars:car_detail' car.pk car.slug %}" class="text-decoration-none">
-                    <div style="height: 180px; overflow: hidden; background: #f1f3f5;">
-                        {% if car.car_images.first %}
-                            <img src="{{ car.car_images.first.image.url }}" 
-                                 style="width: 100%; height: 100%; object-fit: cover;"
-                                 alt="{{ car.title }}">
-                        {% else %}
-                            <div style="height: 100%; display: flex; align-items: center; justify-content: center; color: #adb5bd;">
-                                <i class="bi bi-car-front" style="font-size: 3rem;"></i>
-                            </div>
-                        {% endif %}
-                    </div>
-                </a>
-                <div class="card-body">
-                    <h6 class="fw-bold">{{ car.brand.name }} {{ car.model.name }}</h6>
-                    <p class="text-success fw-bold">{{ car.price|intcomma }} تومان</p>
-                    <a href="{% url 'cars:car_detail' car.pk car.slug %}" class="btn btn-primary btn-sm rounded-pill w-100">
-                        <i class="bi bi-eye"></i> مشاهده
+    <div class="favorite-section mb-5">
+        <div class="section-header">
+            <h4 class="mb-0">
+                <i class="bi bi-car-front-fill text-primary"></i>
+                خودروهای سواری
+                <span class="badge bg-primary rounded-pill">{{ favorite_cars|length }}</span>
+            </h4>
+        </div>
+        <div class="row g-4">
+            {% for car in favorite_cars %}
+            <div class="col-md-4 col-lg-3">
+                <div class="card h-100 shadow-sm border-0 rounded-4 overflow-hidden hover-card favorite-card">
+                    <a href="{% url 'cars:car_detail' car.pk car.slug %}" class="text-decoration-none">
+                        <div class="favorite-image">
+                            {% if car.car_images.first %}
+                                <img src="{{ car.car_images.first.image.url }}" 
+                                     alt="{{ car.title }}">
+                            {% else %}
+                                <div class="no-image">
+                                    <i class="bi bi-car-front"></i>
+                                </div>
+                            {% endif %}
+                        </div>
                     </a>
+                    <div class="card-body d-flex flex-column">
+                        <h6 class="fw-bold text-dark mb-2">{{ car.brand.name }} {{ car.model.name }}</h6>
+                        <p class="text-muted small mb-2">
+                            <i class="bi bi-calendar"></i> {{ car.year }}
+                            {% if car.mileage %} | <i class="bi bi-speedometer2"></i> {{ car.mileage|intcomma }} km{% endif %}
+                        </p>
+                        <p class="text-success fw-bold mb-3">{{ car.price|intcomma }} تومان</p>
+                        
+                        <div class="mt-auto d-flex gap-2">
+                            <a href="{% url 'cars:car_detail' car.pk car.slug %}" 
+                               class="btn btn-primary btn-sm rounded-pill flex-grow-1">
+                                <i class="bi bi-eye"></i> مشاهده
+                            </a>
+                            <form method="post" action="{% url 'cars:toggle_favorite' car.id %}">
+                                {% csrf_token %}
+                                <input type="hidden" name="vehicle_type" value="car">
+                                <button type="submit" class="btn btn-outline-danger btn-sm rounded-circle" 
+                                        title="حذف از علاقه‌مندی‌ها">
+                                    <i class="bi bi-heart-fill"></i>
+                                </button>
+                            </form>
+                        </div>
+                    </div>
                 </div>
             </div>
+            {% endfor %}
         </div>
-        {% endfor %}
     </div>
     {% endif %}
 
     <!-- ===== موتورسیکلت‌ها ===== -->
     {% if favorite_motorcycles %}
-    <h4 class="mb-3"><i class="bi bi-bicycle text-success"></i> موتورسیکلت‌ها</h4>
-    <div class="row g-4 mb-5">
-        {% for moto in favorite_motorcycles %}
-        <div class="col-md-4 col-lg-3">
-            <div class="card h-100 shadow-sm border-0 rounded-4 overflow-hidden hover-card">
-                <a href="{% url 'cars:motorcycle_detail' moto.pk moto.slug %}" class="text-decoration-none">
-                    <div style="height: 180px; overflow: hidden; background: #f1f3f5;">
-                        {% if moto.motorcycle_images.first %}
-                            <img src="{{ moto.motorcycle_images.first.image.url }}" 
-                                style="width: 100%; height: 100%; object-fit: cover;"
-                                alt="{{ moto.title }}">
-                        {% else %}
-                            <div style="height: 100%; display: flex; align-items: center; justify-content: center; color: #adb5bd;">
-                                <i class="bi bi-bicycle" style="font-size: 3rem;"></i>
-                            </div>
-                        {% endif %}
-                    </div>
-                </a>
-                <div class="card-body">
-                    <h6 class="fw-bold">{{ moto.brand }} {{ moto.model_name }}</h6>
-                    <p class="text-success fw-bold">{{ moto.price|intcomma }} تومان</p>
-                    <a href="{% url 'cars:motorcycle_detail' moto.pk moto.slug %}" class="btn btn-success btn-sm rounded-pill w-100">
-                        <i class="bi bi-eye"></i> مشاهده
+    <div class="favorite-section mb-5">
+        <div class="section-header">
+            <h4 class="mb-0">
+                <i class="bi bi-bicycle text-success"></i>
+                موتورسیکلت‌ها
+                <span class="badge bg-success rounded-pill">{{ favorite_motorcycles|length }}</span>
+            </h4>
+        </div>
+        <div class="row g-4">
+            {% for moto in favorite_motorcycles %}
+            <div class="col-md-4 col-lg-3">
+                <div class="card h-100 shadow-sm border-0 rounded-4 overflow-hidden hover-card favorite-card">
+                    <a href="{% url 'cars:motorcycle_detail' moto.pk moto.slug %}" class="text-decoration-none">
+                        <div class="favorite-image">
+                            {% if moto.motorcycle_images.first %}
+                                <img src="{{ moto.motorcycle_images.first.image.url }}" 
+                                     alt="{{ moto.title }}">
+                            {% else %}
+                                <div class="no-image">
+                                    <i class="bi bi-bicycle"></i>
+                                </div>
+                            {% endif %}
+                        </div>
                     </a>
+                    <div class="card-body d-flex flex-column">
+                        <h6 class="fw-bold text-dark mb-2">{{ moto.brand }} {{ moto.model_name }}</h6>
+                        <p class="text-muted small mb-2">
+                            <i class="bi bi-calendar"></i> {{ moto.year }}
+                            {% if moto.mileage %} | <i class="bi bi-speedometer2"></i> {{ moto.mileage|intcomma }} km{% endif %}
+                        </p>
+                        <p class="text-success fw-bold mb-3">{{ moto.price|intcomma }} تومان</p>
+                        
+                        <div class="mt-auto d-flex gap-2">
+                            <a href="{% url 'cars:motorcycle_detail' moto.pk moto.slug %}" 
+                               class="btn btn-success btn-sm rounded-pill flex-grow-1">
+                                <i class="bi bi-eye"></i> مشاهده
+                            </a>
+                            <form method="post" action="{% url 'cars:toggle_favorite' moto.id %}">
+                                {% csrf_token %}
+                                <input type="hidden" name="vehicle_type" value="motorcycle">
+                                <button type="submit" class="btn btn-outline-danger btn-sm rounded-circle" 
+                                        title="حذف از علاقه‌مندی‌ها">
+                                    <i class="bi bi-heart-fill"></i>
+                                </button>
+                            </form>
+                        </div>
+                    </div>
                 </div>
             </div>
+            {% endfor %}
         </div>
-        {% endfor %}
     </div>
     {% endif %}
 
     <!-- ===== ماشین‌های سنگین ===== -->
     {% if favorite_heavies %}
-    <h4 class="mb-3"><i class="bi bi-truck text-warning"></i> ماشین‌های سنگین</h4>
-    <div class="row g-4 mb-5">
-        {% for heavy in favorite_heavies %}
-        <div class="col-md-4 col-lg-3">
-            <div class="card h-100 shadow-sm border-0 rounded-4 overflow-hidden hover-card">
-                <a href="{% url 'cars:heavy_detail' heavy.pk heavy.slug %}" class="text-decoration-none">
-                    <div style="height: 180px; overflow: hidden; background: #f1f3f5;">
-                        {% if heavy.heavy_images.first %}
-                            <img src="{{ heavy.heavy_images.first.image.url }}" 
-                                style="width: 100%; height: 100%; object-fit: cover;"
-                                alt="{{ heavy.title }}">
-                        {% else %}
-                            <div style="height: 100%; display: flex; align-items: center; justify-content: center; color: #adb5bd;">
-                                <i class="bi bi-truck" style="font-size: 3rem;"></i>
-                            </div>
-                        {% endif %}
-                    </div>
-                </a>
-                <div class="card-body">
-                    <h6 class="fw-bold">{{ heavy.brand }} {{ heavy.model_name }}</h6>
-                    <p class="text-success fw-bold">{{ heavy.price|intcomma }} تومان</p>
-                    <a href="{% url 'cars:heavy_detail' heavy.pk heavy.slug %}" class="btn btn-warning btn-sm rounded-pill w-100">
-                        <i class="bi bi-eye"></i> مشاهده
+    <div class="favorite-section mb-5">
+        <div class="section-header">
+            <h4 class="mb-0">
+                <i class="bi bi-truck text-warning"></i>
+                ماشین‌های سنگین
+                <span class="badge bg-warning text-dark rounded-pill">{{ favorite_heavies|length }}</span>
+            </h4>
+        </div>
+        <div class="row g-4">
+            {% for heavy in favorite_heavies %}
+            <div class="col-md-4 col-lg-3">
+                <div class="card h-100 shadow-sm border-0 rounded-4 overflow-hidden hover-card favorite-card">
+                    <a href="{% url 'cars:heavy_detail' heavy.pk heavy.slug %}" class="text-decoration-none">
+                        <div class="favorite-image">
+                            {% if heavy.heavy_images.first %}
+                                <img src="{{ heavy.heavy_images.first.image.url }}" 
+                                     alt="{{ heavy.title }}">
+                            {% else %}
+                                <div class="no-image">
+                                    <i class="bi bi-truck"></i>
+                                </div>
+                            {% endif %}
+                        </div>
                     </a>
+                    <div class="card-body d-flex flex-column">
+                        <h6 class="fw-bold text-dark mb-2">{{ heavy.brand }} {{ heavy.model_name }}</h6>
+                        <p class="text-muted small mb-2">
+                            <i class="bi bi-calendar"></i> {{ heavy.year }}
+                            {% if heavy.load_capacity %} | <i class="bi bi-box-seam"></i> {{ heavy.load_capacity }} تن{% endif %}
+                        </p>
+                        <p class="text-success fw-bold mb-3">{{ heavy.price|intcomma }} تومان</p>
+                        
+                        <div class="mt-auto d-flex gap-2">
+                            <a href="{% url 'cars:heavy_detail' heavy.pk heavy.slug %}" 
+                               class="btn btn-warning btn-sm rounded-pill flex-grow-1">
+                                <i class="bi bi-eye"></i> مشاهده
+                            </a>
+                            <form method="post" action="{% url 'cars:toggle_favorite' heavy.id %}">
+                                {% csrf_token %}
+                                <input type="hidden" name="vehicle_type" value="heavy">
+                                <button type="submit" class="btn btn-outline-danger btn-sm rounded-circle" 
+                                        title="حذف از علاقه‌مندی‌ها">
+                                    <i class="bi bi-heart-fill"></i>
+                                </button>
+                            </form>
+                        </div>
+                    </div>
                 </div>
             </div>
+            {% endfor %}
         </div>
-        {% endfor %}
     </div>
     {% endif %}
 
     <!-- ===== حالت خالی ===== -->
     {% if not favorite_cars and not favorite_motorcycles and not favorite_heavies %}
-    <div class="text-center py-5">
-        <i class="bi bi-heart text-muted" style="font-size: 4rem;"></i>
-        <h4 class="mt-3 text-muted">هنوز چیزی به علاقه‌مندی‌ها اضافه نکرده‌اید.</h4>
-        <a href="{% url 'cars:car_list' %}" class="btn btn-primary rounded-pill mt-3">
+    <div class="empty-state text-center py-5">
+        <div class="empty-icon">
+            <i class="bi bi-heart"></i>
+        </div>
+        <h4 class="mt-3 text-muted">هنوز چیزی به علاقه‌مندی‌ها اضافه نکرده‌اید</h4>
+        <p class="text-muted">با کلیک روی آیکون قلب در صفحه آگهی‌ها، آن‌ها را به لیست علاقه‌مندی‌ها اضافه کنید.</p>
+        <a href="{% url 'cars:car_list' %}" class="btn-gradient-primary rounded-pill mt-3">
             <i class="bi bi-car-front"></i> مشاهده خودروها
         </a>
     </div>
     {% endif %}
 
 </div>
+
+<!-- ===== CSS ===== -->
+<style>
+    /* ===== بخش‌ها ===== */
+    .favorite-section {
+        animation: fadeIn 0.5s ease;
+    }
+
+    .section-header {
+        margin-bottom: 1.5rem;
+        padding-bottom: 0.75rem;
+        border-bottom: 2px solid #f1f3f5;
+    }
+
+    .section-header h4 {
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+        font-weight: 700;
+        font-size: 1.2rem;
+    }
+
+    .section-header .badge {
+        font-size: 0.75rem;
+        padding: 0.35rem 0.7rem;
+    }
+
+    /* ===== کارت علاقه‌مندی ===== */
+    .favorite-card {
+        transition: all 0.3s ease;
+    }
+
+    .favorite-card:hover {
+        transform: translateY(-6px);
+        box-shadow: 0 12px 30px rgba(0, 0, 0, 0.12) !important;
+    }
+
+    .favorite-image {
+        height: 180px;
+        overflow: hidden;
+        background: #f1f3f5;
+        position: relative;
+    }
+
+    .favorite-image img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+        transition: transform 0.4s ease;
+    }
+
+    .favorite-card:hover .favorite-image img {
+        transform: scale(1.05);
+    }
+
+    .favorite-image .no-image {
+        height: 100%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: #adb5bd;
+    }
+
+    .favorite-image .no-image i {
+        font-size: 3rem;
+    }
+
+    /* ===== کارت ===== */
+    .favorite-card .card-body {
+        padding: 1.2rem;
+    }
+
+    .favorite-card .card-body h6 {
+        font-size: 1rem;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+    }
+
+    .favorite-card .btn {
+        font-size: 0.85rem;
+        font-weight: 600;
+    }
+
+    /* ===== حالت خالی ===== */
+    .empty-state {
+        padding: 4rem 1rem;
+    }
+
+    .empty-icon {
+        width: 120px;
+        height: 120px;
+        background: linear-gradient(135deg, #fee 0%, #fdd 100%);
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin: 0 auto;
+    }
+
+    .empty-icon i {
+        font-size: 3.5rem;
+        color: #dc3545;
+    }
+
+    /* ===== انیمیشن ===== */
+    @keyframes fadeIn {
+        from { opacity: 0; transform: translateY(10px); }
+        to { opacity: 1; transform: translateY(0); }
+    }
+</style>
+
 {% endblock %}

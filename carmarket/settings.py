@@ -25,11 +25,30 @@ SECRET_KEY = config('SECRET_KEY')
 
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = config('DEBUG', default=True, cast=bool)
-
 ALLOWED_HOSTS = ['localhost', '127.0.0.1']
 
+# ============================================
+# تنظیمات CSRF
+# ============================================
+
+CSRF_TRUSTED_ORIGINS = [
+    'http://127.0.0.1:8000',
+    'http://localhost:8000',
+]
+
+# ✅ نگه‌داشتن کوکی CSRF
+CSRF_COOKIE_HTTPONLY = False
+CSRF_COOKIE_SECURE = False  # برای localhost
+CSRF_USE_SESSIONS = False
+
+# ✅ زمان انقضای سشن (۲ هفته)
+SESSION_COOKIE_AGE = 1209600  # 2 weeks in seconds
+SESSION_SAVE_EVERY_REQUEST = True  # تمدید خودکار سشن
 
 # Application definition
+# صفحه خطای CSRF سفارشی
+CSRF_FAILURE_VIEW = 'accounts.views.csrf_failure'
+
 
 INSTALLED_APPS = [
     'daphne', 
@@ -178,3 +197,22 @@ CHANNEL_LAYERS = {
         'BACKEND': 'channels.layers.InMemoryChannelLayer',
     },
 }
+
+# ============================================
+# تنظیمات ایمیل (برای فراموشی رمز عبور)
+# ============================================
+
+# برای تست (ایمیل توی ترمینال چاپ میشه)
+EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'
+
+# برای production (بعداً فعال کن)
+# EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
+# EMAIL_HOST = 'smtp.gmail.com'
+# EMAIL_PORT = 587
+# EMAIL_USE_TLS = True
+# EMAIL_HOST_USER = 'your-email@gmail.com'
+# EMAIL_HOST_PASSWORD = 'your-app-password'
+# DEFAULT_FROM_EMAIL = 'بازار خودرو <noreply@carmarket.ir>'
+
+# ✅ آدرس سایت (برای لینک‌های ایمیل)
+SITE_URL = 'http://127.0.0.1:8000'

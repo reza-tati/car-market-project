@@ -1,149 +1,492 @@
-<!-- accounts/templates/accounts/register.html -->
 {% extends 'base.html' %}
 {% load static %}
 
 {% block title %}ثبت‌نام در بازار خودرو{% endblock %}
 
-{% block extra_css %}
-<link rel="stylesheet" href="{% static 'css/custom.css' %}">
-{% endblock %}
-
 {% block content %}
-<div class="container py-5">
-    <div class="row justify-content-center">
-        <div class="col-lg-7 col-md-9">
-            <div class="card register-card">
-                <div class="card-header text-black text-center">
-                    <h3 class="mb-1">🚗 ثبت‌نام در بازار خودرو</h3>
-                    <p class="mb-0">ایجاد حساب کاربری برای خرید و فروش خودرو</p>
+<div class="auth-wrapper">
+
+    <!-- کارت ثبت‌نام -->
+    <div class="auth-card register-card">
+
+        <!-- هدر گرادیانت -->
+        <div class="auth-header">
+            <div class="auth-icon">
+                <i class="bi bi-person-plus-fill"></i>
+            </div>
+            <h3 class="auth-title">ثبت‌نام در بازار خودرو</h3>
+            <p class="auth-subtitle">ایجاد حساب کاربری برای خرید و فروش خودرو</p>
+        </div>
+
+        <!-- بدنه فرم -->
+        <div class="auth-body">
+
+            <!-- نمایش خطاهای کلی -->
+            {% if form.non_field_errors %}
+                <div class="alert alert-danger rounded-3 border-0">
+                    <i class="bi bi-exclamation-triangle-fill"></i>
+                    {% for error in form.non_field_errors %}
+                        {{ error }}
+                    {% endfor %}
                 </div>
-                <div class="card-body">
-                    <form method="post" novalidate>
-                        {% csrf_token %}
-                        
-                        <!-- نمایش خطاهای کلی -->
-                        {% if form.non_field_errors %}
-                            <div class="alert alert-danger border-0 rounded-3">
-                                {% for error in form.non_field_errors %}
-                                    {{ error }}
-                                {% endfor %}
-                            </div>
-                        {% endif %}
-                        
-                        <!-- نام و نام خانوادگی -->
-                        <div class="row g-3">
-                            <div class="col-md-6">
-                                <div class="form-group">
-                                    <label for="{{ form.last_name.id_for_label }}" class="form-label">نام خانوادگی</label>
-                                    {{ form.last_name }}
-                                    {% if form.last_name.errors %}
-                                        <div class="text-danger">{{ form.last_name.errors }}</div>
-                                    {% endif %}
-                                    <div class="form-text">حداقل ۲ کاراکتر</div>
-                                </div>
-                            </div>
-                            <div class="col-md-6">
-                                <div class="form-group">
-                                    <label for="{{ form.first_name.id_for_label }}" class="form-label">نام</label>
-                                    {{ form.first_name }}
-                                    {% if form.first_name.errors %}
-                                        <div class="text-danger">{{ form.first_name.errors }}</div>
-                                    {% endif %}
-                                </div>
-                            </div>
+            {% endif %}
+
+            <form method="post" novalidate>
+                {% csrf_token %}
+
+                <!-- ===== نام و نام خانوادگی ===== -->
+                <div class="row g-3">
+                    <div class="col-md-6">
+                        <div class="form-group">
+                            <label for="{{ form.last_name.id_for_label }}" class="form-label">
+                                <i class="bi bi-person text-primary"></i>
+                                نام خانوادگی
+                            </label>
+                            {{ form.last_name }}
+                            {% if form.last_name.errors %}
+                                <div class="text-danger small mt-1">{{ form.last_name.errors }}</div>
+                            {% endif %}
+                            <div class="form-text">حداقل ۲ کاراکتر</div>
                         </div>
-                        
-                        <!-- شماره موبایل -->
-                        <div class="form-group mt-3">
-                            <label for="{{ form.phone.id_for_label }}" class="form-label">📱 شماره موبایل</label>
-                            {{ form.phone }}
-                            {% if form.phone.errors %}
-                                <div class="text-danger">{{ form.phone.errors }}</div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="form-group">
+                            <label for="{{ form.first_name.id_for_label }}" class="form-label">
+                                <i class="bi bi-person text-primary"></i>
+                                نام
+                            </label>
+                            {{ form.first_name }}
+                            {% if form.first_name.errors %}
+                                <div class="text-danger small mt-1">{{ form.first_name.errors }}</div>
                             {% endif %}
                         </div>
-                        
-                        <!-- رمز عبور -->
-                        <div class="row g-3 mt-1">
-                            <div class="col-md-6">
-                                <div class="form-group">
-                                    <label for="{{ form.password1.id_for_label }}" class="form-label">🔒 رمز عبور</label>
-                                    {{ form.password1 }}
-                                    {% if form.password1.errors %}
-                                        <div class="text-danger">{{ form.password1.errors }}</div>
-                                    {% endif %}
-                                    <div class="form-text">{{ form.password1.help_text }}</div>
-                                </div>
-                            </div>
-                            <div class="col-md-6">
-                                <div class="form-group">
-                                    <label for="{{ form.password2.id_for_label }}" class="form-label">🔁 تکرار رمز عبور</label>
-                                    {{ form.password2 }}
-                                    {% if form.password2.errors %}
-                                        <div class="text-danger">{{ form.password2.errors }}</div>
-                                    {% endif %}
-                                </div>
-                            </div>
-                        </div>
-                        
-                        
-                        
-                        <!-- نوع حساب کاربری -->
-                       <div class="mb-4">
-                            <label class="form-label">
-                                <i class="bi bi-person-badge-fill me-1"></i>نوع حساب کاربری
-                            </label>
-                            <div class="row g-3">
-                                <div class="col-6">
-                                    <div class="form-check card card-hover h-100">
-                                        <input class="form-check-input" type="radio" name="user_type" 
-                                               id="buyer" value="buyer" checked>
-                                        <label class="form-check-label card-body text-center" for="buyer">
-                                            <i class="bi bi-cart-check-fill display-6 text-success mb-2"></i>
-                                            <h6 class="fw-bold">خریدار</h6>
-                                            <small class="text-muted">برای خرید خودرو</small>
-                                        </label>
-                                    </div>
-                                </div>
-                                <div class="col-6">
-                                    <div class="form-check card card-hover h-100">
-                                        <input class="form-check-input" type="radio" name="user_type" 
-                                               id="seller" value="seller">
-                                        <label class="form-check-label card-body text-center" for="seller">
-                                            <i class="bi bi-shop display-6 text-primary mb-2"></i>
-                                            <h6 class="fw-bold">فروشنده</h6>
-                                            <small class="text-muted">برای فروش خودرو</small>
-                                        </label>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>                       
-                        <!-- قوانین -->
-                        <div class="form-group mt-4">
-                            <div class="form-check">
-                                <input class="form-check-input" type="checkbox" id="terms" required>
-                                <label class="form-check-label" for="terms">
-                                    ✅ با <a href="#" class="login-link">قوانین و مقررات</a> و 
-                                    <a href="#" class="login-link">سیاست حفظ حریم خصوصی</a> بازار خودرو موافقت می‌کنم.
-                                </label>
-                            </div>
-                        </div>
-                        
-                        <!-- دکمه ثبت‌نام -->
-                        <button type="submit" class="btn btn-primary w-100 mt-4">
-                            🚀 ثبت‌نام
-                        </button>
-                    </form>
-                    
-                    <!-- لینک ورود -->
-                    <div class="text-center mt-4">
-                        <p class="mb-0 text-muted">
-                            قبلاً حساب کاربری دارید؟ 
-                            <a href="{% url 'accounts:login' %}" class="login-link">وارد شوید</a>
-                        </p>
                     </div>
                 </div>
+
+                <!-- ===== شماره موبایل ===== -->
+                <div class="form-group mt-3">
+                    <label for="{{ form.phone.id_for_label }}" class="form-label">
+                        <i class="bi bi-phone text-primary"></i>
+                        شماره موبایل
+                    </label>
+                    {{ form.phone }}
+                    {% if form.phone.errors %}
+                        <div class="text-danger small mt-1">{{ form.phone.errors }}</div>
+                    {% endif %}
+                </div>
+
+                <!-- ===== رمز عبور ===== -->
+                <div class="row g-3 mt-1">
+                    <div class="col-md-6">
+                        <div class="form-group">
+                            <label for="{{ form.password1.id_for_label }}" class="form-label">
+                                <i class="bi bi-lock text-primary"></i>
+                                رمز عبور
+                            </label>
+                            <div class="password-wrapper">
+                                {{ form.password1 }}
+                                <button type="button" class="password-toggle" onclick="togglePassword('{{ form.password1.id_for_label }}', this)">
+                                    <i class="bi bi-eye"></i>
+                                </button>
+                            </div>
+                            {% if form.password1.errors %}
+                                <div class="text-danger small mt-1">{{ form.password1.errors }}</div>
+                            {% endif %}
+                            <div class="form-text">{{ form.password1.help_text }}</div>
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="form-group">
+                            <label for="{{ form.password2.id_for_label }}" class="form-label">
+                                <i class="bi bi-lock-fill text-primary"></i>
+                                تکرار رمز عبور
+                            </label>
+                            <div class="password-wrapper">
+                                {{ form.password2 }}
+                                <button type="button" class="password-toggle" onclick="togglePassword('{{ form.password2.id_for_label }}', this)">
+                                    <i class="bi bi-eye"></i>
+                                </button>
+                            </div>
+                            {% if form.password2.errors %}
+                                <div class="text-danger small mt-1">{{ form.password2.errors }}</div>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+
+                <!-- ===== نوع حساب کاربری ===== -->
+                <div class="form-group mt-4">
+                    <label class="form-label mb-3">
+                        <i class="bi bi-person-badge-fill text-primary"></i>
+                        نوع حساب کاربری
+                    </label>
+                    <div class="user-type-cards">
+                        {% for choice in form.user_type %}
+                            <div class="user-type-card">
+                                {{ choice.tag }}
+                                <label for="{{ choice.id_for_label }}" class="card-label">
+                                    <div class="card-icon">
+                                        {% if choice.choice_label == 'فروشنده' %}
+                                            <i class="bi bi-shop text-primary"></i>
+                                        {% else %}
+                                            <i class="bi bi-cart-check-fill text-success"></i>
+                                        {% endif %}
+                                    </div>
+                                    <div class="card-title">{{ choice.choice_label }}</div>
+                                    <div class="card-desc">
+                                        {% if choice.choice_label == 'فروشنده' %}
+                                            برای فروش خودرو
+                                        {% else %}
+                                            برای خرید خودرو
+                                        {% endif %}
+                                    </div>
+                                </label>
+                            </div>
+                        {% endfor %}
+                    </div>
+                    {% if form.user_type.errors %}
+                        <div class="text-danger small mt-1">{{ form.user_type.errors }}</div>
+                    {% endif %}
+                </div>
+
+                <!-- ===== قوانین ===== -->
+                <div class="form-group mt-4">
+                    <div class="form-check">
+                        <input class="form-check-input" type="checkbox" id="terms" required>
+                        <label class="form-check-label" for="terms">
+                            با <a href="#" class="link-primary">قوانین و مقررات</a> و 
+                            <a href="#" class="link-primary">سیاست حفظ حریم خصوصی</a> بازار خودرو موافقت می‌کنم.
+                        </label>
+                    </div>
+                </div>
+
+                <!-- ===== دکمه ثبت‌نام ===== -->
+                <button type="submit" class="btn-auth w-100 mt-4">
+                    <i class="bi bi-rocket-takeoff"></i>
+                    ثبت‌نام
+                </button>
+
+            </form>
+
+            <!-- ===== لینک ورود ===== -->
+            <div class="auth-footer">
+                <p class="mb-0">
+                    قبلاً حساب کاربری دارید؟
+                    <a href="{% url 'accounts:login' %}" class="register-link">
+                        وارد شوید
+                    </a>
+                </p>
             </div>
         </div>
     </div>
 </div>
+
+<!-- ===== CSS ===== -->
+<style>
+    /* ===== کانتینر اصلی ===== */
+    .auth-wrapper {
+        min-height: calc(100vh - 120px);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        padding: 2rem 1rem;
+        background: linear-gradient(135deg, #f5f7fa 0%, #e8ecf1 100%);
+    }
+
+    /* ===== کارت ===== */
+    .auth-card {
+        width: 100%;
+        max-width: 720px;
+        background: #ffffff;
+        border-radius: 24px;
+        box-shadow: 0 20px 60px rgba(0, 0, 0, 0.08);
+        overflow: hidden;
+        animation: slideUp 0.5s ease;
+    }
+
+    @keyframes slideUp {
+        from {
+            opacity: 0;
+            transform: translateY(20px);
+        }
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+
+    /* ===== هدر ===== */
+    .auth-header {
+        background: linear-gradient(135deg, #11998e 0%, #38ef7d 100%);
+        color: white;
+        padding: 2rem 1.5rem;
+        text-align: center;
+        position: relative;
+    }
+
+    .auth-icon {
+        width: 70px;
+        height: 70px;
+        background: rgba(255, 255, 255, 0.2);
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin: 0 auto 1rem;
+        font-size: 2rem;
+    }
+
+    .auth-title {
+        font-size: 1.4rem;
+        font-weight: 800;
+        margin-bottom: 0.3rem;
+    }
+
+    .auth-subtitle {
+        font-size: 0.85rem;
+        opacity: 0.85;
+        margin: 0;
+    }
+
+    /* ===== بدنه ===== */
+    .auth-body {
+        padding: 2rem 1.75rem;
+    }
+
+    /* ===== فیلدها ===== */
+    .form-label {
+        font-weight: 600;
+        color: #2d3436;
+        font-size: 0.9rem;
+        margin-bottom: 0.4rem;
+    }
+
+    .form-control {
+        border-radius: 12px;
+        border: 2px solid #e9ecef;
+        padding: 0.75rem 1rem;
+        font-size: 0.95rem;
+        background: #f8f9fa;
+        transition: all 0.3s ease;
+    }
+
+    .form-control:focus {
+        border-color: #11998e;
+        box-shadow: 0 0 0 4px rgba(17, 153, 142, 0.1);
+        background: #ffffff;
+    }
+
+    /* ===== فیلد رمز با دکمه چشم ===== */
+    .password-wrapper {
+        position: relative;
+    }
+
+    .password-toggle {
+        position: absolute;
+        left: 12px;
+        top: 50%;
+        transform: translateY(-50%);
+        background: transparent;
+        border: none;
+        color: #adb5bd;
+        cursor: pointer;
+        font-size: 1.1rem;
+        padding: 4px;
+        transition: color 0.2s;
+    }
+
+    .password-toggle:hover {
+        color: #11998e;
+    }
+
+    /* ===== چک‌باکس ===== */
+    .form-check-input {
+        width: 18px;
+        height: 18px;
+        margin-top: 0.15rem;
+        accent-color: #11998e;
+        cursor: pointer;
+    }
+
+    .form-check-label {
+        cursor: pointer;
+        font-size: 0.9rem;
+        color: #495057;
+        margin-right: 0.3rem;
+    }
+
+    .link-primary {
+        color: #11998e;
+        text-decoration: none;
+        font-weight: 600;
+    }
+
+    .link-primary:hover {
+        color: #0d7a6f;
+        text-decoration: underline;
+    }
+
+    /* ===== کارت‌های نوع حساب ===== */
+    .user-type-cards {
+        display: flex;
+        gap: 1rem;
+        flex-wrap: wrap;
+    }
+
+    .user-type-card {
+        flex: 1;
+        min-width: 140px;
+    }
+
+    .user-type-card input[type="radio"] {
+        display: none;
+    }
+
+    .user-type-card .card-label {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        padding: 1.5rem 1rem;
+        border: 2px solid #e9ecef;
+        border-radius: 16px;
+        background: #ffffff;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        text-align: center;
+        min-height: 130px;
+    }
+
+    .user-type-card .card-label:hover {
+        border-color: #11998e;
+        background: #f0fdf9;
+        transform: translateY(-3px);
+        box-shadow: 0 8px 20px rgba(17, 153, 142, 0.1);
+    }
+
+    .user-type-card input[type="radio"]:checked + .card-label {
+        border-color: #11998e;
+        background: #e7f9f5;
+        box-shadow: 0 0 0 4px rgba(17, 153, 142, 0.15);
+    }
+
+    .user-type-card .card-icon {
+        font-size: 2.2rem;
+        margin-bottom: 0.5rem;
+    }
+
+    .user-type-card .card-title {
+        font-weight: 700;
+        font-size: 1.05rem;
+        color: #212529;
+        margin-bottom: 0.2rem;
+    }
+
+    .user-type-card .card-desc {
+        font-size: 0.78rem;
+        color: #6c757d;
+    }
+
+    /* ===== دکمه ثبت‌نام ===== */
+    .btn-auth {
+        background: linear-gradient(135deg, #11998e 0%, #38ef7d 100%);
+        color: white;
+        border: none;
+        border-radius: 12px;
+        padding: 0.85rem;
+        font-weight: 700;
+        font-size: 1rem;
+        transition: all 0.3s ease;
+        cursor: pointer;
+    }
+
+    .btn-auth:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 8px 25px rgba(17, 153, 142, 0.35);
+        color: white;
+    }
+
+    .btn-auth:active {
+        transform: translateY(0);
+    }
+
+    /* ===== فوتر ===== */
+    .auth-footer {
+        text-align: center;
+        margin-top: 1.5rem;
+        padding-top: 1.5rem;
+        border-top: 1px solid #f1f3f5;
+    }
+
+    .auth-footer p {
+        font-size: 0.9rem;
+        color: #6c757d;
+    }
+
+    .register-link {
+        color: #11998e;
+        font-weight: 700;
+        text-decoration: none;
+        transition: color 0.2s;
+    }
+
+    .register-link:hover {
+        color: #0d7a6f;
+        text-decoration: underline;
+    }
+
+    /* ===== آلرت ===== */
+    .alert {
+        border-radius: 12px;
+        font-size: 0.9rem;
+    }
+
+    /* ===== ریسپانسیو ===== */
+    @media (max-width: 768px) {
+        .auth-card {
+            border-radius: 18px;
+        }
+
+        .auth-body {
+            padding: 1.5rem 1.25rem;
+        }
+
+        .auth-header {
+            padding: 1.5rem 1rem;
+        }
+
+        .user-type-cards {
+            flex-direction: column;
+        }
+
+        .user-type-card .card-label {
+            flex-direction: row;
+            gap: 1rem;
+            padding: 1rem 1.5rem;
+            min-height: 70px;
+        }
+
+        .user-type-card .card-icon {
+            font-size: 1.5rem;
+            margin-bottom: 0;
+        }
+    }
+</style>
+
+<!-- ===== JavaScript ===== -->
+<script>
+function togglePassword(inputId, btn) {
+    const input = document.getElementById(inputId);
+    const icon = btn.querySelector('i');
+    
+    if (input.type === 'password') {
+        input.type = 'text';
+        icon.className = 'bi bi-eye-slash';
+    } else {
+        input.type = 'password';
+        icon.className = 'bi bi-eye';
+    }
+}
+</script>
+
 {% endblock %}

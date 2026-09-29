@@ -1,0 +1,31 @@
+{% extends 'base.html' %}
+
+{% block title %}خطای امنیتی{% endblock %}
+
+{% block content %}
+<div class="auth-wrapper">
+    <div class="auth-card">
+        <div class="auth-header" style="background: linear-gradient(135deg, #dc3545, #c82333);">
+            <div class="auth-icon">
+                <i class="bi bi-shield-exclamation"></i>
+            </div>
+            <h3 class="auth-title">خطای امنیتی</h3>
+            <p class="auth-subtitle">نشست شما منقضی شده است</p>
+        </div>
+        <div class="auth-body text-center">
+            <p class="text-muted">
+                به دلیل عدم فعالیت طولانی، نشست شما منقضی شده است.
+                لطفاً دوباره وارد شوید.
+            </p>
+            <a href="{% url 'accounts:login' %}" class="btn-auth w-100 mt-3">
+                <i class="bi bi-box-arrow-in-right"></i>
+                ورود مجدد
+            </a>
+            <a href="/" class="btn-outline-auth mt-2">
+                <i class="bi bi-house"></i>
+                صفحه اصلی
+            </a>
+        </div>
+    </div>
+</div>
+{% endblock %}

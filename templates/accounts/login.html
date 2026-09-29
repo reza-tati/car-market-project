@@ -1,54 +1,346 @@
-<!-- 2. ایجاد فایل templates/accounts/login.html -->
 {% extends 'base.html' %}
 {% load crispy_forms_tags %}
 
 {% block title %}ورود به حساب کاربری{% endblock %}
 
 {% block content %}
-<div class="container py-5">
-    <div class="row justify-content-center">
-        <div class="col-md-6">
-            <div class="card">
-                <div class="card-header bg-primary text-white">
-                    <h4 class="mb-0"><i class="bi bi-box-arrow-in-right"></i> ورود به حساب کاربری</h4>
+<div class="auth-wrapper">
+
+    <!-- کارت ورود -->
+    <div class="auth-card">
+
+        <!-- هدر گرادیانت -->
+        <div class="auth-header">
+            <div class="auth-icon">
+                <i class="bi bi-box-arrow-in-right"></i>
+            </div>
+            <h3 class="auth-title">ورود به حساب کاربری</h3>
+            <p class="auth-subtitle">خوش آمدید! لطفاً وارد شوید</p>
+        </div>
+
+        <!-- بدنه فرم -->
+        <div class="auth-body">
+
+            <!-- نمایش خطاها -->
+            {% if form.errors %}
+                <div class="alert alert-danger rounded-3 border-0">
+                    <i class="bi bi-exclamation-triangle-fill"></i>
+                    شماره موبایل یا رمز عبور نادرست است.
                 </div>
-                <div class="card-body">
-                    
-                    {% if form.errors %}
-                    <div class="alert alert-danger">
-                        نام کاربری یا رمز عبور نادرست است.
+            {% endif %}
+
+            {% if messages %}
+                {% for message in messages %}
+                    <div class="alert alert-{{ message.tags }} rounded-3 border-0">
+                        {{ message }}
                     </div>
-                    {% endif %}
-                    
-                    <form method="post">
-                        {% csrf_token %}
-                        
-                        <div class="mb-3">
-                            <label for="id_username" class="form-label">شماره موبایل</label>
-                            <input type="text" name="username" class="form-control" id="id_username" required>
-                        </div>
-                        
-                        <div class="mb-3">
-                            <label for="id_password" class="form-label">رمز عبور</label>
-                            <input type="password" name="password" class="form-control" id="id_password" required>
-                        </div>
-                        
-                        <div class="mb-3 form-check">
-                            <input type="checkbox" class="form-check-input" id="remember_me">
-                            <label class="form-check-label" for="remember_me">مرا به خاطر بسپار</label>
-                        </div>
-                        
-                        <button type="submit" class="btn btn-primary w-100">
-                            <i class="bi bi-key"></i> ورود
-                        </button>
-                        
-                        <div class="text-center mt-3">
-                            <a href="{% url 'accounts:register' %}">حساب کاربری ندارید؟ ثبت‌نام کنید</a>
-                        </div>
-                    </form>
+                {% endfor %}
+            {% endif %}
+
+            <form method="post" novalidate>
+                {% csrf_token %}
+
+                <!-- شماره موبایل -->
+                <div class="form-group mb-3">
+                    <label for="id_username" class="form-label">
+                        <i class="bi bi-phone text-primary"></i>
+                        شماره موبایل
+                    </label>
+                    <input type="text" 
+                           name="username" 
+                           class="form-control" 
+                           id="id_username" 
+                           placeholder="شماره موبایل خود را وارد کنید"
+                           autocomplete="username"
+                           required>
                 </div>
+
+                <!-- رمز عبور -->
+                <div class="form-group mb-3">
+                    <label for="id_password" class="form-label">
+                        <i class="bi bi-lock text-primary"></i>
+                        رمز عبور
+                    </label>
+                    <div class="password-wrapper">
+                        <input type="password" 
+                               name="password" 
+                               class="form-control" 
+                               id="id_password"
+                               placeholder="رمز عبور خود را وارد کنید"
+                               autocomplete="current-password"
+                               required>
+                        <button type="button" class="password-toggle" onclick="togglePassword('id_password', this)">
+                            <i class="bi bi-eye"></i>
+                        </button>
+                    </div>
+                </div>
+
+                <!-- مرا به خاطر بسپار + فراموشی رمز -->
+                <div class="d-flex justify-content-between align-items-center mb-3">
+                    <div class="form-check">
+                        <input type="checkbox" class="form-check-input" id="remember_me">
+                        <label class="form-check-label" for="remember_me">
+                            مرا به خاطر بسپار
+                        </label>
+                    </div>
+                    <a href="{% url 'accounts:password_reset' %}" class="forgot-link">
+                        رمز عبور را فراموش کرده‌اید؟
+                    </a>
+                </div>
+
+                <!-- دکمه ورود -->
+                <button type="submit" class="btn-auth w-100">
+                    <i class="bi bi-box-arrow-in-right"></i>
+                    ورود به حساب
+                </button>
+
+            </form>
+
+            <!-- لینک ثبت‌نام -->
+            <div class="auth-footer">
+                <p class="mb-0">
+                    حساب کاربری ندارید؟
+                    <a href="{% url 'accounts:register' %}" class="register-link">
+                        ثبت‌نام کنید
+                    </a>
+                </p>
             </div>
         </div>
     </div>
 </div>
+
+<!-- ===== CSS ===== -->
+<style>
+    /* ===== کانتینر اصلی ===== */
+    .auth-wrapper {
+        min-height: calc(100vh - 120px);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        padding: 2rem 1rem;
+        background: linear-gradient(135deg, #f5f7fa 0%, #e8ecf1 100%);
+    }
+
+    /* ===== کارت ===== */
+    .auth-card {
+        width: 100%;
+        max-width: 450px;
+        background: #ffffff;
+        border-radius: 24px;
+        box-shadow: 0 20px 60px rgba(0, 0, 0, 0.08);
+        overflow: hidden;
+        animation: slideUp 0.5s ease;
+    }
+
+    @keyframes slideUp {
+        from {
+            opacity: 0;
+            transform: translateY(20px);
+        }
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+
+    /* ===== هدر ===== */
+    .auth-header {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: white;
+        padding: 2rem 1.5rem;
+        text-align: center;
+        position: relative;
+    }
+
+    .auth-icon {
+        width: 70px;
+        height: 70px;
+        background: rgba(255, 255, 255, 0.2);
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin: 0 auto 1rem;
+        font-size: 2rem;
+    }
+
+    .auth-title {
+        font-size: 1.4rem;
+        font-weight: 800;
+        margin-bottom: 0.3rem;
+    }
+
+    .auth-subtitle {
+        font-size: 0.85rem;
+        opacity: 0.85;
+        margin: 0;
+    }
+
+    /* ===== بدنه ===== */
+    .auth-body {
+        padding: 2rem 1.75rem;
+    }
+
+    /* ===== فیلدها ===== */
+    .form-label {
+        font-weight: 600;
+        color: #2d3436;
+        font-size: 0.9rem;
+        margin-bottom: 0.4rem;
+    }
+
+    .form-control {
+        border-radius: 12px;
+        border: 2px solid #e9ecef;
+        padding: 0.75rem 1rem;
+        font-size: 0.95rem;
+        background: #f8f9fa;
+        transition: all 0.3s ease;
+    }
+
+    .form-control:focus {
+        border-color: #667eea;
+        box-shadow: 0 0 0 4px rgba(102, 126, 234, 0.1);
+        background: #ffffff;
+    }
+
+    /* ===== فیلد رمز با دکمه چشم ===== */
+    .password-wrapper {
+        position: relative;
+    }
+
+    .password-toggle {
+        position: absolute;
+        left: 12px;
+        top: 50%;
+        transform: translateY(-50%);
+        background: transparent;
+        border: none;
+        color: #adb5bd;
+        cursor: pointer;
+        font-size: 1.1rem;
+        padding: 4px;
+        transition: color 0.2s;
+    }
+
+    .password-toggle:hover {
+        color: #667eea;
+    }
+
+    /* ===== چک‌باکس ===== */
+    .form-check-input {
+        width: 18px;
+        height: 18px;
+        margin-top: 0.15rem;
+        accent-color: #667eea;
+        cursor: pointer;
+    }
+
+    .form-check-label {
+        cursor: pointer;
+        font-size: 0.9rem;
+        color: #495057;
+        margin-right: 0.3rem;
+    }
+
+    /* ===== لینک فراموشی ===== */
+    .forgot-link {
+        color: #667eea;
+        text-decoration: none;
+        font-size: 0.85rem;
+        font-weight: 500;
+        transition: color 0.2s;
+    }
+
+    .forgot-link:hover {
+        color: #764ba2;
+        text-decoration: underline;
+    }
+
+    /* ===== دکمه ورود ===== */
+    .btn-auth {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: white;
+        border: none;
+        border-radius: 12px;
+        padding: 0.85rem;
+        font-weight: 700;
+        font-size: 1rem;
+        transition: all 0.3s ease;
+        cursor: pointer;
+    }
+
+    .btn-auth:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 8px 25px rgba(102, 126, 234, 0.35);
+        color: white;
+    }
+
+    .btn-auth:active {
+        transform: translateY(0);
+    }
+
+    /* ===== فوتر ===== */
+    .auth-footer {
+        text-align: center;
+        margin-top: 1.5rem;
+        padding-top: 1.5rem;
+        border-top: 1px solid #f1f3f5;
+    }
+
+    .auth-footer p {
+        font-size: 0.9rem;
+        color: #6c757d;
+    }
+
+    .register-link {
+        color: #667eea;
+        font-weight: 700;
+        text-decoration: none;
+        transition: color 0.2s;
+    }
+
+    .register-link:hover {
+        color: #764ba2;
+        text-decoration: underline;
+    }
+
+    /* ===== آلرت ===== */
+    .alert {
+        border-radius: 12px;
+        font-size: 0.9rem;
+    }
+
+    /* ===== ریسپانسیو ===== */
+    @media (max-width: 576px) {
+        .auth-card {
+            border-radius: 18px;
+        }
+
+        .auth-body {
+            padding: 1.5rem 1.25rem;
+        }
+
+        .auth-header {
+            padding: 1.5rem 1rem;
+        }
+    }
+</style>
+
+<!-- ===== JavaScript: نمایش/مخفی کردن رمز ===== -->
+<script>
+function togglePassword(inputId, btn) {
+    const input = document.getElementById(inputId);
+    const icon = btn.querySelector('i');
+    
+    if (input.type === 'password') {
+        input.type = 'text';
+        icon.className = 'bi bi-eye-slash';
+    } else {
+        input.type = 'password';
+        icon.className = 'bi bi-eye';
+    }
+}
+</script>
+
 {% endblock %}

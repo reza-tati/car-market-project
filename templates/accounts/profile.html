@@ -1,4 +1,3 @@
-<!-- templates/accounts/profile.html -->
 {% extends 'base.html' %}
 {% load crispy_forms_tags %}
 {% load static %}
@@ -7,138 +6,540 @@
 
 {% block content %}
 <div class="container py-4">
-    <div class="row">
-        <!-- سایدبار -->
-        <div class="col-lg-3">
-            <div class="card mb-4">
-                <div class="card-body text-center">
-                    <!-- تصویر پروفایل -->
-                    <img src="{{ user.profile.get_avatar_url }}" 
-                         class="rounded-circle img-fluid" 
-                         style="width: 150px; height: 150px; object-fit: cover;"
-                         alt="تصویر پروفایل">
-                    
-                    <h5 class="my-3">{{ user.get_full_name|default:user.username }}</h5>
-                    
-                    <!-- اطلاعات کاربر -->
-                    <div class="text-muted mb-1">
-                        <i class="bi bi-person"></i> {{ user.username }}
+
+    <div class="row g-4">
+
+        <!-- ===== سایدبار ===== -->
+        <div class="col-lg-4 col-xl-3">
+            <div class="profile-sidebar">
+
+                <!-- کارت پروفایل -->
+                <div class="profile-card">
+                    <!-- آواتار -->
+                    <div class="avatar-wrapper">
+                        <img src="{{ user.profile.get_avatar_url }}" 
+                             alt="{{ user.username }}"
+                             class="profile-avatar">
+                        {% if user.profile.is_seller %}
+                            <span class="seller-badge" title="فروشنده تایید شده">
+                                <i class="bi bi-patch-check-fill"></i>
+                            </span>
+                        {% endif %}
                     </div>
-                    {% if user.profile.city %}
-                    <div class="text-muted mb-1">
-                        <i class="bi bi-geo-alt"></i> {{ user.profile.city }}
+
+                    <!-- نام کاربر -->
+                    <h5 class="profile-name">
+                        {{ user.get_full_name|default:user.username }}
+                    </h5>
+
+                    <!-- اطلاعات -->
+                    <div class="profile-info">
+                        <div class="info-item">
+                            <i class="bi bi-person-circle"></i>
+                            <span>{{ user.username }}</span>
+                        </div>
+
+                        {% if user.profile.city %}
+                        <div class="info-item">
+                            <i class="bi bi-geo-alt"></i>
+                            <span>{{ user.profile.city }}</span>
+                        </div>
+                        {% endif %}
+
+                        {% if user.profile.phone %}
+                        <div class="info-item">
+                            <i class="bi bi-telephone"></i>
+                            <span>{{ user.profile.phone }}</span>
+                        </div>
+                        {% endif %}
                     </div>
-                    {% endif %}
-                    {% if user.profile.phone %}
-                    <div class="text-muted mb-1">
-                        <i class="bi bi-telephone"></i> {{ user.profile.phone }}
-                    </div>
-                    {% endif %}
-                    
-                    <!-- وضعیت فروشنده -->
+
+                    <!-- امتیاز فروشنده -->
                     {% if user.profile.is_seller %}
-                    <span class="badge bg-success mt-2">فروشنده تایید شده</span>
-                    <div class="mt-2">
-                        <small class="text-muted">
-                            <i class="bi bi-star-fill text-warning"></i>
-                            امتیاز: {{ user.profile.seller_rating|floatformat:1 }}
-                        </small>
+                    <div class="seller-rating">
+                        <div class="rating-stars">
+                            <i class="bi bi-star-fill"></i>
+                            <span>{{ user.profile.seller_rating|floatformat:1 }}</span>
+                        </div>
+                        <small>امتیاز فروشنده</small>
                     </div>
                     {% endif %}
                 </div>
-                
+
                 <!-- منوی پروفایل -->
-                <div class="list-group list-group-flush">
-                    <a href="{% url 'accounts:profile' %}" class="list-group-item list-group-item-action active">
-                        <i class="bi bi-person"></i> پروفایل
+                <div class="profile-menu">
+                    <a href="{% url 'accounts:profile' %}" class="menu-item active">
+                        <i class="bi bi-person-gear"></i>
+                        <span>پروفایل</span>
                     </a>
-                    <a href="{% url 'accounts:my_cars' %}" class="list-group-item list-group-item-action">
-                        <i class="bi bi-car-front"></i> خودروهای من
+                    <a href="{% url 'accounts:my_cars' %}" class="menu-item">
+                        <i class="bi bi-car-front"></i>
+                        <span>خودروهای من</span>
                     </a>
-                    <a href="{% url 'accounts:favorites' %}" class="list-group-item list-group-item-action">
-                        <i class="bi bi-heart"></i> علاقه‌مندی‌ها
+                    <a href="{% url 'accounts:favorites' %}" class="menu-item">
+                        <i class="bi bi-heart"></i>
+                        <span>علاقه‌مندی‌ها</span>
                     </a>
-                    <a href="{% url 'accounts:password_change' %}" class="list-group-item list-group-item-action">
-                        <i class="bi bi-key"></i> تغییر رمز عبور
+                    <a href="{% url 'chat:chat_list' %}" class="menu-item">
+                        <i class="bi bi-chat-dots"></i>
+                        <span>چت‌های من</span>
+                    </a>
+                    <a href="{% url 'accounts:password_change' %}" class="menu-item">
+                        <i class="bi bi-key"></i>
+                        <span>تغییر رمز عبور</span>
+                    </a>
+                    <a href="{% url 'accounts:logout' %}" class="menu-item text-danger">
+                        <i class="bi bi-box-arrow-right"></i>
+                        <span>خروج</span>
                     </a>
                 </div>
             </div>
         </div>
-        
-        <!-- محتوای اصلی -->
-        <div class="col-lg-9">
-            <div class="card">
-                <div class="card-header bg-primary text-white">
-                    <h5 class="mb-0"><i class="bi bi-person-gear"></i> ویرایش پروفایل</h5>
+
+        <!-- ===== محتوای اصلی ===== -->
+        <div class="col-lg-8 col-xl-9">
+
+            <!-- آمار -->
+            <div class="row g-3 mb-4">
+                <div class="col-md-3 col-6">
+                    <div class="stats-card blue">
+                        <i class="bi bi-car-front stats-icon"></i>
+                        <div class="stats-number">{{ stats.total_cars }}</div>
+                        <div class="stats-label">کل آگهی‌ها</div>
+                    </div>
                 </div>
-                <div class="card-body">
+                <div class="col-md-3 col-6">
+                    <div class="stats-card green">
+                        <i class="bi bi-check-circle stats-icon"></i>
+                        <div class="stats-number">{{ stats.active_cars }}</div>
+                        <div class="stats-label">آگهی‌های فعال</div>
+                    </div>
+                </div>
+                <div class="col-md-3 col-6">
+                    <div class="stats-card red">
+                        <i class="bi bi-cash-stack stats-icon"></i>
+                        <div class="stats-number">{{ stats.sold_cars }}</div>
+                        <div class="stats-label">فروخته شده</div>
+                    </div>
+                </div>
+                <div class="col-md-3 col-6">
+                    <div class="stats-card pink">
+                        <i class="bi bi-heart-fill stats-icon"></i>
+                        <div class="stats-number">{{ stats.favorite_count }}</div>
+                        <div class="stats-label">علاقه‌مندی‌ها</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- فرم ویرایش پروفایل -->
+            <div class="edit-card">
+                <div class="edit-header">
+                    <i class="bi bi-pencil-square"></i>
+                    <h5>ویرایش پروفایل</h5>
+                </div>
+
+                <div class="edit-body">
                     <form method="post" enctype="multipart/form-data" novalidate>
                         {% csrf_token %}
-                        
-                        <div class="row">
+
+                        <div class="row g-4">
                             <!-- فرم اطلاعات کاربر -->
                             <div class="col-md-6">
-                                <h6 class="border-bottom pb-2 mb-3">اطلاعات کاربری</h6>
-                                {{ u_form|crispy }}
+                                <div class="form-section">
+                                    <h6 class="form-section-title">
+                                        <i class="bi bi-person text-primary"></i>
+                                        اطلاعات کاربری
+                                    </h6>
+                                    {{ u_form|crispy }}
+                                </div>
                             </div>
-                            
+
                             <!-- فرم پروفایل -->
                             <div class="col-md-6">
-                                <h6 class="border-bottom pb-2 mb-3">اطلاعات تکمیلی</h6>
-                                {{ p_form|crispy }}
+                                <div class="form-section">
+                                    <h6 class="form-section-title">
+                                        <i class="bi bi-info-circle text-success"></i>
+                                        اطلاعات تکمیلی
+                                    </h6>
+                                    {{ p_form|crispy }}
+                                </div>
                             </div>
                         </div>
-                        
+
                         <!-- دکمه‌ها -->
-                        <div class="mt-4">
-                            <button type="submit" class="btn btn-primary">
-                                <i class="bi bi-check-circle"></i> ذخیره تغییرات
+                        <div class="form-actions">
+                            <button type="submit" class="btn-save">
+                                <i class="bi bi-check-circle"></i>
+                                ذخیره تغییرات
                             </button>
-                            <a href="{% url 'cars:car_list' %}" class="btn btn-outline-secondary">
-                                <i class="bi bi-x-circle"></i> انصراف
+                            <a href="{% url 'cars:car_list' %}" class="btn-cancel">
+                                <i class="bi bi-x-circle"></i>
+                                انصراف
                             </a>
                         </div>
                     </form>
-                    
-                    
-                    <!-- آمار کاربر -->
-                    <div class="row mt-5">
-                        <div class="col-md-3 text-center">
-                            <div class="card border-primary" style="background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%); color: white;">
-                                <div class="card-body">
-                                    <h3>{{ stats.total_cars }}</h3>
-                                    <p class="text-white-50">تعداد آگهی‌ها</p>
-                                </div>
-                            </div>
-                        </div>
-                        <div class="col-md-3 text-center">
-                            <div class="card border-success" style="background: linear-gradient(135deg, #11998e 0%, #38ef7d 100%); color: white;">
-                                <div class="card-body">
-                                    <h3>{{ stats.sold_cars }}</h3>
-                                    <p class="text-white-50">خودروهای فروخته شده</p>
-                                </div>
-                            </div>
-                        </div>
-                        <div class="col-md-3 text-center">
-                            <div class="card border-info" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white;">
-                                <div class="card-body">
-                                    <h3>{{ stats.active_cars }}</h3>
-                                    <p class="text-white-50">آگهی‌های فعال</p>
-                                </div>
-                            </div>
-                        </div>
-                        <div class="col-md-3 text-center">
-                            <div class="card border-warning" style="background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%); color: white;">
-                                <div class="card-body">
-                                    <h3>{{ stats.favorite_count }}</h3>
-                                    <p class="text-white-50">علاقه‌مندی‌ها</p>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
                 </div>
             </div>
         </div>
     </div>
 </div>
+
+<!-- ===== CSS ===== -->
+<style>
+    /* ===== سایدبار ===== */
+    .profile-sidebar {
+        position: sticky;
+        top: 80px;
+    }
+
+    /* ===== کارت پروفایل ===== */
+    .profile-card {
+        background: #ffffff;
+        border-radius: 20px;
+        padding: 2rem 1.5rem;
+        text-align: center;
+        box-shadow: 0 8px 30px rgba(0, 0, 0, 0.06);
+        margin-bottom: 1.5rem;
+        position: relative;
+        overflow: hidden;
+    }
+
+    .profile-card::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        right: 0;
+        left: 0;
+        height: 80px;
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        z-index: 0;
+    }
+
+    .avatar-wrapper {
+        position: relative;
+        display: inline-block;
+        z-index: 1;
+    }
+
+    .profile-avatar {
+        width: 110px;
+        height: 110px;
+        border-radius: 50%;
+        object-fit: cover;
+        border: 4px solid #ffffff;
+        box-shadow: 0 8px 20px rgba(0, 0, 0, 0.15);
+    }
+
+    .seller-badge {
+        position: absolute;
+        bottom: 5px;
+        left: 5px;
+        background: #11998e;
+        color: white;
+        width: 30px;
+        height: 30px;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        border: 3px solid white;
+        font-size: 0.9rem;
+    }
+
+    .profile-name {
+        margin-top: 1rem;
+        font-weight: 800;
+        font-size: 1.15rem;
+        color: #2d3436;
+    }
+
+    /* ===== اطلاعات ===== */
+    .profile-info {
+        margin-top: 1rem;
+        text-align: right;
+    }
+
+    .info-item {
+        display: flex;
+        align-items: center;
+        gap: 0.6rem;
+        padding: 0.5rem 0;
+        font-size: 0.85rem;
+        color: #6c757d;
+        border-bottom: 1px solid #f1f3f5;
+    }
+
+    .info-item:last-child {
+        border-bottom: none;
+    }
+
+    .info-item i {
+        color: #667eea;
+        font-size: 0.95rem;
+        min-width: 18px;
+    }
+
+    /* ===== امتیاز فروشنده ===== */
+    .seller-rating {
+        margin-top: 1rem;
+        padding: 0.75rem;
+        background: linear-gradient(135deg, #fff9e6 0%, #fff3cd 100%);
+        border-radius: 12px;
+        text-align: center;
+    }
+
+    .rating-stars {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 0.4rem;
+        font-size: 1.2rem;
+        font-weight: 800;
+        color: #856404;
+    }
+
+    .rating-stars i {
+        color: #ffc107;
+    }
+
+    .seller-rating small {
+        color: #856404;
+        font-size: 0.75rem;
+    }
+
+    /* ===== منوی پروفایل ===== */
+    .profile-menu {
+        background: #ffffff;
+        border-radius: 16px;
+        padding: 0.5rem;
+        box-shadow: 0 8px 30px rgba(0, 0, 0, 0.06);
+        overflow: hidden;
+    }
+
+    .menu-item {
+        display: flex;
+        align-items: center;
+        gap: 0.75rem;
+        padding: 0.75rem 1rem;
+        border-radius: 12px;
+        text-decoration: none;
+        color: #495057;
+        font-weight: 500;
+        font-size: 0.9rem;
+        transition: all 0.3s ease;
+        margin-bottom: 0.2rem;
+    }
+
+    .menu-item:hover {
+        background: #f0f4ff;
+        color: #667eea;
+        transform: translateX(-4px);
+    }
+
+    .menu-item.active {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: white;
+        box-shadow: 0 4px 12px rgba(102, 126, 234, 0.3);
+    }
+
+    .menu-item.active i {
+        color: white;
+    }
+
+    .menu-item i {
+        font-size: 1.1rem;
+        color: #667eea;
+        min-width: 20px;
+    }
+
+    .menu-item.text-danger i,
+    .menu-item.text-danger {
+        color: #dc3545 !important;
+    }
+
+    .menu-item.text-danger:hover {
+        background: #fee;
+    }
+
+    /* ===== کارت‌های آمار ===== */
+    .stats-card {
+        border-radius: 16px;
+        padding: 1.2rem 1rem;
+        color: white;
+        text-align: center;
+        transition: all 0.3s ease;
+        position: relative;
+        overflow: hidden;
+        cursor: pointer;
+    }
+
+    .stats-card:hover {
+        transform: translateY(-4px);
+        box-shadow: 0 12px 30px rgba(0, 0, 0, 0.15);
+    }
+
+    .stats-card .stats-icon {
+        font-size: 2rem;
+        opacity: 0.3;
+        position: absolute;
+        bottom: 0.5rem;
+        left: 1rem;
+    }
+
+    .stats-card .stats-number {
+        font-size: 1.8rem;
+        font-weight: 800;
+        margin-bottom: 0;
+    }
+
+    .stats-card .stats-label {
+        font-size: 0.8rem;
+        opacity: 0.9;
+        margin-bottom: 0;
+    }
+
+    .stats-card.blue { background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%); }
+    .stats-card.green { background: linear-gradient(135deg, #11998e 0%, #38ef7d 100%); }
+    .stats-card.red { background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%); }
+    .stats-card.pink { background: linear-gradient(135deg, #a18cd1 0%, #fbc2eb 100%); }
+
+    /* ===== کارت ویرایش ===== */
+    .edit-card {
+        background: #ffffff;
+        border-radius: 20px;
+        box-shadow: 0 8px 30px rgba(0, 0, 0, 0.06);
+        overflow: hidden;
+    }
+
+    .edit-header {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: white;
+        padding: 1.25rem 1.5rem;
+        display: flex;
+        align-items: center;
+        gap: 0.75rem;
+    }
+
+    .edit-header i {
+        font-size: 1.5rem;
+    }
+
+    .edit-header h5 {
+        margin: 0;
+        font-weight: 700;
+    }
+
+    .edit-body {
+        padding: 2rem 1.5rem;
+    }
+
+    /* ===== بخش‌های فرم ===== */
+    .form-section {
+        background: #f8f9fa;
+        border-radius: 16px;
+        padding: 1.25rem;
+        height: 100%;
+        border: 2px solid #e9ecef;
+        transition: all 0.3s;
+    }
+
+    .form-section:hover {
+        border-color: #667eea;
+    }
+
+    .form-section-title {
+        font-size: 0.95rem;
+        font-weight: 700;
+        color: #2d3436;
+        margin-bottom: 1rem;
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+        padding-bottom: 0.75rem;
+        border-bottom: 1px solid #e9ecef;
+    }
+
+    /* ===== دکمه‌ها ===== */
+    .form-actions {
+        display: flex;
+        gap: 0.75rem;
+        margin-top: 2rem;
+        padding-top: 1.5rem;
+        border-top: 1px solid #f1f3f5;
+    }
+
+    .btn-save {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: white;
+        border: none;
+        border-radius: 12px;
+        padding: 0.75rem 2rem;
+        font-weight: 700;
+        font-size: 0.95rem;
+        transition: all 0.3s ease;
+        cursor: pointer;
+        display: inline-flex;
+        align-items: center;
+        gap: 0.5rem;
+    }
+
+    .btn-save:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 8px 25px rgba(102, 126, 234, 0.35);
+        color: white;
+    }
+
+    .btn-cancel {
+        background: transparent;
+        color: #6c757d;
+        border: 2px solid #e9ecef;
+        border-radius: 12px;
+        padding: 0.75rem 1.5rem;
+        font-weight: 600;
+        font-size: 0.9rem;
+        text-decoration: none;
+        transition: all 0.3s ease;
+        display: inline-flex;
+        align-items: center;
+        gap: 0.5rem;
+    }
+
+    .btn-cancel:hover {
+        border-color: #dc3545;
+        color: #dc3545;
+        background: #fff5f5;
+    }
+
+    /* ===== ریسپانسیو ===== */
+    @media (max-width: 992px) {
+        .profile-sidebar {
+            position: static;
+        }
+    }
+
+    @media (max-width: 576px) {
+        .edit-body {
+            padding: 1.25rem 1rem;
+        }
+
+        .form-actions {
+            flex-direction: column;
+        }
+
+        .btn-save, .btn-cancel {
+            width: 100%;
+            justify-content: center;
+        }
+
+        .stats-card .stats-number {
+            font-size: 1.5rem;
+        }
+
+        .profile-avatar {
+            width: 90px;
+            height: 90px;
+        }
+    }
+</style>
+
 {% endblock %}

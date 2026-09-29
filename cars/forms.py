@@ -14,7 +14,10 @@ class CarForm(forms.ModelForm):
             'condition', 'description', 'city'
         ]
         
-        widgets = {
+        widgets = {'color': forms.Select(attrs={
+                'class': 'form-select',
+                'id': 'id_color'
+            }),
             'title': forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'مثال: سمند LX مدل ۱۴۰۰'}),
             'year': forms.NumberInput(attrs={'class': 'form-control', 'min': '1360', 'max': '1405'}),
             'price': forms.NumberInput(attrs={'class': 'form-control', 'placeholder': 'قیمت به تومان'}),

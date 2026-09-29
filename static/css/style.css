@@ -263,3 +263,131 @@
     color: white;
     transform: translateY(-2px);
 }
+/* ============================================
+   استایل چک‌باکس "تصویر اصلی" در فرم‌ها
+   ============================================ */
+
+/* کانتینر چک‌باکس */
+.form-check {
+    display: flex;
+    align-items: center;
+    gap: 0.6rem;
+    padding: 0.5rem 0.75rem;
+    background: #f8f9fa;
+    border: 2px solid #e9ecef;
+    border-radius: 10px;
+    transition: all 0.3s ease;
+    cursor: pointer;
+    margin-top: 1rem;
+}
+
+.form-check:hover {
+    background: #e7f0ff;
+    border-color: #667eea;
+}
+
+/* چک‌باکس */
+.form-check-input[type="checkbox"] {
+    width: 22px;
+    height: 22px;
+    min-width: 22px;
+    margin: 0;
+    cursor: pointer;
+    accent-color: #667eea;
+    border: 2px solid #ced4da;
+    border-radius: 6px;
+    transition: all 0.2s ease;
+    position: relative;
+    flex-shrink: 0;
+}
+
+.form-check-input[type="checkbox"]:hover {
+    border-color: #667eea;
+    transform: scale(1.05);
+}
+
+.form-check-input[type="checkbox"]:checked {
+    background-color: #667eea;
+    border-color: #667eea;
+}
+
+.form-check-input[type="checkbox"]:focus {
+    outline: none;
+    box-shadow: 0 0 0 4px rgba(102, 126, 234, 0.2);
+}
+
+/* برچسب چک‌باکس */
+.form-check-label {
+    cursor: pointer;
+    font-size: 0.95rem;
+    font-weight: 500;
+    color: #2d3436;
+    user-select: none;
+    margin: 0;
+}
+
+/* ✅ وقتی چک‌باکس تیک می‌خوره، کل کانتینر رنگی میشه */
+.form-check:has(.form-check-input:checked) {
+    background: #e7f0ff;
+    border-color: #667eea;
+}
+
+.form-check:has(.form-check-input:checked) .form-check-label {
+    color: #667eea;
+    font-weight: 700;
+}
+/* ===== استایل Placeholder ===== */
+.form-control::placeholder {
+    color: #adb5bd;
+    opacity: 0.6;
+    font-size: 0.9rem;
+}
+
+.form-control:focus::placeholder {
+    opacity: 0.4;
+}
+/* ===== انتخاب رنگ با آیکون ===== */
+.color-option {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.color-circle {
+    width: 20px;
+    height: 20px;
+    border-radius: 50%;
+    border: 2px solid #ddd;
+    display: inline-block;
+    flex-shrink: 0;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}
+
+/* رنگ‌ها */
+.color-white { background: #ffffff; }
+.color-black { background: #000000; }
+.color-silver { background: #c0c0c0; }
+.color-gray { background: #808080; }
+.color-red { background: #dc3545; }
+.color-blue { background: #0d6efd; }
+.color-green { background: #198754; }
+.color-brown { background: #8b4513; }
+.color-yellow { background: #ffc107; }
+.color-orange { background: #fd7e14; }
+
+/* استایل Select2 */
+.select2-container--bootstrap-5 .select2-selection {
+    border-radius: 12px;
+    border: 2px solid #e9ecef;
+    padding: 0.4rem;
+    min-height: 48px;
+}
+
+.select2-container--bootstrap-5 .select2-selection--single .select2-selection__rendered {
+    line-height: 32px;
+    padding-right: 0.5rem;
+}
+
+.select2-container--bootstrap-5 .select2-results__option {
+    padding: 8px 12px;
+}
