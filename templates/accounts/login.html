@@ -40,6 +40,20 @@
             <form method="post" novalidate>
                 {% csrf_token %}
 
+                <!-- ✅ توکن Draft رو توی فرم قرار بده -->
+                {% if draft_token %}
+                    <input type="hidden" name="draft_token" value="{{ draft_token }}">
+                    
+                    <div class="alert alert-info rounded-3 border-0 mb-3">
+                        <i class="bi bi-info-circle-fill"></i>
+                        <strong>اطلاعات آگهی شما ذخیره شد!</strong>
+                        <p class="mb-0 small mt-1">
+                            اگر قبلاً حساب کاربری دارید، وارد شوید تا آگهی‌تان ثبت شود.
+                            در غیر این صورت، <a href="{% url 'accounts:register' %}?draft={{ draft_token }}" class="fw-bold">ثبت‌نام کنید</a>.
+                        </p>
+                    </div>
+                {% endif %}
+
                 <!-- شماره موبایل -->
                 <div class="form-group mb-3">
                     <label for="id_username" class="form-label">

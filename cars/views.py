@@ -9,7 +9,10 @@ from django.http import JsonResponse
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.models import User
 from itertools import chain
-
+import uuid
+from django.views import View
+from django.utils import timezone
+from django.urls import reverse
 from .models import (
     Car, Motorcycle, HeavyVehicle,
     CarImage, MotorcycleImage, HeavyVehicleImage,
@@ -23,7 +26,6 @@ from .forms import (
 # ============================================
 # لیست خودروها (سواری)
 # ============================================
-
 class CarListView(ListView):
     template_name = 'cars/car_list.html'
     context_object_name = 'cars'
@@ -36,24 +38,50 @@ class CarListView(ListView):
         # ===== ۲. دریافت وسایل نقلیه بر اساس نوع =====
         if vehicle_type == 'car':
             # فقط سواری
-            cars = Car.objects.filter(is_active=True, is_verified=True).select_related('brand', 'model', 'seller').prefetch_related('car_images')
+            cars = Car.objects.filter(
+                is_active=True, 
+                is_verified=True,
+                is_draft=False  # ← Draftها رو نشون نده
+            ).select_related('brand', 'model', 'seller').prefetch_related('car_images')
             all_vehicles = list(cars)
             
         elif vehicle_type == 'motorcycle':
             # فقط موتورسیکلت
-            motorcycles = Motorcycle.objects.filter(is_active=True, is_verified=True).select_related('seller').prefetch_related('motorcycle_images')
+            motorcycles = Motorcycle.objects.filter(
+                is_active=True, 
+                is_verified=True,
+                is_draft=False  # ← Draftها رو نشون نده
+            ).select_related('seller').prefetch_related('motorcycle_images')
             all_vehicles = list(motorcycles)
             
         elif vehicle_type == 'heavy':
             # فقط ماشین سنگین
-            heavies = HeavyVehicle.objects.filter(is_active=True, is_verified=True).select_related('seller').prefetch_related('heavy_images')
+            heavies = HeavyVehicle.objects.filter(
+                is_active=True, 
+                is_verified=True,
+                is_draft=False  # ← Draftها رو نشون نده
+            ).select_related('seller').prefetch_related('heavy_images')
             all_vehicles = list(heavies)
             
         else:
             # همه وسایل نقلیه (پیش‌فرض)
-            cars = Car.objects.filter(is_active=True, is_verified=True).select_related('brand', 'model', 'seller').prefetch_related('car_images')
-            motorcycles = Motorcycle.objects.filter(is_active=True, is_verified=True).select_related('seller').prefetch_related('motorcycle_images')
-            heavies = HeavyVehicle.objects.filter(is_active=True, is_verified=True).select_related('seller').prefetch_related('heavy_images')
+            cars = Car.objects.filter(
+                is_active=True, 
+                is_verified=True,
+                is_draft=False  # ← Draftها رو نشون نده
+            ).select_related('brand', 'model', 'seller').prefetch_related('car_images')
+            
+            motorcycles = Motorcycle.objects.filter(
+                is_active=True, 
+                is_verified=True,
+                is_draft=False  # ← Draftها رو نشون نده
+            ).select_related('seller').prefetch_related('motorcycle_images')
+            
+            heavies = HeavyVehicle.objects.filter(
+                is_active=True, 
+                is_verified=True,
+                is_draft=False  # ← Draftها رو نشون نده
+            ).select_related('seller').prefetch_related('heavy_images')
             
             all_vehicles = sorted(
                 chain(cars, motorcycles, heavies),
@@ -61,7 +89,7 @@ class CarListView(ListView):
                 reverse=True
             )
         
-        # ===== ۳. اعمال فیلترها (فقط برای سواری معنی‌داره) =====
+        # ===== ۳. اعمال فیلترها =====
         brand = self.request.GET.get('brand')
         min_price = self.request.GET.get('min_price')
         max_price = self.request.GET.get('max_price')
@@ -80,7 +108,6 @@ class CarListView(ListView):
             all_vehicles = [v for v in all_vehicles if city.lower() in v.city.lower()]
         
         # ===== ۴. صفحه‌بندی دستی =====
-        from django.core.paginator import Paginator
         paginator = Paginator(all_vehicles, self.paginate_by)
         page_number = self.request.GET.get('page', 1)
         page_obj = paginator.get_page(page_number)
@@ -88,16 +115,16 @@ class CarListView(ListView):
         self.page_obj = page_obj
         
         return page_obj.object_list
-
+    
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
         
-        # ===== ۱. اضافه کردن page_obj برای صفحه‌بندی =====
+        # اضافه کردن page_obj برای صفحه‌بندی
         if hasattr(self, 'page_obj'):
             context['page_obj'] = self.page_obj
             context['is_paginated'] = self.page_obj.has_other_pages()
         
-        # ===== ۲. اضافه کردن favorite_ids =====
+        # favorite_ids
         if self.request.user.is_authenticated:
             context['favorite_ids'] = list(Favorite.objects.filter(
                 user=self.request.user
@@ -105,23 +132,17 @@ class CarListView(ListView):
         else:
             context['favorite_ids'] = []
         
-        # ===== ۳. برندها با تعداد خودرو =====
+        # برندها
         context['brands'] = Brand.objects.annotate(
             car_count=Count('car')
         ).filter(car_count__gt=0).order_by('-car_count')[:10]
         
-        # ===== ۴. آمار کلی =====
         context['total_cars'] = Car.objects.filter(
-            is_active=True, is_verified=True
-        ).count()
-        context['total_motorcycles'] = Motorcycle.objects.filter(
-            is_active=True, is_verified=True
-        ).count()
-        context['total_heavies'] = HeavyVehicle.objects.filter(
-            is_active=True, is_verified=True
+            is_active=True, 
+            is_verified=True,
+            is_draft=False
         ).count()
         
-        # ===== ۵. انتخاب‌ها برای فیلترها =====
         context['transmission_choices'] = Car.TRANSMISSION_CHOICES
         context['fuel_choices'] = Car.FUEL_CHOICES
         context['color_choices'] = Car.COLOR_CHOICES
@@ -140,7 +161,8 @@ class MotorcycleListView(ListView):
     def get_queryset(self):
         return Motorcycle.objects.filter(
             is_active=True, 
-            is_verified=True
+            is_verified=True,
+            is_draft=False  # ← Draftها رو نشون نده
         ).select_related('seller').prefetch_related('motorcycle_images')
     
     def get_context_data(self, **kwargs):
@@ -152,7 +174,6 @@ class MotorcycleListView(ListView):
         else:
             context['favorite_ids'] = []
         return context
-
 
 # ============================================
 # لیست ماشین‌های سنگین
@@ -166,7 +187,8 @@ class HeavyVehicleListView(ListView):
     def get_queryset(self):
         return HeavyVehicle.objects.filter(
             is_active=True, 
-            is_verified=True
+            is_verified=True,
+            is_draft=False  # ← Draftها رو نشون نده
         ).select_related('seller').prefetch_related('heavy_images')
     
     def get_context_data(self, **kwargs):
@@ -179,7 +201,6 @@ class HeavyVehicleListView(ListView):
             context['favorite_ids'] = []
         return context
 
-
 # ============================================
 # جزئیات خودرو (سواری)
 # ============================================
@@ -189,7 +210,9 @@ class CarDetailView(DetailView):
     context_object_name = 'car'
     
     def get_queryset(self):
-        return Car.objects.select_related(
+        return Car.objects.filter(
+            is_draft=False  # ← Draftها رو نشون نده
+        ).select_related(
             'seller__profile', 'brand', 'model'
         ).prefetch_related('car_images')
     
@@ -257,7 +280,10 @@ class MotorcycleDetailView(DetailView):
     context_object_name = 'motorcycle'
     
     def get_queryset(self):
-        return Motorcycle.objects.select_related('seller__profile')
+        # ✅ Draftها رو نشون نده
+        return Motorcycle.objects.filter(
+            is_draft=False
+        ).select_related('seller__profile').prefetch_related('motorcycle_images')
     
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
@@ -289,8 +315,11 @@ class HeavyVehicleDetailView(DetailView):
     context_object_name = 'heavy'
     
     def get_queryset(self):
-        return HeavyVehicle.objects.select_related('seller__profile')
-    
+        # ✅ Draftها رو نشون نده
+        return HeavyVehicle.objects.filter(
+            is_draft=False
+        ).select_related('seller__profile').prefetch_related('heavy_images')
+
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
         heavy = self.get_object()
@@ -315,158 +344,240 @@ class HeavyVehicleDetailView(DetailView):
 # ============================================
 # ایجاد خودرو (سواری)
 # ============================================
-class CarCreateView(LoginRequiredMixin, CreateView):
-    model = Car
-    form_class = CarForm
-    template_name = 'cars/car_form.html'
+class CarCreateView(View):
+    """
+    ثبت آگهی خودرو - کاربر مهمان می‌تونه اطلاعات رو پر کنه
+    """
     
-    def form_valid(self, form):
-        print("=" * 60)
-        print("✅ form_valid CALLED")
-        print(f"FILES: {self.request.FILES}")
+    def get(self, request):
+        """نمایش فرم خالی"""
+        form = CarForm()
+        formset = CarImageFormSet()
         
-        form.instance.seller = self.request.user
-        form.instance.vehicle_type = 'car'
-        self.object = form.save()
+        return render(request, 'cars/car_form.html', {
+            'form': form,
+            'formset': formset,
+        })
+    
+    def post(self, request):
+        """پردازش فرم"""
+        form = CarForm(request.POST, request.FILES)
+        formset = CarImageFormSet(request.POST, request.FILES)
         
-        print(f"✅ Car saved with ID: {self.object.id}")
+        if form.is_valid() and formset.is_valid():
+            # ✅ چک کن کاربر لاگین کرده یا نه
+            if not request.user.is_authenticated:
+                # کاربر مهمان: Draft ذخیره کن
+                return self._save_draft(request, form, formset)
+            
+            # کاربر لاگین: مستقیم ذخیره کن
+            return self._save_car(request, form, formset)
         
-        formset = CarImageFormSet(
-            self.request.POST,
-            self.request.FILES,
-            instance=self.object
+        # اگه فرم معتبر نبود
+        messages.error(request, 'لطفاً خطاهای فرم را برطرف کنید.')
+        return render(request, 'cars/car_form.html', {
+            'form': form,
+            'formset': formset,
+        })
+    
+    def _save_draft(self, request, form, formset):
+        """ذخیره آگهی به عنوان Draft"""
+        # ساخت توکن یکتا
+        draft_token = str(uuid.uuid4())
+        
+        # ذخیره خودرو به عنوان Draft
+        car = form.save(commit=False)
+        car.seller = None              # ← فروشنده نداره
+        car.is_draft = True            # ← پیش‌نویس
+        car.is_active = False          # ← توی لیست نمایش داده نشه
+        car.is_verified = False        # ← نیاز به تایید
+        car.draft_token = draft_token  # ← توکن یکتا
+        car.vehicle_type = 'car'
+        car.save()
+        
+        # ذخیره تصاویر
+        formset.instance = car
+        formset.save()
+        
+        # ✅ ذخیره توکن توی Session
+        request.session['draft_token'] = draft_token
+        request.session['draft_type'] = 'car'
+        
+        messages.success(
+            request,
+            '✅ اطلاعات آگهی شما ذخیره شد! برای ثبت نهایی، لطفاً ثبت‌نام کنید.'
         )
         
-        print(f"formset.is_valid(): {formset.is_valid()}")
-        print(f"formset.errors: {formset.errors}")
-        print(f"formset.non_form_errors(): {formset.non_form_errors()}")
-        
-        if formset.is_valid():
-            formset.save()
-            print(f"✅ Images saved!")
-            
-            if not self.object.car_images.filter(is_main=True).exists():
-                first_image = self.object.car_images.first()
-                if first_image:
-                    first_image.is_main = True
-                    first_image.save()
-                    print(f"✅ Main image set")
-        else:
-            print(f"❌ Formset invalid!")
-            return self.form_invalid(form)
-        
-        messages.success(self.request, 'آگهی شما با موفقیت ثبت شد!')
-        return super().form_valid(form)
+        # هدایت به صفحه ثبت‌نام با توکن
+        return redirect(f"{reverse('accounts:register')}?draft={draft_token}")
     
-    def form_invalid(self, form):
-        print("=" * 60)
-        print("❌ form_invalid CALLED")
-        print(f"Form errors: {form.errors}")
-        print("=" * 60)
-        return super().form_invalid(form)
-    
-    def get_context_data(self, **kwargs):
-        context = super().get_context_data(**kwargs)
-        if self.request.POST:
-            context['formset'] = CarImageFormSet(self.request.POST, self.request.FILES)
-        else:
-            context['formset'] = CarImageFormSet()
-        return context
-
-
+    def _save_car(self, request, form, formset):
+        """ذخیره نهایی خودرو (کاربر لاگین شده)"""
+        car = form.save(commit=False)
+        car.seller = request.user
+        car.vehicle_type = 'car'
+        car.is_draft = False
+        car.is_active = True
+        car.save()
+        
+        formset.instance = car
+        formset.save()
+        
+        messages.success(request, 'آگهی شما با موفقیت ثبت شد!')
+        return redirect('cars:car_detail', pk=car.pk, slug=car.slug)
 
 # ============================================
 # ایجاد موتورسیکلت
 # ============================================
-class MotorcycleCreateView(LoginRequiredMixin, CreateView):
-    model = Motorcycle
-    form_class = MotorcycleForm
-    template_name = 'cars/motorcycle_form.html'
+
+class MotorcycleCreateView(View):
+    """
+    ثبت آگهی موتورسیکلت - کاربر مهمان می‌تونه اطلاعات رو پر کنه
+    """
     
-    def form_valid(self, form):
-        form.instance.seller = self.request.user
-        form.instance.vehicle_type = 'motorcycle'
-        self.object = form.save()
+    def get(self, request):
+        form = MotorcycleForm()
+        formset = MotorcycleImageFormSet()
         
-        formset = MotorcycleImageFormSet(
-            self.request.POST,
-            self.request.FILES,
-            instance=self.object
+        return render(request, 'cars/motorcycle_form.html', {
+            'form': form,
+            'formset': formset,
+        })
+    
+    def post(self, request):
+        form = MotorcycleForm(request.POST, request.FILES)
+        formset = MotorcycleImageFormSet(request.POST, request.FILES)
+        
+        if form.is_valid() and formset.is_valid():
+            # ✅ چک کن کاربر لاگین کرده یا نه
+            if not request.user.is_authenticated:
+                return self._save_draft(request, form, formset)
+            
+            return self._save_motorcycle(request, form, formset)
+        
+        messages.error(request, 'لطفاً خطاهای فرم را برطرف کنید.')
+        return render(request, 'cars/motorcycle_form.html', {
+            'form': form,
+            'formset': formset,
+        })
+    
+    def _save_draft(self, request, form, formset):
+        """ذخیره آگهی به عنوان Draft"""
+        draft_token = str(uuid.uuid4())
+        
+        motorcycle = form.save(commit=False)
+        motorcycle.seller = None
+        motorcycle.is_draft = True
+        motorcycle.is_active = False
+        motorcycle.is_verified = False
+        motorcycle.draft_token = draft_token
+        motorcycle.vehicle_type = 'motorcycle'
+        motorcycle.save()
+        
+        formset.instance = motorcycle
+        formset.save()
+        
+        request.session['draft_token'] = draft_token
+        request.session['draft_type'] = 'motorcycle'
+        
+        messages.success(
+            request,
+            '✅ اطلاعات آگهی شما ذخیره شد! برای ثبت نهایی، لطفاً ثبت‌نام کنید.'
         )
         
-        if formset.is_valid():
-            formset.save()
-            
-            if not self.object.motorcycle_images.filter(is_main=True).exists():
-                first_image = self.object.motorcycle_images.first()
-                if first_image:
-                    first_image.is_main = True
-                    first_image.save()
-        else:
-            return self.form_invalid(form)
+        return redirect(f"{reverse('accounts:register')}?draft={draft_token}")
+    
+    def _save_motorcycle(self, request, form, formset):
+        """ذخیره نهایی موتورسیکلت"""
+        motorcycle = form.save(commit=False)
+        motorcycle.seller = request.user
+        motorcycle.vehicle_type = 'motorcycle'
+        motorcycle.is_draft = False
+        motorcycle.is_active = True
+        motorcycle.save()
         
-        messages.success(self.request, 'موتورسیکلت با موفقیت ثبت شد!')
-        return super().form_valid(form)
-    
-    def get_context_data(self, **kwargs):
-        context = super().get_context_data(**kwargs)
-        if self.request.POST:
-            context['formset'] = MotorcycleImageFormSet(self.request.POST, self.request.FILES)
-        else:
-            context['formset'] = MotorcycleImageFormSet()
-        return context
-    
-    def form_invalid(self, form):
-        messages.error(self.request, 'لطفا اطلاعات را با دقت پر کنید.')
-        return super().form_invalid(form)
-
-
+        formset.instance = motorcycle
+        formset.save()
+        
+        messages.success(request, 'موتورسیکلت با موفقیت ثبت شد!')
+        return redirect('cars:motorcycle_detail', pk=motorcycle.pk, slug=motorcycle.slug)
 
 # ============================================
 # ایجاد ماشین سنگین
 # ============================================
-class HeavyVehicleCreateView(LoginRequiredMixin, CreateView):
-    model = HeavyVehicle
-    form_class = HeavyVehicleForm
-    template_name = 'cars/heavy_form.html'
+# cars/views.py
+
+class HeavyVehicleCreateView(View):
+    """
+    ثبت آگهی ماشین سنگین - کاربر مهمان می‌تونه اطلاعات رو پر کنه
+    """
     
-    def form_valid(self, form):
-        form.instance.seller = self.request.user
-        form.instance.vehicle_type = 'heavy'
-        self.object = form.save()
+    def get(self, request):
+        form = HeavyVehicleForm()
+        formset = HeavyVehicleImageFormSet()
         
-        formset = HeavyVehicleImageFormSet(
-            self.request.POST,
-            self.request.FILES,
-            instance=self.object
+        return render(request, 'cars/heavy_form.html', {
+            'form': form,
+            'formset': formset,
+        })
+    
+    def post(self, request):
+        form = HeavyVehicleForm(request.POST, request.FILES)
+        formset = HeavyVehicleImageFormSet(request.POST, request.FILES)
+        
+        if form.is_valid() and formset.is_valid():
+            # ✅ چک کن کاربر لاگین کرده یا نه
+            if not request.user.is_authenticated:
+                return self._save_draft(request, form, formset)
+            
+            return self._save_heavy(request, form, formset)
+        
+        messages.error(request, 'لطفاً خطاهای فرم را برطرف کنید.')
+        return render(request, 'cars/heavy_form.html', {
+            'form': form,
+            'formset': formset,
+        })
+    
+    def _save_draft(self, request, form, formset):
+        """ذخیره آگهی به عنوان Draft"""
+        draft_token = str(uuid.uuid4())
+        
+        heavy = form.save(commit=False)
+        heavy.seller = None
+        heavy.is_draft = True
+        heavy.is_active = False
+        heavy.is_verified = False
+        heavy.draft_token = draft_token
+        heavy.vehicle_type = 'heavy'
+        heavy.save()
+        
+        formset.instance = heavy
+        formset.save()
+        
+        request.session['draft_token'] = draft_token
+        request.session['draft_type'] = 'heavy'
+        
+        messages.success(
+            request,
+            '✅ اطلاعات آگهی شما ذخیره شد! برای ثبت نهایی، لطفاً ثبت‌نام کنید.'
         )
         
-        if formset.is_valid():
-            formset.save()
-            
-            if not self.object.heavy_images.filter(is_main=True).exists():
-                first_image = self.object.heavy_images.first()
-                if first_image:
-                    first_image.is_main = True
-                    first_image.save()
-        else:
-            return self.form_invalid(form)
+        return redirect(f"{reverse('accounts:register')}?draft={draft_token}")
+    
+    def _save_heavy(self, request, form, formset):
+        """ذخیره نهایی ماشین سنگین"""
+        heavy = form.save(commit=False)
+        heavy.seller = request.user
+        heavy.vehicle_type = 'heavy'
+        heavy.is_draft = False
+        heavy.is_active = True
+        heavy.save()
         
-        messages.success(self.request, 'ماشین سنگین با موفقیت ثبت شد!')
-        return super().form_valid(form)
-    
-    def get_context_data(self, **kwargs):
-        context = super().get_context_data(**kwargs)
-        if self.request.POST:
-            context['formset'] = HeavyVehicleImageFormSet(self.request.POST, self.request.FILES)
-        else:
-            context['formset'] = HeavyVehicleImageFormSet()
-        return context
-    
-    def form_invalid(self, form):
-        messages.error(self.request, 'لطفا اطلاعات را با دقت پر کنید.')
-        return super().form_invalid(form)
-
+        formset.instance = heavy
+        formset.save()
+        
+        messages.success(request, 'ماشین سنگین با موفقیت ثبت شد!')
+        return redirect('cars:heavy_detail', pk=heavy.pk, slug=heavy.slug)
 
 
 # ============================================

@@ -69,8 +69,10 @@ class BaseVehicle(models.Model):
     seller = models.ForeignKey(
         User,
         on_delete=models.CASCADE,
-        related_name='%(class)s_vehicles',  # ← این مشکل related_name رو حل میکنه
-        verbose_name='فروشنده'
+        related_name='%(class)s_vehicles',
+        verbose_name='فروشنده',
+        null=True,      
+        blank=True,     
     )
     
     title = models.CharField(max_length=200, verbose_name='عنوان آگهی')
@@ -86,6 +88,20 @@ class BaseVehicle(models.Model):
     is_active = models.BooleanField(default=True, verbose_name='فعال')
     is_verified = models.BooleanField(default=False, verbose_name='تایید شده')
     is_featured = models.BooleanField(default=False, verbose_name='آگهی ویژه')
+
+     # ✅ فیلدهای Draft (پیش‌نویس)
+    is_draft = models.BooleanField(
+        default=False,
+        verbose_name='پیش‌نویس'
+    )
+    
+    draft_token = models.CharField(
+        max_length=100,
+        blank=True,
+        null=True,
+        unique=True,
+        verbose_name='توکن پیش‌نویس'
+    )
     
     created_at = models.DateTimeField(default=timezone.now, verbose_name='تاریخ ثبت')
     updated_at = models.DateTimeField(auto_now=True, verbose_name='آخرین بروزرسانی')
