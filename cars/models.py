@@ -109,6 +109,29 @@ class BaseVehicle(models.Model):
     views = models.PositiveIntegerField(default=0, verbose_name='تعداد بازدید')
     phone_views = models.PositiveIntegerField(default=0, verbose_name='تعداد نمایش شماره')
 
+    # ✅ فیلدهای پرداخت
+    is_paid = models.BooleanField(
+        default=False,
+        verbose_name='پرداخت شده'
+    )
+    payment_amount = models.DecimalField(
+        max_digits=12,
+        decimal_places=0,
+        default=0,
+        verbose_name='مبلغ پرداخت شده (تومان)'
+    )
+    payment_date = models.DateTimeField(
+        blank=True,
+        null=True,
+        verbose_name='تاریخ پرداخت'
+    )
+    payment_tracking_code = models.CharField(
+        max_length=100,
+        blank=True,
+        null=True,
+        verbose_name='کد پیگیری پرداخت'
+    )
+    
     class Meta:
         abstract = True
         ordering = ['-created_at']

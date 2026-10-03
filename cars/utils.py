@@ -1,7 +1,8 @@
-# cars/utils.py (ایجاد فایل جدید)
 from django.db.models import Count, Avg, Q
 from datetime import datetime, timedelta
 from .models import Car
+from django.conf import settings
+from cars.models import Car, Motorcycle, HeavyVehicle
 
 def get_car_statistics():
     """گرفتن آمار خودروها"""
@@ -35,3 +36,39 @@ def get_popular_brands(limit=10):
     return Brand.objects.annotate(
         car_count=Count('car')
     ).order_by('-car_count')[:limit]
+
+
+def get_user_listings_count(user):
+    """
+    تعداد کل آگهی‌های (غیر Draft) کاربر
+    """
+    if not user.is_authenticated:
+        return 0
+    
+    cars_count = Car.objects.filter(seller=user, is_draft=False).count()
+    moto_count = Motorcycle.objects.filter(seller=user, is_draft=False).count()
+    heavy_count = HeavyVehicle.objects.filter(seller=user, is_draft=False).count()
+    
+    return cars_count + moto_count + heavy_count
+
+
+def can_post_free_listing(user):
+    """
+    آیا کاربر می‌تونه آگهی رایگان ثبت کنه؟
+    """
+    if not user.is_authenticated:
+        return False
+    
+    free_limit = getattr(settings, 'FREE_LISTINGS_PER_USER', 1)
+    current_count = get_user_listings_count(user)
+    
+    return current_count < free_limit
+
+
+def get_listing_price(user):
+    """
+    قیمت آگهی بعدی
+    """
+    if can_post_free_listing(user):
+        return 0
+    return getattr(settings, 'LISTING_PRICE', 50000)

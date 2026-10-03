@@ -26,6 +26,27 @@
                 </div>
 
                 <div class="card-body p-4">
+                <!-- ✅ این کد رو اینجا اضافه کن -->
+                    {% if user.is_authenticated %}
+                        {% if can_post_free %}
+                            <div class="alert alert-success rounded-4 mb-4 border-0">
+                                <i class="bi bi-gift-fill"></i>
+                                <strong>🎁 آگهی اول شما رایگان است!</strong>
+                                <p class="mb-0 small mt-1">
+                                    این آگهی رو رایگان ثبت کنید. برای آگهی‌های بعدی باید هزینه پرداخت کنید.
+                                </p>
+                            </div>
+                        {% else %}
+                            <div class="alert alert-warning rounded-4 mb-4 border-0">
+                                <i class="bi bi-credit-card-fill"></i>
+                                <strong>💰 هزینه ثبت آگهی</strong>
+                                <p class="mb-0 small mt-1">
+                                    برای ثبت این آگهی، باید مبلغ <strong>{{ listing_price|floatformat:0 }} تومان</strong> پرداخت کنید.
+                                </p>
+                            </div>
+                        {% endif %}
+                    {% endif %}
+                    <!-- ✅ پایان کد -->
 
                     <form method="post" enctype="multipart/form-data" novalidate>
                         {% csrf_token %}

@@ -57,7 +57,13 @@ class MotorcycleForm(forms.ModelForm):
             'is_sold',          # پیش‌فرض False
             'is_active',        # پیش‌فرض True
             'is_verified',      # پیش‌فرض False
-            'is_featured',      # پیش‌فرض False
+            'is_featured',
+            'is_draft',              # ← جدید
+            'draft_token',           # ← جدید
+            'is_paid',               # ← جدید
+            'payment_amount',        # ← جدید (مشکل اینجا بود!)
+            'payment_date',          # ← جدید
+            'payment_tracking_code', # ← جدید      # پیش‌فرض False
         ]
         widgets = {
             'title': forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'مثال: هوندا CB400'}),
@@ -75,7 +81,12 @@ class HeavyVehicleForm(forms.ModelForm):
         exclude = [
             'seller', 'vehicle_type', 'slug', 'views', 'phone_views',
             'created_at', 'updated_at',
-            'is_sold', 'is_active', 'is_verified', 'is_featured',
+            'is_sold', 'is_active', 'is_verified', 'is_featured','is_draft',              # ← جدید
+            'draft_token',           # ← جدید
+            'is_paid',               # ← جدید
+            'payment_amount',        # ← جدید (مشکل اینجا بود!)
+            'payment_date',          # ← جدید
+            'payment_tracking_code', # ← جدید
         ]
         widgets = {
             'title': forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'مثال: کامیون ولوو'}),

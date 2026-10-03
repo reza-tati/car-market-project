@@ -13,6 +13,7 @@ import uuid
 from django.views import View
 from django.utils import timezone
 from django.urls import reverse
+from cars.utils import can_post_free_listing, get_listing_price
 from .models import (
     Car, Motorcycle, HeavyVehicle,
     CarImage, MotorcycleImage, HeavyVehicleImage,
@@ -354,11 +355,17 @@ class CarCreateView(View):
         form = CarForm()
         formset = CarImageFormSet()
         
-        return render(request, 'cars/car_form.html', {
+        # ✅ اطلاعات آگهی رایگان
+        from cars.utils import can_post_free_listing, get_listing_price
+        
+        context = {
             'form': form,
             'formset': formset,
-        })
-    
+            'can_post_free': can_post_free_listing(request.user) if request.user.is_authenticated else False,
+            'listing_price': get_listing_price(request.user) if request.user.is_authenticated else 0,
+        }
+        
+        return render(request, 'cars/car_form.html', context)
     def post(self, request):
         """پردازش فرم"""
         form = CarForm(request.POST, request.FILES)
@@ -413,19 +420,46 @@ class CarCreateView(View):
     
     def _save_car(self, request, form, formset):
         """ذخیره نهایی خودرو (کاربر لاگین شده)"""
+        from cars.utils import can_post_free_listing, get_listing_price
+        
         car = form.save(commit=False)
         car.seller = request.user
         car.vehicle_type = 'car'
         car.is_draft = False
-        car.is_active = True
-        car.save()
         
-        formset.instance = car
-        formset.save()
+        # ✅ چک کن آگهی رایگان هست یا نیاز به پرداخت داره
+        if can_post_free_listing(request.user):
+            # آگهی رایگان
+            car.is_active = True
+            car.is_verified = False
+            car.is_paid = False
+            car.save()
+            
+            formset.instance = car
+            formset.save()
+            
+            messages.success(request, '🎉 آگهی شما رایگان ثبت شد! پس از تایید نمایش داده می‌شود.')
+            return redirect('cars:car_detail', pk=car.pk, slug=car.slug)
         
-        messages.success(request, 'آگهی شما با موفقیت ثبت شد!')
-        return redirect('cars:car_detail', pk=car.pk, slug=car.slug)
-
+        else:
+            # آگهی نیاز به پرداخت داره
+            price = get_listing_price(request.user)
+            
+            car.is_active = False
+            car.is_verified = False
+            car.is_paid = False
+            car.payment_amount = price
+            car.save()
+            
+            formset.instance = car
+            formset.save()
+            
+            messages.warning(
+                request,
+                f'⚠️ برای ثبت این آگهی، باید مبلغ {price:,} تومان پرداخت کنید. '
+                f'سیستم پرداخت به زودی فعال می‌شود.'
+            )
+            return redirect('cars:car_list')  # ← این خط درسته
 # ============================================
 # ایجاد موتورسیکلت
 # ============================================
@@ -439,15 +473,32 @@ class MotorcycleCreateView(View):
         form = MotorcycleForm()
         formset = MotorcycleImageFormSet()
         
-        return render(request, 'cars/motorcycle_form.html', {
+        # ✅ اطلاعات آگهی رایگان
+        from cars.utils import can_post_free_listing, get_listing_price
+        
+        context = {
             'form': form,
             'formset': formset,
-        })
-    
+            'can_post_free': can_post_free_listing(request.user) if request.user.is_authenticated else False,
+            'listing_price': get_listing_price(request.user) if request.user.is_authenticated else 0,
+        }
+        
+        return render(request, 'cars/motorcycle_form.html', context)
     def post(self, request):
         form = MotorcycleForm(request.POST, request.FILES)
         formset = MotorcycleImageFormSet(request.POST, request.FILES)
-        
+        if not form.is_valid():
+            print("=" * 60)
+            print("❌ Motorcycle Form Errors:")
+            print(form.errors)
+            print("=" * 60)
+
+        if not formset.is_valid():
+            print("=" * 60)
+            print("❌ Motorcycle Formset Errors:")
+            print(formset.errors)
+            print(formset.non_form_errors())
+            print("=" * 60)
         if form.is_valid() and formset.is_valid():
             # ✅ چک کن کاربر لاگین کرده یا نه
             if not request.user.is_authenticated:
@@ -489,24 +540,46 @@ class MotorcycleCreateView(View):
     
     def _save_motorcycle(self, request, form, formset):
         """ذخیره نهایی موتورسیکلت"""
+        from cars.utils import can_post_free_listing, get_listing_price
+        
         motorcycle = form.save(commit=False)
         motorcycle.seller = request.user
         motorcycle.vehicle_type = 'motorcycle'
         motorcycle.is_draft = False
-        motorcycle.is_active = True
-        motorcycle.save()
         
-        formset.instance = motorcycle
-        formset.save()
+        if can_post_free_listing(request.user):
+            motorcycle.is_active = True
+            motorcycle.is_verified = False
+            motorcycle.is_paid = False
+            motorcycle.save()
+            
+            formset.instance = motorcycle
+            formset.save()
+            
+            messages.success(request, '🎉 موتورسیکلت شما رایگان ثبت شد! پس از تایید نمایش داده می‌شود.')
+            return redirect('cars:motorcycle_detail', pk=motorcycle.pk, slug=motorcycle.slug)
         
-        messages.success(request, 'موتورسیکلت با موفقیت ثبت شد!')
-        return redirect('cars:motorcycle_detail', pk=motorcycle.pk, slug=motorcycle.slug)
-
+        else:
+            price = get_listing_price(request.user)
+            
+            motorcycle.is_active = False
+            motorcycle.is_verified = False
+            motorcycle.is_paid = False
+            motorcycle.payment_amount = price
+            motorcycle.save()
+            
+            formset.instance = motorcycle
+            formset.save()
+            
+            messages.warning(
+                request,
+                f'⚠️ برای ثبت این آگهی، باید مبلغ {price:,} تومان پرداخت کنید. '
+                f'سیستم پرداخت به زودی فعال می‌شود.'
+            )
+            return redirect('cars:car_list')  # ← این خط درسته
 # ============================================
 # ایجاد ماشین سنگین
 # ============================================
-# cars/views.py
-
 class HeavyVehicleCreateView(View):
     """
     ثبت آگهی ماشین سنگین - کاربر مهمان می‌تونه اطلاعات رو پر کنه
@@ -516,14 +589,34 @@ class HeavyVehicleCreateView(View):
         form = HeavyVehicleForm()
         formset = HeavyVehicleImageFormSet()
         
-        return render(request, 'cars/heavy_form.html', {
+        # ✅ اطلاعات آگهی رایگان
+        from cars.utils import can_post_free_listing, get_listing_price
+        
+        context = {
             'form': form,
             'formset': formset,
-        })
-    
+            'can_post_free': can_post_free_listing(request.user) if request.user.is_authenticated else False,
+            'listing_price': get_listing_price(request.user) if request.user.is_authenticated else 0,
+        }
+        
+        return render(request, 'cars/heavy_form.html', context)
+
     def post(self, request):
         form = HeavyVehicleForm(request.POST, request.FILES)
         formset = HeavyVehicleImageFormSet(request.POST, request.FILES)
+
+        if not form.is_valid():
+            print("=" * 60)
+            print("❌ HeavyVehicle Form Errors:")
+            print(form.errors)
+            print("=" * 60)
+
+        if not formset.is_valid():
+            print("=" * 60)
+            print("❌ HeavyVehicle Formset Errors:")
+            print(formset.errors)
+            print(formset.non_form_errors())
+            print("=" * 60)
         
         if form.is_valid() and formset.is_valid():
             # ✅ چک کن کاربر لاگین کرده یا نه
@@ -566,20 +659,43 @@ class HeavyVehicleCreateView(View):
     
     def _save_heavy(self, request, form, formset):
         """ذخیره نهایی ماشین سنگین"""
+        from cars.utils import can_post_free_listing, get_listing_price
+        
         heavy = form.save(commit=False)
         heavy.seller = request.user
         heavy.vehicle_type = 'heavy'
         heavy.is_draft = False
-        heavy.is_active = True
-        heavy.save()
         
-        formset.instance = heavy
-        formset.save()
+        if can_post_free_listing(request.user):
+            heavy.is_active = True
+            heavy.is_verified = False
+            heavy.is_paid = False
+            heavy.save()
+            
+            formset.instance = heavy
+            formset.save()
+            
+            messages.success(request, '🎉 ماشین سنگین شما رایگان ثبت شد! پس از تایید نمایش داده می‌شود.')
+            return redirect('cars:heavy_detail', pk=heavy.pk, slug=heavy.slug)
         
-        messages.success(request, 'ماشین سنگین با موفقیت ثبت شد!')
-        return redirect('cars:heavy_detail', pk=heavy.pk, slug=heavy.slug)
-
-
+        else:
+            price = get_listing_price(request.user)
+            
+            heavy.is_active = False
+            heavy.is_verified = False
+            heavy.is_paid = False
+            heavy.payment_amount = price
+            heavy.save()
+            
+            formset.instance = heavy
+            formset.save()
+            
+            messages.warning(
+                request,
+                f'⚠️ برای ثبت این آگهی، باید مبلغ {price:,} تومان پرداخت کنید. '
+                f'سیستم پرداخت به زودی فعال می‌شود.'
+            )
+            return redirect('cars:car_list')  # ← این خط درسته
 # ============================================
 # ویرایش خودرو
 # ============================================
