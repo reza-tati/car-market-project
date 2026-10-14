@@ -67,6 +67,8 @@ INSTALLED_APPS = [
     'search',
     'core',
     'chat',
+    'azbankgateways',  # ← اضافه کن
+    'payments',
 
     # پکیج‌های خارجی
     'crispy_forms',
@@ -116,15 +118,15 @@ LOGOUT_REDIRECT_URL = 'cars:car_list'
 # Database
 # https://docs.djangoproject.com/en/4.2/ref/settings/#databases
 
-# settings.py
+# Database
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.postgresql',
-        'NAME': 'carmarket_db',
-        'USER': 'postgres',
-        'PASSWORD': '123',  # ← پسورد خودت رو بذار
-        'HOST': 'localhost',
-        'PORT': '5432',
+        'NAME': config('DB_NAME', default='carmarket_db'),
+        'USER': config('DB_USER', default='postgres'),
+        'PASSWORD': config('DB_PASSWORD', default='123'),
+        'HOST': config('DB_HOST', default='localhost'),
+        'PORT': config('DB_PORT', default='5432'),
     }
 }
 
@@ -230,3 +232,23 @@ LISTING_PRICE = 50000  # ۵۰ هزار تومان
 
 # متن‌های نمایشی
 LISTING_PRICE_TEXT = '۵۰,۰۰۰ تومان'
+
+# ============================================
+# تنظیمات درگاه پرداخت
+# ============================================
+
+AZ_IRANIAN_BANK_GATEWAYS = {
+    'GATEWAYS': {
+        'ZARINPAL': {
+            'MERCHANT_CODE': config('ZARINPAL_MERCHANT_CODE', default=''),
+            'SANDBOX': config('ZARINPAL_SANDBOX', default=True, cast=bool),
+        },
+    },
+    'DEFAULT': 'ZARINPAL',
+    'CURRENCY': 'IRR',
+    'TRACKING_CODE_QUERY_PARAM': 'tc',
+    'TRACKING_CODE_LENGTH': 16,
+    'SETTING_VALUE_READER_CLASS': 'azbankgateways.readers.DefaultReader',
+    'BANK_PRIORITIES': ['ZARINPAL'],
+    'IS_SAFE_GET_GATEWAY_PAYMENT': False,
+}

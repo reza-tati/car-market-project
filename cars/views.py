@@ -459,7 +459,7 @@ class CarCreateView(View):
                 f'⚠️ برای ثبت این آگهی، باید مبلغ {price:,} تومان پرداخت کنید. '
                 f'سیستم پرداخت به زودی فعال می‌شود.'
             )
-            return redirect('cars:car_list')  # ← این خط درسته
+            return redirect('payments:start_payment', vehicle_type='car', vehicle_id=car.id)  # ← این خط درسته
 # ============================================
 # ایجاد موتورسیکلت
 # ============================================
@@ -576,7 +576,7 @@ class MotorcycleCreateView(View):
                 f'⚠️ برای ثبت این آگهی، باید مبلغ {price:,} تومان پرداخت کنید. '
                 f'سیستم پرداخت به زودی فعال می‌شود.'
             )
-            return redirect('cars:car_list')  # ← این خط درسته
+            redirect('payments:start_payment', vehicle_type='motorcycle', vehicle_id=motorcycle.id)  # ← این خط درسته
 # ============================================
 # ایجاد ماشین سنگین
 # ============================================
