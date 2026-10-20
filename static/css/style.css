@@ -1,85 +1,14 @@
-
-.featured-badge {
-    position: absolute;
-    top: 12px;
-    left: 12px;
-    background: linear-gradient(135deg, #ffd93d 0%, #ff6b6b 100%);
-    color: #2d3436;
-    padding: 4px 14px;
-    border-radius: 30px;
-    font-size: 0.7rem;
-    font-weight: 800;
-    box-shadow: 0 4px 15px rgba(255, 107, 107, 0.4);
-    display: flex;
-    align-items: center;
-    gap: 4px;
-    z-index: 10;
+/* ============================================
+   استایل‌های پایه
+   ============================================ */
+body {
+    font-family: 'Vazir', sans-serif;
+    background-color: #f8f9fa;
 }
 
-.featured-badge i {
-    font-size: 0.65rem;
-    color: #f39c12;
-}
-/* ===== برچسب ویژه ===== */
-/* .featured-badge {
-    position: absolute;
-    top: 12px;
-    left: 12px;
-    background: linear-gradient(135deg, #f6d365 0%, #fda085 100%);
-    color: #2d3436;
-    padding: 5px 14px;
-    border-radius: 30px;
-    font-size: 0.7rem;
-    font-weight: 800;
-    letter-spacing: 0.3px;
-    box-shadow: 0 4px 12px rgba(253, 160, 133, 0.4);
-    display: flex;
-    align-items: center;
-    gap: 4px;
-    z-index: 10;
-} */
-
-/* .featured-badge i {
-    font-size: 0.7rem;
-    color: #f39c12;
-} */
-/* ===== برچسب ویژه ===== */
-/* .featured-badge {
-    position: absolute;
-    top: 12px;
-    left: 12px;
-    background: linear-gradient(135deg, #ffd93d 0%, #ff6b6b 100%);
-    color: #2d3436;
-    padding: 4px 14px;
-    border-radius: 30px;
-    font-size: 0.7rem;
-    font-weight: 800;
-    letter-spacing: 0.3px;
-    box-shadow: 0 4px 15px rgba(255, 107, 107, 0.4);
-    display: flex;
-    align-items: center;
-    gap: 4px;
-    z-index: 10;
-} */
-
-/* .featured-badge i {
-    font-size: 0.65rem;
-    color: #f39c12;
-} */
-/* ===== رفع چپ‌چینی منوی برندها ===== */
-.dropdown-menu,
-.dropdown-item {
-    text-align: right;
-}
-
-.dropdown-menu {
-    right: 0;
-    left: auto;
-}
 /* ============================================
    استایل‌های هدر (Navbar)
    ============================================ */
-
 .navbar {
     box-shadow: 0 2px 20px rgba(0, 0, 0, 0.06);
     padding: 0.8rem 0;
@@ -119,6 +48,7 @@
     margin-left: 6px;
 }
 
+/* فرم جستجوی هدر */
 .navbar .input-group {
     border-radius: 30px;
     overflow: hidden;
@@ -153,6 +83,9 @@
     box-shadow: 0 4px 15px rgba(13, 110, 253, 0.3);
 }
 
+/* ============================================
+   استایل منوهای کشویی (Dropdown)
+   ============================================ */
 .dropdown-menu {
     border: none;
     border-radius: 16px;
@@ -160,6 +93,9 @@
     padding: 0.5rem;
     min-width: 200px;
     margin-top: 8px;
+    text-align: right; /* رفع چپ‌چینی */
+    right: 0;
+    left: auto;
 }
 
 .dropdown-item {
@@ -168,6 +104,7 @@
     font-weight: 500;
     color: #4a5568;
     transition: all 0.2s ease;
+    text-align: right; /* رفع چپ‌چینی */
 }
 
 .dropdown-item:hover {
@@ -186,7 +123,6 @@
 /* ============================================
    استایل‌های فوتر
    ============================================ */
-
 .footer {
     background: #f8f9fa;
     border-top: 1px solid #e9ecef;
@@ -215,6 +151,7 @@
     transform: translateX(-4px);
 }
 
+/* شبکه‌های اجتماعی */
 .social-links a {
     display: inline-flex;
     align-items: center;
@@ -235,19 +172,12 @@
     box-shadow: 0 6px 20px rgba(13, 110, 253, 0.12);
 }
 
-.social-links a:hover i.bi-instagram {
-    color: #e4405f;
-}
-.social-links a:hover i.bi-telegram {
-    color: #0088cc;
-}
-.social-links a:hover i.bi-whatsapp {
-    color: #25d366;
-}
-.social-links a:hover i.bi-linkedin {
-    color: #0a66c2;
-}
+.social-links a:hover i.bi-instagram { color: #e4405f; }
+.social-links a:hover i.bi-telegram { color: #0088cc; }
+.social-links a:hover i.bi-whatsapp { color: #25d366; }
+.social-links a:hover i.bi-linkedin { color: #0a66c2; }
 
+/* دکمه‌های برند در فوتر */
 .footer .btn-outline-secondary {
     border-color: #dee2e6;
     color: #4a5568;
@@ -263,11 +193,10 @@
     color: white;
     transform: translateY(-2px);
 }
+
 /* ============================================
    استایل چک‌باکس "تصویر اصلی" در فرم‌ها
    ============================================ */
-
-/* کانتینر چک‌باکس */
 .form-check {
     display: flex;
     align-items: center;
@@ -286,7 +215,6 @@
     border-color: #667eea;
 }
 
-/* چک‌باکس */
 .form-check-input[type="checkbox"] {
     width: 22px;
     height: 22px;
@@ -316,7 +244,6 @@
     box-shadow: 0 0 0 4px rgba(102, 126, 234, 0.2);
 }
 
-/* برچسب چک‌باکس */
 .form-check-label {
     cursor: pointer;
     font-size: 0.95rem;
@@ -326,7 +253,6 @@
     margin: 0;
 }
 
-/* ✅ وقتی چک‌باکس تیک می‌خوره، کل کانتینر رنگی میشه */
 .form-check:has(.form-check-input:checked) {
     background: #e7f0ff;
     border-color: #667eea;
@@ -336,7 +262,10 @@
     color: #667eea;
     font-weight: 700;
 }
-/* ===== استایل Placeholder ===== */
+
+/* ============================================
+   استایل Placeholder
+   ============================================ */
 .form-control::placeholder {
     color: #adb5bd;
     opacity: 0.6;
@@ -346,7 +275,35 @@
 .form-control:focus::placeholder {
     opacity: 0.4;
 }
-/* ===== انتخاب رنگ با آیکون ===== */
+
+/* ============================================
+   استایل برچسب ویژه
+   ============================================ */
+.featured-badge {
+    position: absolute;
+    top: 12px;
+    left: 12px;
+    background: linear-gradient(135deg, #ffd93d 0%, #ff6b6b 100%);
+    color: #2d3436;
+    padding: 4px 14px;
+    border-radius: 30px;
+    font-size: 0.7rem;
+    font-weight: 800;
+    box-shadow: 0 4px 15px rgba(255, 107, 107, 0.4);
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    z-index: 10;
+}
+
+.featured-badge i {
+    font-size: 0.65rem;
+    color: #f39c12;
+}
+
+/* ============================================
+   استایل انتخاب رنگ با آیکون (Select2)
+   ============================================ */
 .color-option {
     display: flex;
     align-items: center;
@@ -390,4 +347,36 @@
 
 .select2-container--bootstrap-5 .select2-results__option {
     padding: 8px 12px;
+}
+
+/* ============================================
+   کارت خودرو
+   ============================================ */
+.hover-card {
+    transition: all 0.3s ease;
+    border: none;
+    border-radius: 16px;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.06);
+}
+
+.hover-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 12px 30px rgba(0, 0, 0, 0.12) !important;
+}
+
+/* ============================================
+   دکمه گرادیانت
+   ============================================ */
+.btn-gradient-success {
+    background: linear-gradient(135deg, #11998e 0%, #38ef7d 100%);
+    color: white;
+    border: none;
+    font-weight: 600;
+    transition: all 0.3s ease;
+}
+
+.btn-gradient-success:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 25px rgba(17, 153, 142, 0.4);
+    color: white;
 }
