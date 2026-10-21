@@ -453,12 +453,6 @@ class CarCreateView(View):
             
             formset.instance = car
             formset.save()
-            
-            messages.warning(
-                request,
-                f'⚠️ برای ثبت این آگهی، باید مبلغ {price:,} تومان پرداخت کنید. '
-                f'سیستم پرداخت به زودی فعال می‌شود.'
-            )
             return redirect('payments:start_payment', vehicle_type='car', vehicle_id=car.id)  # ← این خط درسته
 # ============================================
 # ایجاد موتورسیکلت
@@ -570,13 +564,7 @@ class MotorcycleCreateView(View):
             
             formset.instance = motorcycle
             formset.save()
-            
-            messages.warning(
-                request,
-                f'⚠️ برای ثبت این آگهی، باید مبلغ {price:,} تومان پرداخت کنید. '
-                f'سیستم پرداخت به زودی فعال می‌شود.'
-            )
-            redirect('payments:start_payment', vehicle_type='motorcycle', vehicle_id=motorcycle.id)  # ← این خط درسته
+            return redirect('payments:start_payment', vehicle_type='motorcycle', vehicle_id=motorcycle.id)  # ← این خط درسته
 # ============================================
 # ایجاد ماشین سنگین
 # ============================================
@@ -634,7 +622,6 @@ class HeavyVehicleCreateView(View):
     def _save_draft(self, request, form, formset):
         """ذخیره آگهی به عنوان Draft"""
         draft_token = str(uuid.uuid4())
-        
         heavy = form.save(commit=False)
         heavy.seller = None
         heavy.is_draft = True
@@ -643,18 +630,14 @@ class HeavyVehicleCreateView(View):
         heavy.draft_token = draft_token
         heavy.vehicle_type = 'heavy'
         heavy.save()
-        
         formset.instance = heavy
         formset.save()
-        
         request.session['draft_token'] = draft_token
         request.session['draft_type'] = 'heavy'
-        
         messages.success(
             request,
             '✅ اطلاعات آگهی شما ذخیره شد! برای ثبت نهایی، لطفاً ثبت‌نام کنید.'
         )
-        
         return redirect(f"{reverse('accounts:register')}?draft={draft_token}")
     
     def _save_heavy(self, request, form, formset):
@@ -671,31 +654,21 @@ class HeavyVehicleCreateView(View):
             heavy.is_verified = False
             heavy.is_paid = False
             heavy.save()
-            
             formset.instance = heavy
             formset.save()
-            
             messages.success(request, '🎉 ماشین سنگین شما رایگان ثبت شد! پس از تایید نمایش داده می‌شود.')
             return redirect('cars:heavy_detail', pk=heavy.pk, slug=heavy.slug)
         
         else:
             price = get_listing_price(request.user)
-            
             heavy.is_active = False
             heavy.is_verified = False
             heavy.is_paid = False
             heavy.payment_amount = price
             heavy.save()
-            
             formset.instance = heavy
             formset.save()
-            
-            messages.warning(
-                request,
-                f'⚠️ برای ثبت این آگهی، باید مبلغ {price:,} تومان پرداخت کنید. '
-                f'سیستم پرداخت به زودی فعال می‌شود.'
-            )
-            return redirect('cars:car_list')  # ← این خط درسته
+            return redirect('payments:start_payment', vehicle_type='heavy', vehicle_id=heavy.id)
 # ============================================
 # ویرایش خودرو
 # ============================================
