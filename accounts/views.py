@@ -7,6 +7,7 @@ from django.contrib.auth.views import LoginView
 from .forms import UserUpdateForm, ProfileUpdateForm, PhoneRegisterForm
 from django.contrib.auth.backends import ModelBackend
 from cars.models import Favorite, Car, Motorcycle, HeavyVehicle
+from cars.utils import can_post_free_listing, get_listing_price
 
 
 # ============================================
@@ -74,75 +75,84 @@ def register(request):
 
 
 # ============================================
-# اتصال Draft به کاربر
+# اتصال Draft به کاربر (با منطق پرداخت)
 # ============================================
 
 def _attach_draft_to_user(request, user, draft_token):
     """
-    اتصال Draft به کاربر (هم برای ثبت‌نام و هم برای لاگین)
+    اتصال Draft به کاربر با رعایت منطق پرداخت:
+    - آگهی اول رایگان → منتشر
+    - آگهی دوم به بعد → نیاز به پرداخت
+    
+    Returns:
+        HttpResponse (redirect) در صورت موفقیت، None در غیر این صورت
     """
-    try:
-        # ✅ خودرو سواری
-        car = Car.objects.filter(draft_token=draft_token, is_draft=True).first()
-        if car:
-            car.seller = user
-            car.is_draft = False
-            car.is_active = True
-            car.is_verified = False
-            car.draft_token = None
-            car.save()
-            
-            request.session.pop('draft_token', None)
-            request.session.pop('draft_type', None)
-            
-            messages.success(
-                request,
-                '🎉 آگهی شما با موفقیت ثبت شد!'
-            )
-            return redirect('cars:car_detail', pk=car.pk, slug=car.slug)
-        
-        # ✅ موتورسیکلت
+    vehicle = None
+    vehicle_type = None
+
+    # پیدا کردن Draft در هر سه مدل
+    car = Car.objects.filter(draft_token=draft_token, is_draft=True).first()
+    if car:
+        vehicle, vehicle_type = car, 'car'
+    else:
         moto = Motorcycle.objects.filter(draft_token=draft_token, is_draft=True).first()
         if moto:
-            moto.seller = user
-            moto.is_draft = False
-            moto.is_active = True
-            moto.is_verified = False
-            moto.draft_token = None
-            moto.save()
-            
-            request.session.pop('draft_token', None)
-            request.session.pop('draft_type', None)
-            
-            messages.success(
-                request,
-                '🎉 آگهی شما با موفقیت ثبت شد!'
-            )
-            return redirect('cars:motorcycle_detail', pk=moto.pk, slug=moto.slug)
-        
-        # ✅ ماشین سنگین
-        heavy = HeavyVehicle.objects.filter(draft_token=draft_token, is_draft=True).first()
-        if heavy:
-            heavy.seller = user
-            heavy.is_draft = False
-            heavy.is_active = True
-            heavy.is_verified = False
-            heavy.draft_token = None
-            heavy.save()
-            
-            request.session.pop('draft_token', None)
-            request.session.pop('draft_type', None)
-            
-            messages.success(
-                request,
-                '🎉 آگهی شما با موفقیت ثبت شد!'
-            )
-            return redirect('cars:heavy_detail', pk=heavy.pk, slug=heavy.slug)
-    
-    except Exception as e:
-        print(f"❌ خطا در اتصال Draft: {e}")
-    
-    return None
+            vehicle, vehicle_type = moto, 'motorcycle'
+        else:
+            heavy = HeavyVehicle.objects.filter(draft_token=draft_token, is_draft=True).first()
+            if heavy:
+                vehicle, vehicle_type = heavy, 'heavy'
+
+    if not vehicle:
+        return None
+
+    # اتصال به کاربر
+    vehicle.seller = user
+    vehicle.is_draft = False
+    vehicle.draft_token = None
+
+    # ✅ منطق پرداخت
+    if can_post_free_listing(user):
+        # آگهی رایگان
+        vehicle.is_active = True
+        vehicle.is_verified = False
+        vehicle.is_paid = False
+        vehicle.save()
+
+        request.session.pop('draft_token', None)
+        request.session.pop('draft_type', None)
+
+        messages.success(request, '🎉 آگهی شما با موفقیت ثبت شد!')
+
+        if vehicle_type == 'car':
+            return redirect('cars:car_detail', pk=vehicle.pk, slug=vehicle.slug)
+        elif vehicle_type == 'motorcycle':
+            return redirect('cars:motorcycle_detail', pk=vehicle.pk, slug=vehicle.slug)
+        else:
+            return redirect('cars:heavy_detail', pk=vehicle.pk, slug=vehicle.slug)
+
+    else:
+        # نیاز به پرداخت
+        price = get_listing_price(user)
+        vehicle.is_active = False
+        vehicle.is_verified = False
+        vehicle.is_paid = False
+        vehicle.payment_amount = price
+        vehicle.save()
+
+        request.session.pop('draft_token', None)
+        request.session.pop('draft_type', None)
+
+        messages.info(
+            request,
+            '💳 برای انتشار آگهی، لطفاً پرداخت را تکمیل کنید.'
+        )
+
+        return redirect(
+            'payments:start_payment',
+            vehicle_type=vehicle_type,
+            vehicle_id=vehicle.id
+        )
 
 
 # ============================================
