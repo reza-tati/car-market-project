@@ -1,0 +1,3118 @@
+/* ---- کدهای قالب جدید ---- */
+@font-face {
+
+  font-family: "IRANYekanX";
+
+  src: url("../fonts/IRANYekanXVF.woff2") format("woff2");
+
+  font-weight: 10 330;
+
+  font-style: normal;
+
+  font-display: swap;
+
+}
+
+
+
+
+:root {
+
+  --blue: #2b5dff;
+  /* آبی اصلی دکمه‌ها و بخش‌های تأکیدی. */
+
+  --blue-dark: #1749ed;
+  /* آبی تیره‌تر برای حالت hover. */
+
+  --blue-soft: #eaf0ff;
+  /* آبی کم‌رنگ پس‌زمینه برخی کنترل‌ها. */
+
+  --ink: #17191f;
+  /* رنگ اصلی عنوان‌ها. */
+
+  --text: #39445a;
+  /* رنگ متن توضیحی. */
+
+  --muted: #7c8ba5;
+  /* رنگ نوشته‌های کم‌اهمیت‌تر. */
+
+  --page: #f5f7fa;
+  /* رنگ پس‌زمینه کلی صفحه، مشابه SVG. */
+
+  --white: #ffffff;
+  /* سفید برای کارت‌ها و نوار بالای سایت. */
+
+  --line: #e8edf5;
+  /* رنگ خط‌های ظریف جداکننده. */
+
+  --radius-card: 24px;
+  /* شعاع گوشه کارت‌ها. */
+
+  --radius-large: 28px;
+  /* شعاع گوشه بنر بزرگ. */
+
+  --content-width: 1128px;
+  /* حداکثر عرض محتوای سایت در نمایشگر بزرگ. */
+
+  --shadow: 0 12px 32px rgba(35, 59, 104, 0.08);
+  /* سایه نرم زیر کارت‌ها. */
+
+}
+
+
+
+
+\* {
+
+  box-sizing: border-box;
+  /* padding و border را داخل عرض و ارتفاع محاسبه می‌کند. */
+
+}
+
+
+
+
+
+html {
+
+  scroll-behavior: smooth;
+  /* هنگام رفتن به یک id، صفحه ناگهانی نمی‌پرد. */
+
+}
+
+
+
+
+body {
+
+  margin: 0;
+  /* حاشیه پیش‌فرض مرورگر را حذف می‌کند. */
+
+  background: var(--page);
+  /* پس‌زمینه خاکستری روشن مطابق طرح. */
+
+  color: var(--text);
+  /* رنگ پیش‌فرض متن‌ها. */
+
+  font-family: "IRANYekanX", "IRANYekanXVF", sans-serif;
+  /* فونت‌های عمومی؛ در اکثر سیستم‌ها بدون نصب اضافه کار می‌کنند. */
+
+  font-weight: 20;
+
+  line-height: 1.7;
+  /* فاصله عمودی خطوط را برای خوانایی فارسی افزایش می‌دهد. */
+
+}
+
+
+
+/* تصاویر نباید از قاب والد خود بیرون بزنند. */
+
+img {
+
+  display: block;
+  /* فاصله خالی زیر تصویر inline را حذف می‌کند. */
+
+  max-width: 100%;
+  /* تصویر را از عرض ظرف بزرگ‌تر نمی‌کند. */
+
+}
+
+
+
+/* پیوندها به‌طور پیش‌فرض خط زیر ندارند. */
+
+a {
+
+  color: inherit;
+  /* رنگ متن را از والد به ارث می‌گیرد. */
+
+  text-decoration: none;
+  /* زیرخط استاندارد مرورگر را حذف می‌کند. */
+
+}
+
+
+
+/* دکمه‌ها و ورودی‌ها از فونت بقیه سایت پیروی می‌کنند. */
+
+button {
+
+  font: inherit;
+  /* اندازه و خانواده فونت را از body می‌گیرد. */
+
+  cursor: pointer;
+  /* نشانگر ماوس را به حالت قابل کلیک تبدیل می‌کند. */
+
+}
+
+
+
+/* ظرف مشترک بخش‌ها را در مرکز صفحه و با عرض مشخص نگه می‌دارد. */
+
+.container {
+
+  width: min(var(--content-width), calc(100% - 48px));
+  /* 1128px یا عرض صفحه منهای حاشیه دو طرف. */
+
+  margin-inline: auto;
+  /* حاشیه خودکار در دو طرف، ظرف را وسط می‌گذارد. */
+
+}
+
+
+
+/* ==================== سربرگ ==================== */
+
+.site-header {
+
+  position: relative;
+  /* نقطه مرجع برای اجزای احتمالی داخل هدر. */
+
+  z-index: 10;
+  /* هدر را روی عناصر عادی صفحه نگه می‌دارد. */
+
+  background: var(--white);
+  /* زمینه سفید هدر. */
+
+  box-shadow: 0 5px 24px rgba(32, 55, 90, 0.04);
+  /* سایه بسیار ملایم زیر هدر. */
+
+}
+
+
+
+.header-inner {
+
+  min-height: 100px;
+  /* ارتفاع هدر نزدیک به اندازه طرح اصلی. */
+
+  display: flex;
+  /* لوگو، منو و دکمه‌ها را در یک ردیف می‌چیند. */
+
+  align-items: center;
+  /* همه موارد را عمودی وسط‌چین می‌کند. */
+
+  justify-content: space-between;
+  /* فضای خالی را بین گروه‌های هدر تقسیم می‌کند. */
+
+  gap: 28px;
+  /* حداقل فاصله گروه‌ها را تعیین می‌کند. */
+
+}
+
+
+
+.brand-logo {
+
+  display: inline-flex;
+  /* نماد و متن لوگو در یک ردیف قرار می‌گیرند. */
+
+  align-items: center;
+  /* نماد و نوشته عمودی هم‌تراز می‌شوند. */
+
+  gap: 8px;
+  /* فاصله نماد از نوشته لوگو. */
+
+  flex-shrink: 0;
+  /* لوگو در فضای تنگ فشرده نمی‌شود. */
+
+  color: var(--blue);
+  /* رنگ اصلی لوگو. */
+
+  white-space: nowrap;
+  /* نام برند در یک خط باقی می‌ماند. */
+
+}
+
+
+
+.brand-mark {
+
+  font-size: 30px;
+  /* اندازه نماد ماشین کنار لوگو. */
+
+  line-height: 1;
+  /* ارتفاع خط اطراف نماد را جمع‌وجور می‌کند. */
+
+}
+
+
+
+.brand-name {
+
+  font-size: 28px;
+  /* اندازه نوشته بازار خودرو. */
+
+  font-weight: 900;
+  /* ضخامت زیاد برای حس لوگویی. */
+
+  letter-spacing: -1.2px;
+  /* فاصله حروف را کمی فشرده می‌کند. */
+
+}
+
+
+
+.main-nav {
+
+  display: flex;
+  /* پیوندهای ناوبری را کنار هم قرار می‌دهد. */
+
+  align-items: center;
+  /* پیوندها را عمودی وسط‌چین می‌کند. */
+
+  gap: 34px;
+  /* فاصله بین خودرو، سنگین و موتور. */
+
+  color: #7084ab;
+  /* رنگ ملایم لینک‌های منو. */
+
+  font-size: 15px;
+  /* اندازه متن منو. */
+
+  font-weight: 700;
+  /* کمی ضخیم‌تر از متن عادی. */
+
+}
+
+
+
+.main-nav a {
+
+  transition: color 180ms ease;
+  /* تغییر رنگ hover را نرم می‌کند. */
+
+}
+
+
+
+.main-nav a:hover,
+
+.footer-links a:hover {
+
+  color: 00A6FB;
+  /* هنگام رفتن ماوس روی لینک، آبی می‌شود. */
+
+}
+
+
+
+.header-actions {
+
+  display: flex;
+  /* دکمه‌های هدر در یک ردیف‌اند. */
+
+  align-items: center;
+  /* دکمه‌ها عمودی وسط‌چین می‌شوند. */
+
+  gap: 12px;
+  /* فاصله دکمه‌ها از هم. */
+
+}
+
+
+
+.button {
+
+  min-height: 46px;
+  /* ارتفاع حداقلی مشترک دکمه‌ها. */
+
+  padding: 0 22px;
+  /* فاصله متن از دو لبه دکمه. */
+
+  border: 0;
+  /* کادر پیش‌فرض دکمه را حذف می‌کند. */
+
+  border-radius: 999px;
+  /* گوشه‌های کاملاً گرد و کپسولی. */
+
+  display: inline-flex;
+  /* متن و نماد داخل دکمه کنار هم می‌مانند. */
+
+  align-items: center;
+  /* محتویات دکمه عمودی وسط‌چین می‌شوند. */
+
+  justify-content: center;
+  /* محتویات دکمه افقی وسط‌چین می‌شوند. */
+
+  gap: 16px;
+  /* فاصله متن از فلش. */
+
+  white-space: nowrap;
+  /* نوشته دکمه در دو خط نمی‌شکند. */
+
+  font-size: 14px;
+  /* اندازه متن دکمه. */
+
+  font-weight: 700;
+  /* متن دکمه ضخیم است. */
+
+  transition: background 180ms ease, transform 180ms ease;
+  /* تغییر رنگ و حرکت دکمه نرم است. */
+
+}
+
+
+
+.button:hover {
+
+  transform: translateY(-2px);
+  /* دکمه هنگام hover کمی به بالا حرکت می‌کند. */
+
+}
+
+
+
+.button-primary {
+
+  background: #00A6FB;
+  /* زمینه آبی اصلی. */
+
+  color: var(--white);
+  /* متن سفید برای تضاد مناسب. */
+
+}
+
+
+
+.button-primary:hover {
+
+  background: var(--blue-dark);
+  /* رنگ آبی تیره‌تر هنگام hover. */
+
+}
+
+
+
+.button-muted {
+
+  background: #edf1f8;
+  /* زمینه خاکستری-آبی کم‌رنگ. */
+
+  color: #7184a5;
+  /* نوشته دکمه کم‌رنگ. */
+
+}
+
+
+
+.icon-button {
+
+  width: 46px;
+  /* عرض دکمه اعلان. */
+
+  height: 46px;
+  /* ارتفاع دکمه اعلان. */
+
+  border: 0;
+  /* حذف خط دور دکمه. */
+
+  border-radius: 50%;
+  /* دکمه گرد. */
+
+  background: #edf1f8;
+  /* پس‌زمینه روشن. */
+
+  color: #8da0c2;
+  /* رنگ نماد اعلان. */
+
+  font-size: 22px;
+  /* اندازه نماد. */
+
+}
+
+
+
+.menu-toggle {
+
+  display: none;
+  /* منوی همبرگری در دسکتاپ پنهان است. */
+
+  width: 42px;
+  /* عرض دکمه موبایل. */
+
+  height: 42px;
+  /* ارتفاع دکمه موبایل. */
+
+  border: 0;
+  /* حذف کادر پیش‌فرض. */
+
+  border-radius: 12px;
+  /* گوشه گرد. */
+
+  background: var(--blue-soft);
+  /* زمینه آبی روشن. */
+
+  color: var(--blue);
+  /* نماد آبی. */
+
+  font-size: 23px;
+  /* اندازه نماد منو. */
+
+}
+
+/* بنر بززگ جدیددددد */
+
+/* =========================================
+
+   HERO - طراحی جدید
+
+   ========================================= */
+
+
+
+
+
+
+
+
+
+
+
+
+
+.hero {
+
+  position: relative;
+  /* مبنای موقعیت‌دهی لایه‌های داخلی بنر است. */
+
+  isolation: isolate;
+  /* لایه‌های بنر را از عناصر بیرونی جدا می‌کند. */
+
+  width: min(var(--content-width), calc(100% - 48px));
+  /* پهنای بنر را به اندازه طرح مرجع محدود می‌کند. */
+
+  height: 480px;
+  /* ارتفاع بنر دقیقاً برابر SVG مرجع است. */
+
+  margin: 34px auto 0;
+  /* فاصله بالای بنر و مرکزچین‌کردن آن را تعیین می‌کند. */
+
+  overflow: hidden;
+  /* هر قسمت تصویر بیرون از گوشه‌های گرد پنهان می‌شود. */
+
+  border-radius: var(--card-radius);
+  /* گوشه‌های بنر را ۲۴ پیکسل گرد می‌کند. */
+
+  background: var(--hero-blue);
+  /* رنگ پایه سمت چپ بنر. */
+
+  box-shadow: 0 16px 32px rgba(52, 60, 106, 0.08);
+  /* سایه بنر را از زمینه جدا می‌کند. */
+
+}
+
+
+
+.hero-art {
+
+  position: absolute;
+  /* لایه تصویری را روی کل بنر قرار می‌دهد. */
+
+  inset: 0;
+  /* لایه را به تمام چهار سمت بنر می‌چسباند. */
+
+  z-index: -1;
+  /* این لایه پشت متن و دکمه‌های بنر می‌ماند. */
+
+  overflow: hidden;
+  /* هر تصویر تکرارشونده بیرون از بنر دیده نمی‌شود. */
+
+  background: var(--hero-blue);
+  /* رنگ آبی زیر تصویر خودرو است. */
+
+}
+
+
+
+.hero-car-pattern {
+
+  position: absolute;
+  /* خودرو را آزادانه روی زمینه آبی می‌چیند. */
+
+  inset: 0;
+  /* محدوده تکرار را هم‌اندازه بنر می‌کند. */
+
+  background-image: url("../assets/images/image0_2_2.webp");
+  /* تصویر شفاف خودرو از SVG اصلی است. */
+
+  background-repeat: no-repeat;
+  /* تصویر اول یک‌بار رسم می‌شود؛ تصویر دوم با pseudo-element کنترل می‌شود. */
+
+  background-size: 675px 675px;
+  /* مقیاس خودرو را برای ارتفاع نمایشی بنر تنظیم می‌کند. */
+
+  background-position: -112px -116px;
+  /* خودرو را کمی بیشتر به چپ می‌بریم تا سپر آن با مرز مورب طرح اصلی هماهنگ شود. */
+
+}
+
+
+
+.hero-car-pattern::after {
+
+  content: "";
+  /* pseudo-element دوم، تکه‌ای از خودروی تکرارشونده در مرجع را بازسازی می‌کند. */
+
+  position: absolute;
+  /* تصویر دوم داخل همان لایه خودرو مستقل جای‌گذاری می‌شود. */
+
+  top: 0;
+  /* از بالای لایه تصویر شروع می‌شود. */
+
+  left: 540px;
+  /* تصویر دوم را جلوتر می‌بریم تا فقط همان نوار محدودِ قابل مشاهده در مرجع دیده شود. */
+
+  width: 675px;
+  /* عرض تصویر دوم با مقیاس تصویر اصلی یکسان است. */
+
+  height: 675px;
+  /* ارتفاع تصویر دوم با مقیاس تصویر اصلی یکسان است. */
+
+  background-image: url("../assets/images/image0_2_2.webp");
+  /* همان خودروی شفاف از فایل SVG اصلی. */
+
+  background-repeat: no-repeat;
+  /* فقط یک نسخه از خودرو نمایش داده می‌شود. */
+
+  background-size: 675px 675px;
+  /* مقیاس تصویر دوم با تصویر اول هماهنگ است. */
+
+  background-position: 0 -110px;
+  /* خودرو را عمودی با نمونه اول هم‌تراز می‌کند. */
+
+}
+
+
+
+.hero-dark-shape {
+
+  position: absolute;
+  /* سطح مشکی را روی لایه خودرو قرار می‌دهد. */
+
+  inset: 0;
+  /* سطح مشکی اندازه کل بنر را می‌گیرد. */
+
+  background: var(--hero-dark);
+  /* رنگ مشکی-ذغالی سمت راست بنر. */
+
+  z-index: 1;
+  /* سطح تیره زیر نوار خودروی دوم و بالای تصویر پایه رسم می‌شود. */
+
+  clip-path: polygon(37% 0, 100% 0, 100% 100%, 62% 100%);
+  /* مرز مورب دقیقاً از حدود ۳۷٪ بالا تا ۶۲٪ پایین ادامه دارد. */
+
+}
+
+
+
+.hero-content {
+
+  position: absolute;
+  /* متن را نسبت به بنر ثابت می‌کند. */
+
+  top: 25px;
+  /* فاصله آغاز متن از بالای بنر با موقعیت تیتر SVG هماهنگ شده است. */
+
+  right: 32px;
+  /* فاصله متن از لبه راست بنر. */
+
+  width: 500px;
+  /* عرض فضای متن و ویژگی‌ها. */
+
+  color: #FFFFFF;
+  /* رنگ پیش‌فرض متن بنر سفید است. */
+
+  text-align: right;
+  /* همه متن‌های معرفی به سمت راست تراز می‌شوند. */
+
+  direction: rtl;
+  /* جهت حروف فارسی را حفظ می‌کند. */
+
+}
+
+
+
+.hero-content h1 {
+
+  margin: 0;
+  /* فاصله پیش‌فرض تیتر را حذف می‌کند. */
+
+  color: #FFFFFF;
+  /* رنگ اصلی تیتر سفید است. */
+
+  font-size: 60px;
+  /* اندازه بزرگ تیتر در بنر؛ کمی بزرگ‌تر شده تا با نوشته برداری مرجع نزدیک‌تر باشد. */
+
+  font-weight: 800;
+  /* وزن ضخیم برای تیتر اصلی. */
+
+  line-height: 1.62;
+  /* فاصله بلندتر بین دو خط عنوان، جایگاه توضیح و ویژگی‌ها را با مرجع هماهنگ می‌کند. */
+
+  letter-spacing: -1.2px;
+  /* فاصله حروف را کمی فشرده می‌کند. */
+
+}
+
+
+
+.hero-content h1 span {
+
+  color: #7D9AF6;
+  /* عبارت «با اطمینان» آبی روشن است. */
+
+}
+
+
+
+.hero-description {
+
+  margin: 24px 0 0;
+  /* فاصله میان عنوان و توضیح را مطابق طرح مرجع تنظیم می‌کند. */
+
+  color: #7D9AF6;
+  /* رنگ متن کوتاه زیر عنوان مطابق طرح است. */
+
+  font-size: 16px;
+  /* اندازه توضیح را برای نزدیک‌شدن طول و ارتفاع متن به SVG مرجع تنظیم می‌کند. */
+
+  font-weight: 500;
+  /* وزن متوسط متن توضیح. */
+
+  line-height: 1.8;
+  /* ارتفاع خط توضیح را برای خوانایی تنظیم می‌کند. */
+
+  white-space: nowrap;
+  /* جمله تا جای ممکن در یک خط می‌ماند. */
+
+}
+
+
+
+.hero-benefits {
+
+  display: flex;
+  /* سه ویژگی را در یک ردیف قرار می‌دهد. */
+
+  align-items: center;
+  /* آیکون‌ها و نوشته‌ها را عمودی وسط‌چین می‌کند. */
+
+  justify-content: space-between;
+  /* فضای افقی بین ویژگی‌ها را تقسیم می‌کند. */
+
+  width: 420px;
+  /* پهنای ردیف ویژگی‌ها مطابق محدوده استفاده‌شده در طرح مرجع. */
+
+  margin-left: auto;
+  /* ردیف را در سمت راست فضای متن نگه می‌دارد. */
+
+  gap: 15px;
+  /* حداقل فاصله بین ویژگی‌ها در اندازه‌های فشرده. */
+
+  margin-top: 20px;
+  /* فاصله ویژگی‌ها با توضیح و ارتفاع آیکون‌ها را هماهنگ می‌کند. */
+
+}
+
+
+
+.benefit-item {
+
+  min-width: 0;
+  /* اجازه می‌دهد آیتم در عرض محدود جمع شود. */
+
+  display: flex;
+  /* آیکون و متن را در یک ردیف قرار می‌دهد. */
+
+  align-items: center;
+  /* آیکون و متن را عمودی وسط می‌کند. */
+
+  justify-content: flex-start;
+  /* ترتیب داخلی را از سمت راست آغاز می‌کند. */
+
+  gap: 9px;
+  /* فاصله میان آیکون و متن ویژگی. */
+
+  direction: rtl;
+  /* آیکون در سمت راست متن قرار می‌گیرد. */
+
+  color: #FFFFFF;
+  /* نوشته هر ویژگی سفید است. */
+
+  font-size: 13px;
+  /* اندازه نوشته کوچک ویژگی‌ها. */
+
+  font-weight: 600;
+  /* وزن نیمه‌ضخیم متن ویژگی. */
+
+  line-height: 1.55;
+  /* فاصله میان دو سطر متن ویژگی. */
+
+  white-space: nowrap;
+  /* هر خط کوتاه ویژگی‌ها در یک خط باقی می‌ماند. */
+
+}
+
+
+
+.benefit-item svg {
+
+  width: 40px;
+  /* عرض آیکون ویژگی. */
+
+  height: 40px;
+  /* ارتفاع آیکون ویژگی. */
+
+  flex: 0 0 40px;
+  /* اندازه آیکون ثابت می‌ماند و کوچک نمی‌شود. */
+
+  fill: none;
+  /* آیکون‌ها توخالی هستند، مانند خط آیکون طرح اصلی. */
+
+  stroke: #FFFFFF;
+  /* خطوط آیکون سفید هستند. */
+
+  stroke-width: 2;
+  /* ضخامت خطوط آیکون. */
+
+  stroke-linecap: round;
+  /* انتهای خطوط نرم و گرد است. */
+
+  stroke-linejoin: round;
+  /* محل اتصال خطوط گرد است. */
+
+}
+
+
+
+.hero-button {
+
+  position: absolute;
+  /* دکمه را مستقل از جریان متن در پایین بنر قرار می‌دهد. */
+
+  right: 32px;
+  /* فاصله دکمه از لبه راست بنر مطابق طرح مرجع است. */
+
+  bottom: 0;
+  /* موقعیت پایین با مقدار bottom داخلی از طریق والد تنظیم می‌شود. */
+
+  transform: translateY(0);
+  /* حالت عادی دکمه جابه‌جایی ندارد. */
+
+  width: 198px;
+  /* عرض دکمه اصلی بنر. */
+
+  height: 48px;
+  /* ارتفاع دکمه اصلی بنر. */
+
+  display: inline-flex;
+  /* فلش و متن را کنار هم قرار می‌دهد. */
+
+  align-items: center;
+  /* فلش و متن را عمودی وسط‌چین می‌کند. */
+
+  justify-content: center;
+  /* گروه فلش و متن را افقی وسط می‌گذارد. */
+
+  gap: 12px;
+  /* فاصله میان فلش و نوشته دکمه. */
+
+  border-radius: 999px;
+  /* انتهای دکمه را کاملاً گرد می‌کند. */
+
+  background: var(--primary);
+  /* زمینه دکمه آبی اصلی است. */
+
+  color: #FFFFFF;
+  /* متن و فلش روی دکمه سفید هستند. */
+
+  font-size: 14px;
+  /* اندازه متن دکمه. */
+
+  transition: transform 160ms ease, background 160ms ease;
+  /* پاسخ کلیک و hover را نرم می‌کند. */
+
+  z-index: 2;
+  /* دکمه را روی سطح مشکی بنر نگه می‌دارد. */
+
+}
+
+
+
+.hero-button {
+
+  bottom: 32px;
+  /* فاصله دکمه از پایین بنر مطابق طرح مرجع. */
+
+}
+
+
+
+.hero-button svg {
+
+  width: 20px;
+  /* عرض فلش داخل دکمه. */
+
+  height: 20px;
+  /* ارتفاع فلش داخل دکمه. */
+
+  fill: none;
+  /* داخل فلش خالی است. */
+
+  stroke: currentColor;
+  /* رنگ فلش از رنگ سفید متن می‌آید. */
+
+  stroke-width: 1.6;
+  /* ضخامت خط فلش. */
+
+  stroke-linecap: round;
+  /* انتهای خط فلش گرد است. */
+
+  stroke-linejoin: round;
+  /* اتصال خط فلش گرد است. */
+
+}
+
+
+
+.hero-dots {
+
+  height: 16px;
+  /* ارتفاع ردیف نشانگرها برابر دو برابر شعاع نقطه‌ها است. */
+
+  margin-top: 24px;
+  /* فاصله نشانگرها از بنر اصلی. */
+
+  display: flex;
+  /* سه نقطه را در یک ردیف قرار می‌دهد. */
+
+  align-items: center;
+  /* نقطه‌ها را عمودی وسط‌چین می‌کند. */
+
+  justify-content: center;
+  /* گروه نقطه‌ها را در مرکز صفحه قرار می‌دهد. */
+
+  direction: rtl;
+  /* ردیف نشانگر با جهت فارسی تنظیم می‌شود. */
+
+  flex-direction: row-reverse;
+  /* نقطه فعالِ آخرِ HTML را در سمت راست می‌گذارد، مطابق تصویر مرجع. */
+
+  gap: 16px;
+  /* فاصله مرکز تا مرکز نقطه‌ها را مشخص می‌کند. */
+
+}
+
+
+
+.hero-dots span {
+
+  display: block;
+  /* نقطه را به یک جعبه مستقل تبدیل می‌کند. */
+
+  width: 16px;
+  /* عرض نقطه بنر. */
+
+  height: 16px;
+  /* ارتفاع نقطه بنر. */
+
+  border-radius: 50%;
+  /* نقطه را دایره می‌کند. */
+
+  background: var(--primary-soft);
+  /* رنگ نقاط غیرفعال آبی روشن است. */
+
+}
+
+
+
+.hero-dots .is-active {
+
+  background: var(--primary);
+  /* نقطه انتخاب‌شده آبی پررنگ است. */
+
+}
+
+
+/* تنظیم جایگاه آیکون پیام‌ها */
+.message-button {
+
+
+  width: 48px;
+  height: 48px;
+  min-height: 46px;
+  padding: 12px 12px;
+
+  border: none;
+  border-radius: 22px;
+
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+
+  background: #edf1f8;
+  /* زمینه خاکستری-آبی کم‌رنگ. */
+
+  color: #7184a5;
+  /* نوشته دکمه کم‌رنگ. */
+
+
+  cursor: pointer;
+  flex-shrink: 0;
+  white-space: nowrap;
+
+    transition: background 180ms ease, transform 180ms ease;
+  /* تغییر رنگ و حرکت دکمه نرم است. */
+
+}
+
+/* اندازه و جایگاه آیکون */
+.message-button svg,
+.message-button img {
+  display: block;
+  width: 24px;
+  height: 24px;
+  object-fit: contain;
+}
+
+/* هاور بدون پرش عمودی */
+.message-button:hover {
+
+
+
+  transform: translateY(-2px);
+  /* دکمه هنگام hover کمی به بالا حرکت می‌کند. */
+
+
+}
+
+/* حالت کلیک */
+.message-button:active {
+  transition: background 180ms ease, transform 180ms ease;
+  /* تغییر رنگ و حرکت دکمه نرم است. */
+
+}
+
+/* دسترس‌پذیری */
+@media (prefers-reduced-motion: reduce) {
+  .message-button {
+    transition: none;
+  }
+}
+
+
+.message-button svg,
+.message-button img {
+  display: block;
+  width: 24px;
+  height: 24px;
+  margin: 0;
+  object-fit: contain;
+
+}
+
+/* تراز عمودی آیتم‌های هدر */
+.header-actions {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+
+}
+
+
+
+/* ==================== برندها ==================== */
+
+.brand-strip {
+    width: 100%;
+    overflow: hidden;
+    margin: 56px 0 38px;
+    direction: ltr;
+}
+
+.car-brands {
+    display: flex;
+    width: max-content;
+    flex-wrap: nowrap;
+    animation: brandsMove 18s linear infinite;
+    will-change: transform;
+}
+
+.brand-set {
+    display: flex;
+    flex: 0 0 auto;
+    width: max-content;
+    flex-wrap: nowrap;
+    gap: 0;
+}
+
+.brand-set img {
+    display: block;
+    flex: 0 0 auto;
+    width: auto;
+    height: 40px;
+    max-width: none;
+}
+
+/* حرکت پیوسته از راست به چپ */
+@keyframes brandsMove {
+    from {
+        transform: translateX(0);
+    }
+
+    to {
+        transform: translateX(-50%);
+    }
+}
+
+/* موبایل */
+@media (max-width: 768px) {
+    .brand-set img {
+        height: 32px;
+    }
+}
+
+/* کاهش حرکت برای کاربرانی که این گزینه را فعال کرده‌اند */
+@media (prefers-reduced-motion: reduce) {
+    .car-brands {
+        animation: none;
+    }
+}
+
+
+.car-brand {
+
+  display: inline-flex;
+  /* برای چیدمان و تنظیم اندازه. */
+
+  align-items: center;
+  /* متن نام برند وسط‌چین. */
+
+  justify-content: center;
+  /* متن در مرکز ظرف قرار می‌گیرد. */
+
+  color: #25272b;
+  /* رنگ یکدست و نزدیک به لوگوهای تک‌رنگ طرح. */
+
+  font-size: 17px;
+  /* اندازه نوشته برند. */
+
+  font-weight: 900;
+  /* متن ضخیم شبیه نشان تجاری. */
+
+  opacity: .9;
+  /* کمی ملایم‌تر تا با محتوای اصلی رقابت نکند. */
+
+}
+
+
+
+.audi {
+  letter-spacing: 3px;
+}
+
+/* فاصله‌گذاری تزئینی نام آئودی. */
+
+.volvo {
+  font-family: Arial, sans-serif;
+  letter-spacing: 1px;
+}
+
+/* کمی تفاوت تایپی برای ولوو. */
+
+.bmw {
+  border: 2px solid currentColor;
+  border-radius: 50%;
+  width: 36px;
+  height: 36px;
+  font-size: 11px;
+}
+
+/* قاب گرد برای نوشته BMW. */
+
+.jeep {
+  font-size: 19px;
+  letter-spacing: -1px;
+}
+
+/* سبک نوشتاری جیپ. */
+
+.peugeot {
+  font-size: 12px;
+  letter-spacing: -0.5px;
+}
+
+/* نام پژو کمی کوچک‌تر است. */
+
+.vw {
+  border: 2px solid currentColor;
+  border-radius: 50%;
+  width: 36px;
+  height: 36px;
+}
+
+/* قاب گرد برای VW. */
+
+.ferrari {
+  font-size: 12px;
+}
+
+/* اندازه کوچک‌تر نام فراری. */
+
+.gmc {
+  font-style: italic;
+}
+
+/* حالت ایتالیک شبیه نوشته GMC. */
+
+
+
+/* ==================== بخش آگهی‌ها ==================== */
+
+.listing-section {
+
+  margin-bottom: 82px;
+  /* فضای بین بخش خودرو، سنگین و موتور. */
+
+  scroll-margin-top: 24px;
+  /* مقصد لینک‌ها کمی از بالای صفحه فاصله دارد. */
+
+}
+
+
+
+.section-heading {
+
+  display: flex;
+  /* عنوان بخش و پیوند مشاهده همه در یک ردیف. */
+
+  align-items: center;
+  /* وسط‌چین عمودی. */
+
+  justify-content: space-between;
+  /* یکی سمت راست و دیگری سمت چپ قرار می‌گیرد. */
+
+  gap: 20px;
+  /* فاصله عنوان تا لینک. */
+
+  margin-bottom: 28px;
+  /* فاصله تیتر تا کارت‌ها. */
+
+}
+
+
+
+.section-heading h2 {
+
+  margin: 0;
+  /* حاشیه پیش‌فرض عنوان بخش حذف می‌شود. */
+
+  color: var(--ink);
+  /* رنگ تیره عنوان‌ها. */
+
+  font-size: 25px;
+  /* اندازه تیتر بخش. */
+
+  font-weight: 900;
+  /* تیتر برجسته. */
+
+}
+
+
+
+.view-all {
+
+  display: inline-flex;
+  /* فلش و نوشته در یک خط هستند. */
+
+  align-items: center;
+  /* وسط‌چین عمودی. */
+
+  color: #00A6FB;
+  /* رنگ آبی برای لینک مشاهده همه. */
+
+  font-size: 13px;
+  /* اندازه کوچک لینک. */
+
+  font-weight: 700;
+  /* وزن متن لینک. */
+
+}
+
+
+
+.view-all:hover {
+  text-decoration: underline;
+}
+
+/* با رفتن ماوس روی لینک، زیرخط ظاهر می‌شود. */
+
+
+
+.vehicle-grid {
+
+  display: grid;
+  /* شبکه کارت‌ها را فعال می‌کند. */
+
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  /* چهار ستون هم‌اندازه در دسکتاپ. */
+
+  gap: 24px;
+  /* فاصله افقی و عمودی بین کارت‌ها. */
+
+}
+
+
+
+.vehicle-card {
+
+  min-width: 0;
+  /* اجازه می‌دهد ستون‌های grid از عرض طبیعی محتوا پیروی نکنند. */
+
+  padding: 16px;
+  /* فضای داخلی کارت. */
+
+  border: 1px solid rgba(222, 230, 242, .65);
+  /* حاشیه خیلی روشن کارت. */
+
+  border-radius: var(--radius-card);
+  /* گوشه‌های گرد کارت. */
+
+  background: var(--white);
+  /* کارت سفید روی پس‌زمینه خاکستری. */
+
+  box-shadow: var(--shadow);
+  /* سایه ملایم زیر کارت. */
+
+  transition: transform 180ms ease, box-shadow 180ms ease;
+  /* حرکت کارت و سایه نرم. */
+
+}
+
+
+
+.vehicle-card:hover {
+
+  transform: translateY(-4px);
+  /* در hover کارت کمی بالا می‌رود. */
+
+  box-shadow: 0 18px 42px rgba(35, 59, 104, .13);
+  /* سایه کارت کمی قوی‌تر می‌شود. */
+
+}
+
+
+
+.vehicle-image-wrap {
+
+  position: relative;
+  /* برچسب و قلب روی تصویر نسبت به همین قاب جاگذاری می‌شوند. */
+
+  height: 180px;
+  /* ارتفاع یکسان عکس کارت‌ها. */
+
+  overflow: hidden;
+  /* قسمت‌های بیرون از گوشه‌های گرد تصویر مخفی می‌شوند. */
+
+  border-radius: 18px;
+  /* گوشه‌های گرد تصویر. */
+
+  background: #e9edf3;
+  /* رنگ زمینه هنگام بارگذاری عکس. */
+
+}
+
+
+
+.vehicle-image-wrap img {
+
+  width: 100%;
+  /* عکس تمام عرض قاب را پر می‌کند. */
+
+  height: 100%;
+  /* عکس تمام ارتفاع قاب را پر می‌کند. */
+
+  object-fit: cover;
+  /* عکس بدون تغییر شکل قاب را پر می‌کند و ممکن است کمی بریده شود. */
+
+  object-position: center;
+  /* مرکز عکس نقطه اصلی نمایش است. */
+
+  transition: transform 300ms ease;
+  /* بزرگ‌نمایی عکس با حرکت نرم. */
+
+}
+
+
+
+.vehicle-card:hover .vehicle-image-wrap img {
+
+  transform: scale(1.035);
+  /* عکس هنگام hover اندکی بزرگ‌تر می‌شود. */
+
+}
+
+
+
+.used-badge {
+
+  position: absolute;
+  /* برچسب را روی عکس قرار می‌دهد. */
+
+  top: 12px;
+  /* فاصله از بالای تصویر. */
+
+  right: 12px;
+  /* فاصله از سمت راست تصویر در صفحه RTL. */
+
+  padding: 4px 10px;
+  /* فضای داخلی برچسب. */
+
+  border-radius: 999px;
+  /* برچسب کپسولی. */
+
+  background: rgba(242, 246, 252, .84);
+  /* پس‌زمینه روشن نیمه‌شفاف. */
+
+  color: #8493ad;
+  /* رنگ نوشته برچسب. */
+
+  font-size: 11px;
+  /* اندازه نوشته کارکرده. */
+
+  font-weight: 700;
+  /* نوشته ضخیم. */
+
+  backdrop-filter: blur(8px);
+  /* پشت برچسب را کمی محو می‌کند، اگر مرورگر پشتیبانی کند. */
+
+}
+
+
+
+.favorite-button {
+
+  position: absolute;
+  /* قلب روی عکس در موقعیت ثابت قرار می‌گیرد. */
+
+  top: 10px;
+  /* فاصله از بالای قاب. */
+
+  left: 10px;
+  /* فاصله از سمت چپ قاب. */
+
+  width: 32px;
+  /* عرض دکمه قلب. */
+
+  height: 32px;
+  /* ارتفاع دکمه قلب. */
+
+  display: grid;
+  /* برای وسط‌چین‌کردن کاراکتر قلب. */
+
+  place-items: center;
+  /* قلب در مرکز دکمه قرار می‌گیرد. */
+
+  border: 1px solid rgba(255, 255, 255, .75);
+  /* کادر روشن. */
+
+  border-radius: 50%;
+  /* دکمه دایره‌ای. */
+
+  background: rgba(255, 255, 255, .75);
+  /* زمینه سفید شفاف. */
+
+  color: #94a5c2;
+  /* رنگ قلب غیرفعال. */
+
+  font-size: 20px;
+  /* اندازه شکل قلب. */
+
+  line-height: 1;
+  /* ارتفاع خط قلب دقیقاً تنظیم می‌شود. */
+
+  transition: color 160ms ease, background 160ms ease;
+  /* تغییر حالت قلب نرم است. */
+
+}
+
+
+
+.favorite-button.is-favorite {
+
+  background: #fff0f2;
+  /* زمینه صورتی خیلی کم‌رنگ در حالت انتخاب‌شده. */
+
+  color: #e44568;
+  /* قلب انتخاب‌شده صورتی/قرمز می‌شود. */
+
+}
+
+
+
+.image-pagination {
+
+  height: 18px;
+  /* جا برای نقطه‌های زیر تصویر. */
+
+  display: flex;
+  /* نقطه‌ها در یک ردیف می‌آیند. */
+
+  align-items: center;
+  /* عمودی وسط‌چین. */
+
+  justify-content: center;
+  /* وسط عکس. */
+
+  gap: 4px;
+  /* فاصله نقطه‌ها از هم. */
+
+}
+
+
+
+.image-pagination i {
+
+  width: 5px;
+  /* عرض نقطه کوچک. */
+
+  height: 5px;
+  /* ارتفاع نقطه کوچک. */
+
+  display: block;
+  /* عنصر i مانند یک جعبه رفتار می‌کند. */
+
+  border-radius: 50%;
+  /* نقطه گرد. */
+
+  background: #b7d2ff;
+  /* آبی روشن نقطه‌ها. */
+
+}
+
+
+
+.image-pagination i:first-child {
+  background: var(--blue);
+}
+
+/* نقطه اول پررنگ است و حالت انتخاب‌شده را تداعی می‌کند. */
+
+
+
+.vehicle-card h3 {
+
+  margin: 4px 0 8px;
+  /* فاصله کم بالا و فاصله بیشتر پایین عنوان. */
+
+  color: var(--ink);
+  /* عنوان کارت تیره است. */
+
+  font-size: 17px;
+  /* اندازه عنوان آگهی. */
+
+  font-weight: 800;
+  /* عنوان نسبتاً ضخیم. */
+
+}
+
+
+
+.price-row {
+
+  display: flex;
+  /* عنوان قیمت و مبلغ کنار هم‌اند. */
+
+  align-items: baseline;
+  /* متن و مبلغ بر اساس خط پایه تنظیم می‌شوند. */
+
+  justify-content: space-between;
+  /* عنوان و مبلغ دو طرف ردیف قرار می‌گیرند. */
+
+  gap: 8px;
+  /* حداقل فاصله متن و مبلغ. */
+
+  margin: 0;
+  /* حاشیه پیش‌فرض پاراگراف حذف می‌شود. */
+
+  color: #343C6A;
+  /* رنگ عنوان قیمت. */
+
+  font-size: 16px;
+  /* اندازه متن قیمت. */
+
+  font-weight: 800;
+
+}
+
+
+
+.price-row strong {
+
+  color: #343C6A;
+  /* رنگ مبلغ کمی تیره‌تر است. */
+
+  font-size: 16px;
+  /* اندازه مبلغ. */
+
+  font-weight: 800;
+  /* مبلغ ضخیم است. */
+
+  white-space: nowrap;
+  /* مبلغ روی دو خط شکسته نمی‌شود. */
+
+}
+
+
+
+.vehicle-meta {
+  display: flex;
+  direction: rtl;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  width: 100%;
+  margin-top: 8px;
+  margin-bottom: 14px;
+  color: #718EBF;
+  font-size: 10px;
+  white-space: nowrap;
+}
+
+/* زمان انتشار همیشه سمت راست کارت و شهر همیشه سمت چپ قرار می‌گیرد. */
+.vehicle-meta>span {
+  display: inline-flex;
+  direction: ltr;
+  flex: 0 1 auto;
+  align-items: center;
+  gap: 7px;
+  min-width: 0;
+  line-height: 1.5;
+}
+
+.vehicle-meta-time {
+  order: 1;
+  margin-inline-start: auto;
+}
+
+.vehicle-meta-city {
+  order: 2;
+  margin-inline-end: auto;
+}
+
+.vehicle-meta-icon {
+  display: block;
+  flex: 0 0 24px;
+  width: 24px;
+  height: 24px;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 1.8;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+.vehicle-meta-label {
+  display: inline-block;
+  direction: rtl;
+}
+
+
+
+.card-button {
+
+  width: 100%;
+  /* دکمه عرض کامل کارت را پر می‌کند. */
+
+  min-height: 48px;
+  /* ارتفاع دکمه کارت. */
+
+  padding-inline: 10px;
+  /* فاصله افقی کم تا متن در کارت باریک جا شود. */
+
+  font-size: 13px;
+  /* اندازه متن دکمه کارت. */
+
+}
+
+
+
+/* ==================== فوتر ==================== */
+
+.site-footer {
+
+  margin-top: 20px;
+  /* فاصله فوتر از محتوای بالایی. */
+
+  background: var(--white);
+  /* پس‌زمینه سفید فوتر. */
+
+  border-top: 1px solid var(--line);
+  /* خط باریک در بالای فوتر. */
+
+}
+
+
+
+.footer-main {
+
+  min-height: 126px;
+  /* ارتفاع ردیف اصلی فوتر. */
+
+  display: flex;
+  /* لوگو، لینک‌ها و شبکه‌ها در یک ردیف. */
+
+  align-items: center;
+  /* عمودی وسط‌چین. */
+
+  justify-content: space-between;
+  /* گروه‌ها در دو سمت و وسط توزیع می‌شوند. */
+
+  gap: 24px;
+  /* فاصله گروه‌ها. */
+
+}
+
+
+
+.footer-logo .brand-mark {
+  font-size: 24px;
+}
+
+/* نماد لوگوی پایین صفحه کوچک‌تر می‌شود. */
+
+.footer-logo .brand-name {
+  font-size: 24px;
+}
+
+/* نوشته لوگوی پایین صفحه کوچک‌تر می‌شود. */
+
+
+
+.footer-links {
+
+  display: flex;
+  /* پیوندهای فوتر یک ردیف‌اند. */
+
+  align-items: center;
+  /* وسط‌چین عمودی. */
+
+  gap: 24px;
+  /* فاصله بین پیوندها. */
+
+  color: #8ba0c6;
+  /* رنگ ملایم پیوندها. */
+
+  font-size: 14px;
+  /* اندازه متن پیوندها. */
+
+}
+
+
+
+.social-links {
+
+  display: flex;
+  /* نمادهای شبکه اجتماعی در یک ردیف‌اند. */
+
+  align-items: center;
+  /* وسط‌چین عمودی. */
+
+  gap: 18px;
+  /* فاصله نمادها. */
+
+  color: #7c94bc;
+  /* رنگ نمادها. */
+
+  font-size: 19px;
+  /* اندازه نمادها. */
+
+  font-weight: 800;
+  /* شکل نوشته‌ها پررنگ‌تر می‌شود. */
+
+}
+
+
+
+.footer-bottom {
+
+  padding: 18px 24px;
+  /* فاصله داخلی خط کپی‌رایت. */
+
+  border-top: 1px solid var(--line);
+  /* جداکننده باریک بالای کپی‌رایت. */
+
+  text-align: center;
+  /* متن کپی‌رایت وسط‌چین. */
+
+  color: #8fa2c3;
+  /* رنگ کم‌رنگ کپی‌رایت. */
+
+  font-size: 12px;
+  /* اندازه کوچک نوشته. */
+
+}
+
+
+
+.footer-bottom p {
+  margin: 0;
+}
+
+/* حاشیه پیش‌فرض پاراگراف کپی‌رایت حذف می‌شود. */
+
+
+
+/* ==================== واکنش‌گرایی: تبلت و لپ‌تاپ کوچک ==================== */
+
+@media (max-width: 1100px) {
+
+  .header-inner {
+    gap: 18px;
+  }
+
+  /* در عرض متوسط فاصله گروه‌های هدر کم می‌شود. */
+
+  .main-nav {
+    gap: 20px;
+  }
+
+  /* فاصله لینک‌های منو کم می‌شود. */
+
+  .brand-name {
+    font-size: 24px;
+  }
+
+  /* لوگو کمی کوچک‌تر می‌شود. */
+
+  .header-actions {
+    gap: 8px;
+  }
+
+  /* فاصله دکمه‌های هدر کاهش می‌یابد. */
+
+  .button {
+    padding-inline: 17px;
+  }
+
+  /* دکمه‌ها کمی جمع‌وجورتر می‌شوند. */
+
+  .vehicle-grid {
+    gap: 16px;
+  }
+
+  /* فاصله کارت‌ها کاهش می‌یابد. */
+
+  .vehicle-card {
+    padding: 12px;
+  }
+
+  /* padding کارت کمتر می‌شود. */
+
+  .vehicle-image-wrap {
+    height: 155px;
+  }
+
+  /* عکس کارت کوتاه‌تر می‌شود. */
+
+  .price-row strong {
+    font-size: 11px;
+  }
+
+  /* مبلغ در کارت باریک کوچک‌تر می‌شود. */
+
+}
+
+
+
+/* ==================== واکنش‌گرایی: تبلت عمودی ==================== */
+
+@media (max-width: 820px) {
+
+  .header-inner {
+    min-height: 82px;
+  }
+
+  /* هدر در تبلت کوتاه‌تر است. */
+
+  .menu-toggle {
+    display: block;
+  }
+
+  /* دکمه منوی موبایل نمایان می‌شود. */
+
+  .main-nav {
+
+    position: absolute;
+    /* منوی بازشونده نسبت به هدر موقعیت می‌گیرد. */
+
+    top: calc(100% - 2px);
+    /* منو درست زیر هدر قرار می‌گیرد. */
+
+    right: 24px;
+    /* منو از سمت راست فاصله دارد. */
+
+    left: 24px;
+    /* منو از سمت چپ فاصله دارد. */
+
+    display: none;
+    /* تا زمان کلیک پنهان است. */
+
+    flex-direction: column;
+    /* لینک‌ها زیر هم چیده می‌شوند. */
+
+    align-items: stretch;
+    /* هر لینک می‌تواند عرض منو را پر کند. */
+
+    gap: 0;
+    /* فاصله از خود لینک‌ها و padding گرفته می‌شود. */
+
+    padding: 10px;
+    /* فضای داخلی قاب منو. */
+
+    border: 1px solid var(--line);
+    /* حاشیه منو. */
+
+    border-radius: 18px;
+    /* گوشه گرد منو. */
+
+    background: var(--white);
+    /* زمینه سفید منو. */
+
+    box-shadow: var(--shadow);
+    /* سایه برای جداشدن از محتوا. */
+
+  }
+
+  .main-nav.is-open {
+    display: flex;
+  }
+
+  /* با افزودن این کلاس، منوی موبایل باز می‌شود. */
+
+  .main-nav a {
+    padding: 12px;
+  }
+
+  /* فضای قابل کلیک هر لینک را بیشتر می‌کند. */
+
+  .header-actions .notification-button {
+    display: none;
+  }
+
+  /* اعلان برای ساده‌ترشدن هدر تبلت مخفی می‌شود. */
+
+  .hero {
+    min-height: 390px;
+  }
+
+  /* ارتفاع بنر برای تبلت ثابت می‌شود. */
+
+  .hero-content {
+    width: 56%;
+    padding: 35px 22px;
+  }
+
+  /* فضای متن بنر در تبلت بیشتر می‌شود. */
+
+  .hero h1 {
+    font-size: clamp(34px, 5vw, 48px);
+  }
+
+  /* اندازه عنوان با عرض تبلت تنظیم می‌شود. */
+
+  .hero-description {
+    font-size: 12px;
+  }
+
+  /* توضیح بنر کمی کوچک‌تر می‌شود. */
+
+  .hero-benefits {
+    gap: 8px;
+  }
+
+  /* مزیت‌ها در عرض کمتر به هم نزدیک می‌شوند. */
+
+  .benefit-item {
+    gap: 5px;
+    font-size: 10px;
+  }
+
+  /* نماد و نوشته مزیت جمع‌وجورتر می‌شوند. */
+
+  .benefit-icon {
+    width: 29px;
+    height: 29px;
+    font-size: 17px;
+  }
+
+  /* اندازه نماد مزیت کم می‌شود. */
+
+  .brand-strip-inner {
+    width: max-content;
+    margin-inline: 24px;
+  }
+
+  /* ردیف برندها می‌تواند افقی حرکت/برش بخورد. */
+
+  .vehicle-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  /* کارت‌ها دو ستونه می‌شوند. */
+
+  .vehicle-image-wrap {
+    height: clamp(150px, 26vw, 220px);
+  }
+
+  /* ارتفاع عکس دو ستونه تنظیم می‌شود. */
+
+  .footer-main {
+    flex-wrap: wrap;
+    padding-block: 24px;
+  }
+
+  /* موارد فوتر اجازه رفتن به ردیف بعدی دارند. */
+
+}
+
+
+
+/* ==================== واکنش‌گرایی: موبایل ==================== */
+
+@media (max-width: 560px) {
+
+  .container {
+    width: calc(100% - 28px);
+  }
+
+  /* حاشیه دو طرف در موبایل 14 پیکسل می‌شود. */
+
+  .header-inner {
+    min-height: 72px;
+    gap: 10px;
+  }
+
+  /* هدر کوچک‌تر و جمع‌وجورتر است. */
+
+  .brand-mark {
+    font-size: 24px;
+  }
+
+  /* نماد لوگو کوچک‌تر می‌شود. */
+
+  .brand-name {
+    font-size: 20px;
+  }
+
+  /* نوشته لوگو کوچک‌تر می‌شود. */
+
+  .header-actions {
+    gap: 6px;
+  }
+
+  /* فاصله دکمه‌های هدر کم می‌شود. */
+
+  .header-actions .button {
+    min-height: 38px;
+    padding-inline: 12px;
+    font-size: 11px;
+  }
+
+  /* دکمه‌های هدر در موبایل فشرده می‌شوند. */
+
+  .menu-toggle {
+    width: 38px;
+    height: 38px;
+    font-size: 20px;
+  }
+
+  /* دکمه منوی موبایل کوچک‌تر می‌شود. */
+
+  .main-nav {
+    right: 14px;
+    left: 14px;
+  }
+
+  /* منوی بازشونده با حاشیه موبایل هماهنگ می‌شود. */
+
+  .hero {
+    min-height: 520px;
+    margin-top: 18px;
+  }
+
+  /* بنر عمودی‌تر می‌شود تا تصویر و متن جا داشته باشند. */
+
+  .hero::before {
+    width: 100%;
+    height: 55%;
+    top: auto;
+    clip-path: polygon(0 0, 100% 22%, 100% 100%, 0 100%);
+  }
+
+  /* بخش آبی بیشتر به نیمه پایین بنر منتقل می‌شود. */
+
+  .hero-art {
+    top: auto;
+    bottom: 0;
+    width: 100%;
+    height: 48%;
+    justify-content: center;
+  }
+
+  /* تصویر خودرو پایین بنر وسط‌چین می‌شود. */
+
+  .hero-car {
+    width: 100%;
+    max-height: 100%;
+    object-position: center bottom;
+    transform: none;
+  }
+
+  /* خودرو در موبایل عرض بیشتری می‌گیرد. */
+
+  .hero-content {
+    width: 100%;
+    margin: 0;
+    padding: 28px 22px;
+  }
+
+  /* متن بنر تمام عرض بالای تصویر را می‌گیرد. */
+
+  .hero-eyebrow {
+    font-size: 12px;
+    margin-bottom: 6px;
+  }
+
+  /* متن بالای عنوان جمع‌وجور می‌شود. */
+
+  .hero h1 {
+    font-size: 37px;
+    line-height: 1.35;
+  }
+
+  /* عنوان موبایل اندازه ثابت دارد. */
+
+  .hero-description {
+    max-width: 310px;
+    margin: 10px 0 14px;
+    font-size: 12px;
+  }
+
+  /* متن توضیحی محدودتر و خواناتر می‌شود. */
+
+  .hero-benefits {
+    margin-bottom: 17px;
+  }
+
+  /* فاصله مزیت‌ها تا دکمه کم می‌شود. */
+
+  .benefit-item {
+    font-size: 9px;
+  }
+
+  /* نوشته مزیت‌ها کوچک‌تر می‌شود. */
+
+  .benefit-icon {
+    width: 25px;
+    height: 25px;
+    border-radius: 7px;
+    font-size: 14px;
+  }
+
+  /* قاب نمادها کوچک‌تر می‌شود. */
+
+  .hero-button {
+    min-height: 42px;
+    min-width: 160px;
+    font-size: 12px;
+  }
+
+  /* دکمه بنر مناسب موبایل می‌شود. */
+
+  .slider-dots {
+    margin: 18px 0 42px;
+    gap: 10px;
+  }
+
+  /* فاصله نقطه‌ها در موبایل کم می‌شود. */
+
+  .slider-dot {
+    width: 11px;
+    height: 11px;
+  }
+
+  /* نقطه‌های بنر کوچک‌تر می‌شوند. */
+
+  .brand-strip {
+    margin-bottom: 48px;
+  }
+
+  /* فاصله برندها تا بخش آگهی‌ها کمتر می‌شود. */
+
+  .brand-strip-inner {
+    gap: 22px;
+  }
+
+  /* فاصله برندها در ردیف پیمایشی. */
+
+  .listing-section {
+    margin-bottom: 52px;
+  }
+
+  /* فاصله بخش‌ها در موبایل کمتر می‌شود. */
+
+  .section-heading {
+    align-items: flex-start;
+    margin-bottom: 17px;
+    gap: 10px;
+  }
+
+  /* عنوان و لینک برای عرض کم تنظیم می‌شوند. */
+
+  .section-heading h2 {
+    font-size: 18px;
+  }
+
+  /* عنوان بخش کوچک‌تر می‌شود. */
+
+  .view-all {
+    font-size: 10px;
+    white-space: nowrap;
+  }
+
+  /* لینک مشاهده همه جمع‌وجور می‌شود. */
+
+  .vehicle-grid {
+    gap: 12px;
+  }
+
+  /* فاصله کارت‌های موبایل. */
+
+  .vehicle-card {
+    padding: 8px;
+    border-radius: 16px;
+  }
+
+  /* کارت‌ها در عرض کم padding کمتری دارند. */
+
+  .vehicle-image-wrap {
+    height: 125px;
+    border-radius: 12px;
+  }
+
+  /* عکس کارت‌ها کوتاه‌تر و گردتر می‌شود. */
+
+  .used-badge {
+    top: 7px;
+    right: 7px;
+    padding: 3px 6px;
+    font-size: 9px;
+  }
+
+  /* برچسب روی عکس کوچک‌تر می‌شود. */
+
+  .favorite-button {
+    top: 6px;
+    left: 6px;
+    width: 27px;
+    height: 27px;
+    font-size: 17px;
+  }
+
+  /* قلب روی تصویر کوچک‌تر می‌شود. */
+
+  .image-pagination {
+    height: 15px;
+  }
+
+  /* جای نقطه‌های عکس کمتر می‌شود. */
+
+  .vehicle-card h3 {
+    font-size: 13px;
+    margin-bottom: 5px;
+  }
+
+  /* عنوان آگهی کوچک‌تر می‌شود. */
+
+  .price-row {
+    display: block;
+    font-size: 10px;
+  }
+
+  /* در موبایل عنوان قیمت و مبلغ می‌توانند به دو خط بروند. */
+
+  .price-row strong {
+    display: block;
+    margin-top: 2px;
+    font-size: 10px;
+    white-space: normal;
+  }
+
+  /* مبلغ در خط بعدی و با اندازه کوچک نمایش داده می‌شود. */
+
+  .vehicle-meta {
+    align-items: center;
+    flex-direction: row;
+    gap: 5px;
+    margin-top: 6px;
+    margin-bottom: 9px;
+    font-size: 9px;
+  }
+
+  /* در موبایل نیز زمان راست و شهر چپ باقی می‌مانند. */
+  .vehicle-meta>span {
+    gap: 4px;
+  }
+
+  .vehicle-meta-icon {
+    flex-basis: 19px;
+    width: 19px;
+    height: 19px;
+  }
+
+  .card-button {
+    min-height: 36px;
+    gap: 5px;
+    font-size: 10px;
+  }
+
+  /* دکمه کارت موبایل باریک‌تر می‌شود. */
+
+  .footer-main {
+    flex-direction: column;
+    align-items: center;
+    gap: 18px;
+    padding-block: 26px;
+  }
+
+  /* گروه‌های فوتر در موبایل زیر هم قرار می‌گیرند. */
+
+  .footer-links {
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 12px;
+    font-size: 12px;
+  }
+
+  /* لینک‌های فوتر اجازه شکستن خط دارند. */
+
+  .social-links {
+    gap: 22px;
+  }
+
+  /* فاصله نمادهای شبکه اجتماعی تنظیم می‌شود. */
+
+  .footer-bottom {
+    padding: 14px 10px;
+    font-size: 10px;
+  }
+
+  /* خط کپی‌رایت در موبایل جمع‌وجور است. */
+
+}
+
+
+/* نشانگرهای بنر فقط نمایشی هستند؛ بدون انیمیشن یا تغییر خودکار. */
+.hero-dots,
+.hero-dots span {
+  animation: none !important;
+  transition: none !important;
+}
+
+/* ================= بنر نهایی بازار خودرو =================
+   تصویر مرجع ارسالی کاربر با نسبت اصلی نمایش داده می‌شود.
+   لینک شفاف روی دکمه داخل تصویر قرار دارد تا CTA همچنان قابل کلیک باشد. */
+.hero {
+  width: min(var(--content-width), calc(100% - 48px));
+  height: auto;
+  aspect-ratio: 1420 / 605;
+  min-height: 0;
+  margin: 34px auto 0;
+  border-radius: 24px;
+  background: #15161b url("../assets/images/hero-banner.jpg") center / 100% 100% no-repeat;
+  box-shadow: 0 16px 32px rgba(52, 60, 106, 0.08);
+}
+
+.hero-art {
+  display: none;
+}
+
+.hero-content {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
+
+.hero-button {
+  right: 2.95%;
+  bottom: 6.7%;
+  width: 17.5%;
+  height: 10.1%;
+  min-width: 0;
+  min-height: 0;
+  padding: 0;
+  opacity: 0;
+  background: transparent;
+  color: transparent;
+  gap: 0;
+  z-index: 3;
+}
+
+.hero-button svg,
+.hero-button span {
+  opacity: 0;
+}
+
+.hero-button:focus-visible {
+  opacity: 1;
+  outline: 3px solid #fff;
+  outline-offset: 3px;
+  background: rgba(0, 174, 239, .18);
+}
+
+.hero-dots {
+  display: none;
+}
+
+@media (max-width: 700px) {
+  .hero {
+    width: calc(100% - 24px);
+    margin-top: 18px;
+    aspect-ratio: 1420 / 605;
+    border-radius: 14px;
+  }
+}
+
+
+/* ================= اسلایدر سه‌بنری بازار خودرو ================= */
+.hero-slider {
+  position: relative;
+  width: min(1128px, calc(100% - 48px));
+  aspect-ratio: 1128 / 480;
+  height: auto;
+  margin: 34px auto 30px;
+  overflow: hidden;
+  border-radius: 22px;
+  background: #15161b;
+  box-shadow: 0 16px 32px rgba(52, 60, 106, 0.08);
+  isolation: isolate;
+}
+
+.hero-slider-track,
+.hero-slide {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+}
+
+.hero-slide {
+  opacity: 0;
+  visibility: hidden;
+  pointer-events: none;
+  transition: opacity .65s ease, visibility .65s ease;
+}
+
+.hero-slide.is-active {
+  opacity: 1;
+  visibility: visible;
+  pointer-events: auto;
+  z-index: 1;
+}
+
+.hero-slide img {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.hero-slide-cta {
+  position: absolute;
+  bottom: 6.5%;
+  height: 11%;
+  display: block;
+  z-index: 2;
+  border-radius: 999px;
+}
+
+.hero-slide-cta-car {
+  right: 2.8%;
+  width: 18%;
+}
+
+.hero-slide-cta-left {
+  left: 2.7%;
+  width: 18%;
+}
+
+.hero-slider-arrow {
+  position: absolute;
+  z-index: 4;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 38px;
+  height: 38px;
+  border: 1px solid rgba(255, 255, 255, .65);
+  border-radius: 50%;
+  display: grid;
+  place-items: center;
+  padding: 0;
+  cursor: pointer;
+  color: #fff;
+  background: rgba(16, 18, 24, .48);
+  font-size: 20px;
+  line-height: 1;
+  transition: background .2s ease, transform .2s ease;
+}
+
+.hero-slider-arrow:hover {
+  background: #00A6FB;
+}
+
+.hero-slider-prev {
+  left: 14px;
+}
+
+.hero-slider-next {
+  right: 14px;
+}
+
+.hero-slider-dots {
+  position: absolute;
+  z-index: 5;
+  bottom: 12px;
+  left: 50%;
+  transform: translateX(-50%);
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.hero-slider-dot {
+  width: 9px;
+  height: 9px;
+  border: 0;
+  border-radius: 50%;
+  padding: 0;
+  background: rgba(255, 255, 255, .65);
+  cursor: pointer;
+  transition: width .25s ease, background .25s ease;
+}
+
+.hero-slider-dot.is-active {
+  width: 25px;
+  border-radius: 10px;
+  background: #08a9ed;
+}
+
+.hero-slider-arrow:focus-visible,
+.hero-slider-dot:focus-visible,
+.hero-slide-cta:focus-visible {
+  outline: 3px solid #08a9ed;
+  outline-offset: 3px;
+}
+
+@media (max-width: 700px) {
+  .hero-slider {
+    width: calc(100% - 24px);
+    margin: 18px auto 24px;
+    border-radius: 12px;
+  }
+
+  .hero-slider-arrow {
+    width: 30px;
+    height: 30px;
+    font-size: 16px;
+  }
+
+  .hero-slider-prev {
+    left: 7px;
+  }
+
+  .hero-slider-next {
+    right: 7px;
+  }
+
+  .hero-slider-dots {
+    bottom: 6px;
+    gap: 6px;
+  }
+
+  .hero-slider-dot {
+    width: 7px;
+    height: 7px;
+  }
+
+  .hero-slider-dot.is-active {
+    width: 18px;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+
+  .hero-slide,
+  .hero-slider-dot,
+  .hero-slider-arrow {
+    transition: none !important;
+  }
+}
+
+/* فوتر بازطراحی‌شده مطابق تصویر مرجع */
+.site-footer {
+  margin-top: 20px;
+  background: #fff;
+  border-top: 1px solid #e8edf5;
+  color: #8799b9;
+}
+
+.footer-main {
+  min-height: 126px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 24px;
+  direction: rtl;
+  padding-block: 18px;
+}
+
+.footer-brand {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 4px;
+  flex: 0 0 auto;
+  text-decoration: none;
+  color: #8fa2c3;
+}
+
+.footer-brand img {
+  display: block;
+  width: 190px;
+  height: 58px;
+  object-fit: contain;
+}
+
+.footer-brand span {
+  font-size: 11px;
+  line-height: 1.7;
+  white-space: nowrap;
+}
+
+.footer-links {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 22px;
+  color: #8799b9;
+  font-size: 14px;
+  white-space: nowrap;
+}
+
+.footer-links a {
+  text-decoration: none;
+  padding-inline: 0 22px;
+  border-left: 1px solid #e8edf5;
+}
+
+.footer-links a:last-child {
+  border-left: 0;
+  padding-left: 0;
+}
+
+.footer-links a:hover {
+  color: #079fe2;
+}
+
+.footer-socials {
+  display: flex;
+  align-items: center;
+  gap: 18px;
+  direction: ltr;
+  color: #8799b9;
+}
+
+.footer-socials a {
+  display: grid;
+  place-items: center;
+  width: 22px;
+  height: 28px;
+  color: inherit;
+  text-decoration: none;
+  font-size: 21px;
+  font-weight: 700;
+  line-height: 1;
+}
+
+.footer-socials a:hover {
+  color: #079fe2;
+}
+
+.footer-socials a:last-child {
+  font-size: 17px;
+}
+
+.footer-bottom {
+  border-top: 1px solid #e8edf5;
+  padding: 18px 24px;
+  text-align: center;
+  color: #8fa2c3;
+  font-size: 13px;
+}
+
+.footer-bottom p {
+  margin: 0;
+}
+
+@media (max-width: 760px) {
+  .footer-main {
+    min-height: 0;
+    flex-direction: column-reverse;
+    justify-content: center;
+    gap: 18px;
+    padding-block: 22px;
+  }
+
+  .footer-brand {
+    align-items: center;
+  }
+
+  .footer-brand img {
+    width: 170px;
+    height: 52px;
+  }
+
+  .footer-brand span {
+    white-space: normal;
+    text-align: center;
+  }
+
+  .footer-links {
+    flex-wrap: wrap;
+    gap: 10px;
+    font-size: 12px;
+  }
+
+  .footer-links a {
+    padding-inline: 0 10px;
+  }
+
+  .footer-socials {
+    gap: 16px;
+  }
+
+  .footer-bottom {
+    padding: 14px 10px;
+    font-size: 11px;
+  }
+}
+
+
+/* ==================== فوتر نهایی مطابق تصویر مرجع ==================== */
+.site-footer {
+  margin-top: 20px;
+  background: #fff;
+  border-top: 1px solid #edf0f5;
+  color: #8799b9;
+  direction: rtl;
+}
+
+.site-footer .footer-main.container {
+  width: min(1200px, calc(100% - 48px));
+  max-width: 1200px;
+  min-height: 134px;
+  margin-inline: auto;
+  padding: 14px 0;
+  box-sizing: border-box;
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  justify-content: space-between;
+  gap: 28px;
+}
+
+.site-footer .footer-brand {
+  flex: 0 0 300px;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  justify-content: center;
+  gap: 3px;
+  min-width: 0;
+  color: #8799b9;
+  text-decoration: none;
+}
+
+.site-footer .footer-brand img {
+  display: block;
+  width: 232px;
+  max-width: 100%;
+  height: 56px;
+  object-fit: contain;
+  object-position: right center;
+}
+
+.site-footer .footer-brand span {
+  display: block;
+  max-width: 300px;
+  font-size: 11px;
+  line-height: 1.8;
+  text-align: right;
+  white-space: nowrap;
+  color: #8fa2c3;
+}
+
+.site-footer .footer-links {
+  flex: 1 1 auto;
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  justify-content: center;
+  gap: 0;
+  color: #8799b9;
+  font-size: 16px;
+  white-space: nowrap;
+}
+
+.site-footer .footer-links a {
+  padding: 0 20px;
+  line-height: 1.5;
+  text-decoration: none;
+  color: inherit;
+  border-left: 1px solid #e8edf5;
+}
+
+.site-footer .footer-links a:last-child {
+  border-left: 0;
+}
+
+.site-footer .footer-links a:hover {
+  color: #079fe2;
+}
+
+.site-footer .footer-socials {
+  flex: 0 0 190px;
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  justify-content: flex-start;
+  gap: 17px;
+  direction: ltr;
+  color: #8799b9;
+}
+
+.site-footer .footer-socials a {
+  display: grid;
+  place-items: center;
+  width: 24px;
+  height: 28px;
+  color: inherit;
+  text-decoration: none;
+  font-size: 20px;
+}
+
+.site-footer .footer-socials svg {
+  display: block;
+  width: 23px;
+  height: 23px;
+  fill: currentColor;
+}
+
+.site-footer .footer-socials a:hover {
+  color: #079fe2;
+}
+
+.site-footer .footer-bottom {
+  min-height: 78px;
+  box-sizing: border-box;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 18px 24px;
+  border-top: 1px solid #e8edf5;
+  text-align: center;
+  color: #8fa2c3;
+  font-size: 14px;
+  line-height: 1.8;
+}
+
+.site-footer .footer-bottom p {
+  margin: 0;
+}
+
+@media (max-width: 900px) {
+  .site-footer .footer-main.container {
+    width: min(100% - 32px, 640px);
+    min-height: 0;
+    padding: 24px 0;
+    flex-direction: column-reverse;
+    justify-content: center;
+    gap: 18px;
+  }
+
+  .site-footer .footer-brand {
+    flex: 0 1 auto;
+    align-items: center;
+    width: 100%;
+  }
+
+  .site-footer .footer-brand img {
+    object-position: center;
+  }
+
+  .site-footer .footer-brand span {
+    white-space: normal;
+    text-align: center;
+  }
+
+  .site-footer .footer-links {
+    flex: 0 1 auto;
+    flex-wrap: wrap;
+    font-size: 13px;
+  }
+
+  .site-footer .footer-links a {
+    padding-inline: 12px;
+  }
+
+  .site-footer .footer-socials {
+    flex: 0 1 auto;
+    justify-content: center;
+  }
+
+  .site-footer .footer-bottom {
+    min-height: 62px;
+    padding: 14px 10px;
+    font-size: 12px;
+  }
+}
+
+@media (max-width: 380px) {
+  .site-footer .footer-links {
+    gap: 8px 0;
+  }
+
+  .site-footer .footer-links a {
+    padding-inline: 8px;
+    font-size: 12px;
+  }
+}
+
+
+
+/* ==========================================================
+   ثبت آگهی - بدون JavaScript
+   ========================================================== */
+
+
+/*
+   checkbox فقط برای کنترل باز و بسته شدن منو است.
+   خودش دیده نمی‌شود.
+*/
+.advertisement-toggle {
+    position: absolute;
+
+    opacity: 0;
+
+    pointer-events: none;
+}
+
+
+/*
+   ظرف ثبت آگهی.
+   منوی بازشونده نسبت به این قسمت قرار می‌گیرد.
+*/
+.advertisement-wrapper {
+    position: relative;
+}
+
+
+/*
+   label را مثل دکمه معمولی می‌کنیم.
+*/
+.advertisement-button {
+    cursor: pointer;
+}
+
+
+/*
+   منوی سه گزینه‌ای در حالت عادی مخفی است.
+*/
+.advertisement-menu {
+    position: absolute;
+
+    /*
+       منو زیر دکمه قرار می‌گیرد.
+    */
+    top: calc(100% + 10px);
+
+    /*
+       از سمت راست دکمه قرار می‌گیرد.
+    */
+    right: 0;
+
+    /*
+       عرض منو شبیه تصویر قبلی.
+    */
+    width: 190px;
+
+    /*
+       ارتفاع هر سه گزینه.
+    */
+    padding: 7px 0;
+
+    /*
+       رنگ پس‌زمینه مشابه تصویر.
+    */
+    background: #eef3f9;
+
+    /*
+       گوشه‌های گرد.
+    */
+    border-radius: 20px;
+
+    /*
+       در ابتدا مخفی است.
+    */
+    display: none;
+
+    /*
+       روی هدر قرار می‌گیرد.
+    */
+    z-index: 9999;
+
+    /*
+       سایه نرم.
+    */
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.10);
+
+    /*
+       راست‌چین.
+    */
+    direction: rtl;
+}
+
+
+/*
+   وقتی checkbox فعال شود،
+   منوی ثبت آگهی نمایش داده می‌شود.
+   
+   این قسمت جای JavaScript را می‌گیرد.
+*/
+.advertisement-toggle:checked
+~ .advertisement-wrapper
+.advertisement-menu {
+    display: block;
+}
+
+
+/*
+   هر گزینه داخل منو.
+*/
+.advertisement-item {
+    display: flex;
+
+    align-items: center;
+
+    /*
+       آیکون سمت راست و متن کنارش.
+    */
+    flex-direction: row;
+
+    gap: 12px;
+
+    /*
+       ارتفاع هر گزینه.
+    */
+    min-height: 42px;
+
+    /*
+       فاصله از دو طرف.
+    */
+    padding: 0 15px;
+
+    /*
+       محاسبه اندازه درست.
+    */
+    box-sizing: border-box;
+
+    /*
+       حذف خط زیر لینک.
+    */
+    text-decoration: none;
+
+    /*
+       رنگ نوشته مشابه تصویر.
+    */
+    color: #718EBF;
+
+    /*
+       اندازه متن.
+    */
+    font-size: 15px;
+
+    /*
+       متن در یک خط بماند.
+    */
+    white-space: nowrap;
+
+    /*
+       حرکت نرم هنگام هاور.
+    */
+    transition: background-color 0.2s ease;
+}
+
+
+/*
+   آیکون هر گزینه.
+*/
+.advertisement-item svg {
+    width: 23px;
+
+    height: 23px;
+
+    flex-shrink: 0;
+
+    fill: none;
+
+    stroke: currentColor;
+
+    stroke-width: 1.6;
+
+    stroke-linecap: round;
+
+    stroke-linejoin: round;
+}
+
+
+/*
+   وقتی موس روی گزینه قرار می‌گیرد.
+*/
+.advertisement-item:hover {
+    background: rgba(255, 255, 255, 0.5);
+}
+
+
+/*
+   گرد کردن گوشه‌های گزینه اول.
+*/
+.advertisement-item:first-child {
+    border-radius: 14px 14px 0 0;
+}
+
+
+/*
+   گرد کردن گوشه‌های گزینه آخر.
+*/
+.advertisement-item:last-child {
+    border-radius: 0 0 14px 14px;
+}

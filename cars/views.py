@@ -1,6 +1,6 @@
 # cars/views.py
 from django.shortcuts import render, get_object_or_404, redirect
-from django.views.generic import ListView, DetailView, CreateView, UpdateView, DeleteView
+from django.views.generic import ListView, DetailView, CreateView, UpdateView, DeleteView, TemplateView
 from django.contrib.auth.mixins import LoginRequiredMixin, UserPassesTestMixin
 from django.contrib import messages
 from django.db.models import Q, Count
@@ -919,3 +919,14 @@ def brands_processor(request):
             is_featured=True
         )[:6] if not request.path.startswith('/admin/') else [],
     }
+
+
+from django.views.generic import ListView
+
+class HomeView(ListView):
+    model = Car
+    template_name = 'index.html'
+    context_object_name = 'latest_cars'
+    
+    def get_queryset(self):
+        return Car.objects.filter(is_active=True, is_verified=True, is_draft=False).order_by('-created_at')[:4]

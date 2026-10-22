@@ -1,4 +1,5 @@
 # cars/urls.py
+app_name = 'cars'
 from django.urls import path
 from . import views
 
