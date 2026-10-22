@@ -119,6 +119,7 @@ def payment_callback(request):
         return redirect('cars:car_list')
     
     # ✅ بررسی وضعیت
+    
     if bank_record.is_success:
         # ✅ پرداخت موفق
         payment.mark_as_success(reference_id=bank_record.tracking_code)
@@ -139,7 +140,7 @@ def payment_callback(request):
             vehicle.payment_tracking_code = tracking_code
             vehicle.save()
             
-            messages.success(request, '🎉 پرداخت با موفقیت انجام شد!')
+            #messages.success(request, '🎉 پرداخت با موفقیت انجام شد!')
             
             if payment.vehicle_type == 'car':
                 return redirect('cars:car_detail', pk=vehicle.pk, slug=vehicle.slug)
@@ -147,8 +148,6 @@ def payment_callback(request):
                 return redirect('cars:motorcycle_detail', pk=vehicle.pk, slug=vehicle.slug)
             elif payment.vehicle_type == 'heavy':
                 return redirect('cars:heavy_detail', pk=vehicle.pk, slug=vehicle.slug)
-        
-        messages.success(request, '🎉 پرداخت با موفقیت انجام شد!')
         return redirect('cars:car_list')
     
     else:

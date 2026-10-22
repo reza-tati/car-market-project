@@ -4,11 +4,10 @@ from django.contrib.auth import login
 from django.contrib.auth.decorators import login_required
 from django.contrib import messages
 from django.contrib.auth.views import LoginView
-from .forms import UserUpdateForm, ProfileUpdateForm, PhoneRegisterForm
+from .forms import UserUpdateForm, ProfileUpdateForm, PhoneRegisterForm, PhoneLoginForm
 from django.contrib.auth.backends import ModelBackend
 from cars.models import Favorite, Car, Motorcycle, HeavyVehicle
 from cars.utils import can_post_free_listing, get_listing_price
-
 
 # ============================================
 # CustomLoginView (با پشتیبانی از Draft)
@@ -16,28 +15,27 @@ from cars.utils import can_post_free_listing, get_listing_price
 
 class CustomLoginView(LoginView):
     template_name = 'accounts/login.html'
-    
+    authentication_form = PhoneLoginForm
     def form_valid(self, form):
-        # لاگین کاربر
+        # ۱. اول اجازه بده کاربر با موفقیت لاگین بشه
         response = super().form_valid(form)
         
-        # ✅ چک کن توکن Draft توی URL یا POST هست
-        draft_token = self.request.GET.get('draft') or self.request.POST.get('draft_token')
+        # ۲. حالا که لاگین شد، توکن Draft رو چک کن
+        draft_token = self.request.POST.get('draft_token') or self.request.GET.get('draft')
         
         if draft_token:
             result = _attach_draft_to_user(self.request, self.request.user, draft_token)
             if result:
-                return result
+                return result  # اگه Draft وصل شد، redirect میشه به صفحه آگهی
         
-        messages.success(self.request, '✅ با موفقیت وارد شدید!')
+        
         return response
     
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
+        # پاس دادن توکن از URL به تمپلیت
         context['draft_token'] = self.request.GET.get('draft', '')
         return context
-
-
 # ============================================
 # Register (با پشتیبانی از Draft)
 # ============================================
@@ -143,11 +141,7 @@ def _attach_draft_to_user(request, user, draft_token):
         request.session.pop('draft_token', None)
         request.session.pop('draft_type', None)
 
-        messages.info(
-            request,
-            '💳 برای انتشار آگهی، لطفاً پرداخت را تکمیل کنید.'
-        )
-
+        messages.success(request, '⏳ آگهی شما با موفقیت ثبت شد و پس از تایید مدیر، منتشر خواهد شد.')
         return redirect(
             'payments:start_payment',
             vehicle_type=vehicle_type,
