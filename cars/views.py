@@ -930,3 +930,9 @@ class HomeView(ListView):
     
     def get_queryset(self):
         return Car.objects.filter(is_active=True, is_verified=True, is_draft=False).order_by('-created_at')[:4]
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context['latest_heavies'] = HeavyVehicle.objects.filter(is_active=True, is_verified=True, is_draft=False).order_by('-created_at')[:4]
+        context['latest_motorcycles'] = Motorcycle.objects.filter(is_active=True, is_verified=True, is_draft=False).order_by('-created_at')[:4]
+        return context
