@@ -3116,3 +3116,23 @@ button {
 .advertisement-item:last-child {
     border-radius: 0 0 14px 14px;
 }
+@media (max-width: 768px) {
+    .menu-toggle {
+        display: block !important;
+    }
+    .main-nav {
+        display: none;
+        flex-direction: column;
+        position: absolute;
+        top: 100%;
+        left: 0;
+        right: 0;
+        background: #fff;
+        box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+        z-index: 1000;
+        padding: 1rem;
+    }
+    .main-nav.active {
+        display: flex;
+    }
+}

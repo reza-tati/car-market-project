@@ -7,352 +7,111 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>{% block title %}بازار خودرو ایران{% endblock %}</title>
     
-    <!-- Bootstrap 5 RTL -->
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css">
-    
-    <!-- Font Vazir برای فارسی -->
     <link href="https://cdn.jsdelivr.net/gh/rastikerdar/vazir-font@v30.1.0/dist/font-face.css" rel="stylesheet">
     
-    
-    <!-- CSS سفارشی -->
     <link rel="stylesheet" href="{% static 'css/style.css' %}">
     <link rel="stylesheet" href="{% static 'css/index-style.css' %}">
-    <!-- Select2 CSS -->
     <link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet" />
     <link href="https://cdn.jsdelivr.net/npm/select2-bootstrap-5-theme@1.3.0/dist/select2-bootstrap-5-theme.min.css" rel="stylesheet" />
+    
     {% block extra_css %}{% endblock %}
     
     <style>
-        /* استایل‌های داخلی */
         body {
             font-family: 'Vazir', sans-serif;
             background-color: #f8f9fa;
         }
-        
-        .navbar-brand {
-            font-weight: bold;
-            color: #0d6efd !important;
-        }
-        
-        /* استایل کارت خودرو */
-        .car-card {
-            transition: all 0.3s ease;
-            border: 1px solid #dee2e6;
-            border-radius: 10px;
-            overflow: hidden;
-        }
-        
-        .car-card:hover {
-            transform: translateY(-5px);
-            box-shadow: 0 10px 20px rgba(0,0,0,0.1);
-        }
-        
-        .car-img-container {
-            height: 200px;
-            overflow: hidden;
-            background-color: #f8f9fa;
-        }
-        
-        .car-img {
-            width: 100%;
-            height: 100%;
-            object-fit: cover;
-            transition: transform 0.3s ease;
-        }
-        
-        .car-card:hover .car-img {
-            transform: scale(1.05);
-        }
-        
-        .price-tag {
-            font-size: 1.2rem;
-            font-weight: bold;
-            color: #198754;
-        }
+        .navbar-brand { font-weight: bold; color: #0d6efd !important; }
+        .car-card { transition: all 0.3s ease; border: 1px solid #dee2e6; border-radius: 10px; overflow: hidden; }
+        .car-card:hover { transform: translateY(-5px); box-shadow: 0 10px 20px rgba(0,0,0,0.1); }
+        .car-img-container { height: 200px; overflow: hidden; background-color: #f8f9fa; }
+        .car-img { width: 100%; height: 100%; object-fit: cover; transition: transform 0.3s ease; }
+        .car-card:hover .car-img { transform: scale(1.05); }
+        .price-tag { font-size: 1.2rem; font-weight: bold; color: #198754; }
     </style>
 </head>
 <body>
     {% csrf_token %}
-    <!-- 🔹 نوار ناوبری -->
+    
     <header class="site-header" id="top">
-
         <div class="header-inner container">
-
-            <!-- لوگوی تصویری هدر -->
-            <a class="brand-logo" href="#top" aria-label="بازگشت به صفحه اصلی بازار خودرو">
-
-                <img
-                    src="{% static 'assets/images/logo-header.svg' %}"
-                    alt="بازار خودرو"
-                    style="width: 160px; height: 56px; object-fit: contain;"
-                >
-
+            <a class="brand-logo" href="{% url 'home' %}" aria-label="بازگشت به صفحه اصلی">
+                <img src="{% static 'assets/images/logo-header.svg' %}" alt="بازار خودرو" style="width: 160px; height: 56px; object-fit: contain;">
             </a>
 
-
-            <!-- دکمه منوی موبایل -->
-            <button
-                class="menu-toggle"
-                type="button"
-                aria-label="باز کردن منو"
-                aria-expanded="false"
-            >
+            <button class="menu-toggle" id="mobile-menu-btn" type="button" aria-label="باز کردن منو" aria-expanded="false">
                 <span class="menu-lines" aria-hidden="true"></span>
             </button>
 
-
-            <!-- منوی اصلی -->
-            <nav class="main-nav" aria-label="دسته‌بندی آگهی‌ها">
-
-                <a href="#cars">خودرو</a>
-
-                <a href="#trucks">سنگین</a>
-
-                <a href="#motorcycles">موتور</a>
-
+            <nav class="main-nav" id="main-nav-menu" aria-label="دسته‌بندی آگهی‌ها">
+                <a href="{% url 'cars:car_list' %}?type=car">خودرو</a>
+                <a href="{% url 'cars:heavy_list' %}">سنگین</a>
+                <a href="{% url 'cars:motorcycle_list' %}">موتور</a>
             </nav>
 
-
-            <!-- دکمه‌های سمت چپ هدر -->
             <div class="header-actions">
+                <input type="checkbox" id="advertisement-toggle" class="advertisement-toggle">
 
-
-                <!-- =================================================
-                     ثبت آگهی
-                     ================================================= -->
-
-                <!--
-                    این checkbox مخفی وظیفه باز و بسته کردن
-                    منوی ثبت آگهی را بدون JavaScript انجام می‌دهد.
-                -->
-                <input
-                    type="checkbox"
-                    id="advertisement-toggle"
-                    class="advertisement-toggle"
-                >
-
-
-                <!--
-                    ظرف ثبت آگهی.
-                    منوی بازشونده نسبت به این قسمت قرار می‌گیرد.
-                -->
                 <div class="advertisement-wrapper">
-
-
-                    <!--
-                        label مثل همان دکمه ثبت آگهی عمل می‌کند.
-                        با کلیک روی آن checkbox تغییر وضعیت می‌دهد.
-                    -->
-                    <label
-                        class="button button-muted advertisement-button"
-                        for="advertisement-toggle"
-                    >
-
-                        <!-- آیکون فلش -->
-                        <svg
-                            viewBox="0 0 24 24"
-                            aria-hidden="true"
-                            style="width: 18px; height: 18px; fill: none; stroke: currentColor; stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round;"
-                        >
+                    <label class="button button-muted advertisement-button" for="advertisement-toggle">
+                        <svg viewBox="0 0 24 24" aria-hidden="true" style="width: 18px; height: 18px; fill: none; stroke: currentColor; stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round;">
                             <path d="m6 9 6 6 6-6" />
                         </svg>
-
-                        <!-- متن -->
                         <span>ثبت آگهی</span>
-
                     </label>
 
-
-                    <!-- =================================================
-                         منوی سه گزینه‌ای
-                         ================================================= -->
-
                     <div class="advertisement-menu">
-
-
-                        <!-- گزینه اول: خودرو -->
-                        <a
-                            class="advertisement-item"
-                            href="#car-ad"
-                        >
-
-                            <!-- آیکون خودرو -->
-                            <svg
-                                viewBox="0 0 24 24"
-                                aria-hidden="true"
-                            >
-
-                                <path d="M5 17h14" />
-
-                                <path d="M6 17V9.5l2-4h8l2 4V17" />
-
-                                <path d="M4 10h16" />
-
-                                <circle
-                                    cx="7"
-                                    cy="17"
-                                    r="2"
-                                />
-
-                                <circle
-                                    cx="17"
-                                    cy="17"
-                                    r="2"
-                                />
-
+                        <a class="advertisement-item" href="{% url 'cars:car_create' %}">
+                            <svg viewBox="0 0 24 24" aria-hidden="true">
+                                <path d="M5 17h14" /><path d="M6 17V9.5l2-4h8l2 4V17" /><path d="M4 10h16" />
+                                <circle cx="7" cy="17" r="2" /><circle cx="17" cy="17" r="2" />
                             </svg>
-
-                            <!-- متن -->
                             <span>ثبت آگهی خودرو</span>
-
                         </a>
 
-
-                        <!-- گزینه دوم: موتور -->
-                        <a
-                            class="advertisement-item"
-                            href="#motorcycle-ad"
-                        >
-
-                            <!-- آیکون موتور -->
-                            <svg
-                                viewBox="0 0 24 24"
-                                aria-hidden="true"
-                            >
-
-                                <circle
-                                    cx="6"
-                                    cy="17"
-                                    r="3"
-                                />
-
-                                <circle
-                                    cx="18"
-                                    cy="17"
-                                    r="3"
-                                />
-
-                                <path d="M9 17h5l2-5h-4l-2-3" />
-
-                                <path d="M12 9h3" />
-
-                                <path d="M16 12l2-3" />
-
+                        <a class="advertisement-item" href="{% url 'cars:motorcycle_create' %}">
+                            <svg viewBox="0 0 24 24" aria-hidden="true">
+                                <circle cx="6" cy="17" r="3" /><circle cx="18" cy="17" r="3" />
+                                <path d="M9 17h5l2-5h-4l-2-3" /><path d="M12 9h3" /><path d="M16 12l2-3" />
                             </svg>
-
-                            <!-- متن -->
                             <span>ثبت آگهی موتور</span>
-
                         </a>
 
-
-                        <!-- گزینه سوم: سنگین -->
-                        <a
-                            class="advertisement-item"
-                            href="#heavy-ad"
-                        >
-
-                            <!-- آیکون خودرو سنگین -->
-                            <svg
-                                viewBox="0 0 24 24"
-                                aria-hidden="true"
-                            >
-
-                                <rect
-                                    x="5"
-                                    y="4"
-                                    width="14"
-                                    height="15"
-                                    rx="2"
-                                />
-
-                                <path d="M5 11h14" />
-
-                                <path d="M8 19v2" />
-
-                                <path d="M16 19v2" />
-
-                                <circle
-                                    cx="8"
-                                    cy="16"
-                                    r="1"
-                                />
-
-                                <circle
-                                    cx="16"
-                                    cy="16"
-                                    r="1"
-                                />
-
+                        <a class="advertisement-item" href="{% url 'cars:heavy_create' %}">
+                            <svg viewBox="0 0 24 24" aria-hidden="true">
+                                <rect x="5" y="4" width="14" height="15" rx="2" /><path d="M5 11h14" /><path d="M8 19v2" /><path d="M16 19v2" />
+                                <circle cx="8" cy="16" r="1" /><circle cx="16" cy="16" r="1" />
                             </svg>
-
-                            <!-- متن -->
                             <span>ثبت آگهی سنگین</span>
-
                         </a>
-
-
                     </div>
-
                 </div>
 
-
-                <!-- =================================================
-                     دکمه پیام‌ها
-                     ================================================= -->
-
-                <button
-                    class="icon-button message-button"
-                    type="button"
-                    aria-label="پیام‌ها"
-                    title="پیام‌ها"
-                >
-
-                    <svg
-                        viewBox="0 0 24 24"
-                        width="24"
-                        height="24"
-                        fill="none"
-                        stroke="currentColor"
-                        stroke-width="1.8"
-                        stroke-linecap="round"
-                        stroke-linejoin="round"
-                        aria-hidden="true"
-                    >
-
+                <a class="icon-button message-button" href="{% url 'chat:chat_list' %}" aria-label="پیام‌ها" title="پیام‌ها" style="text-decoration: none; color: inherit; display: flex; align-items: center; justify-content: center;">
+                    <svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
                         <path d="M20 11.5v2.2a5 5 0 0 1-5 5h-3l-2.5 2-2.5-2H6a4 4 0 0 1-4-4V8a5 5 0 0 1 5-5h6" />
-
-                        <circle
-                            cx="18"
-                            cy="5"
-                            r="3"
-                        />
-
+                        <circle cx="18" cy="5" r="3" />
                     </svg>
-
-                </button>
-
-
-                <!-- =================================================
-                     ورود
-                     ================================================= -->
-
-                <a
-                    class="button button-primary login-button"
-                    href="#footer"
-                >
-                    ورود
                 </a>
 
-
+                {% if user.is_authenticated %}
+                    <a class="button button-primary login-button" href="{% url 'accounts:profile' %}">
+                        پروفایل ({{ user.username }})
+                    </a>
+                    <a class="button button-muted login-button" href="{% url 'accounts:logout' %}" style="margin-right: 8px;">
+                        خروج
+                    </a>
+                {% else %}
+                    <a class="button button-primary login-button" href="{% url 'accounts:login' %}">
+                        ورود
+                    </a>
+                {% endif %}
             </div>
-
         </div>
-
     </header>
     
-    <!-- 🔹 پیام‌های سیستم -->
     {% if messages %}
     <div class="container mt-3">
         {% for message in messages %}
@@ -364,150 +123,99 @@
     </div>
     {% endif %}
     
-    <!-- 🔹 محتوای اصلی -->
     <main>
         {% block content %}{% endblock %}
     </main>
     
-    <!-- 🔹 فوتر -->
     <footer class="site-footer" id="footer">
-            <div class="footer-main container">
-                <a class="footer-brand" href="#top" aria-label="بازگشت به بالای صفحه">
-                    <img src="{% static 'assets/images/logo-header.svg' %}" alt="بازار خودرو" width="190" height="58">
-                    <span>بازار خودروی انتخابی مطمئن برای خرید و فروش هوشمندانه</span>
-                </a>
-                <nav aria-label="پیوندهای پایین صفحه" class="footer-links">
-                    <a href="#footer">تماس با ما</a>
-                    <a href="#footer">درباره ما</a>
-                    <a href="#footer">قوانین و مقررات</a>
-                </nav>
+        <div class="footer-main container">
+            <a class="footer-brand" href="{% url 'home' %}">
+                <img src="{% static 'assets/images/logo-header.svg' %}" alt="بازار خودرو" width="190" height="58">
+                <span>بازار خودروی انتخابی مطمئن برای خرید و فروش هوشمندانه</span>
+            </a>
+            <nav aria-label="پیوندهای پایین صفحه" class="footer-links">
+                <a href="#footer">تماس با ما</a>
+                <a href="#footer">درباره ما</a>
+                <a href="#footer">قوانین و مقررات</a>
+            </nav>
 
-                <div class="footer-socials" aria-label="شبکه‌های اجتماعی">
-                    <a aria-label="شبکه اجتماعی ایکس" href="#footer"><svg aria-hidden="true" viewBox="0 0 24 24">
-                            <path
-                                d="M18.9 2H22l-6.8 7.8L23.2 22h-6.3L12 14.6 5.6 22H2.4l7.3-8.4L1.8 2h6.5l4.5 6.7L18.9 2Zm-1.1 18h1.7L7.3 3.9H5.5L17.8 20Z" />
-                        </svg></a>
-                    <a aria-label="واتساپ" href="#footer"><svg aria-hidden="true" viewBox="0 0 24 24">
-                            <path
-                                d="M20.5 3.5A11.8 11.8 0 0 0 2 17.7L.5 23.5l6-1.6a11.8 11.8 0 0 0 5.6 1.4h.1A11.8 11.8 0 0 0 20.5 3.5ZM12.2 21.3a9.8 9.8 0 0 1-5-1.4l-.4-.2-3.5.9.9-3.4-.2-.4a9.8 9.8 0 1 1 8.2 4.5Zm5.4-7.3c-.3-.2-1.8-.9-2.1-1s-.5-.2-.7.2-.8 1-1 1.2-.4.2-.7.1a8.1 8.1 0 0 1-2.4-1.5 9 9 0 0 1-1.7-2.1c-.2-.3 0-.5.1-.7l.5-.6.3-.5c.1-.2 0-.4 0-.6s-.7-1.7-1-2.3c-.2-.5-.5-.5-.7-.5H7.6c-.2 0-.6.1-.9.4s-1.2 1.2-1.2 2.8 1.2 3.2 1.4 3.4a11.8 11.8 0 0 0 4.5 4c.6.2 1.1.4 1.5.5.6.2 1.2.2 1.6.1.5-.1 1.8-.7 2-1.4s.3-1.3.2-1.4-.3-.2-.6-.4Z" />
-                        </svg></a>
-                    <a aria-label="اینستاگرام" href="#footer"><svg aria-hidden="true" viewBox="0 0 24 24">
-                            <rect x="3" y="3" width="18" height="18" rx="5" fill="none" stroke="currentColor"
-                                stroke-width="2.1" />
-                            <circle cx="12" cy="12" r="4.2" fill="none" stroke="currentColor" stroke-width="2.1" />
-                            <circle cx="17.7" cy="6.5" r="1.3" />
-                        </svg></a>
-                    <a aria-label="لینکدین" href="#footer"><svg aria-hidden="true" viewBox="0 0 24 24">
-                            <rect x="2" y="2" width="20" height="20" rx="2" />
-                            <path fill="#fff"
-                                d="M6 9h3v10H6zM7.5 4.8a1.7 1.7 0 1 1 0 3.4 1.7 1.7 0 0 1 0-3.4ZM11 9h2.9v1.4h.1A3.2 3.2 0 0 1 17 8.7c3.1 0 3.7 2 3.7 4.6V19h-3v-5c0-1.2 0-2.8-1.8-2.8s-2.1 1.3-2.1 2.7V19H11z" />
-                        </svg></a>
-                </div>
-
+            <div class="footer-socials" aria-label="شبکه‌های اجتماعی">
+                <a aria-label="شبکه اجتماعی ایکس" href="#footer"><svg aria-hidden="true" viewBox="0 0 24 24"><path d="M18.9 2H22l-6.8 7.8L23.2 22h-6.3L12 14.6 5.6 22H2.4l7.3-8.4L1.8 2h6.5l4.5 6.7L18.9 2Zm-1.1 18h1.7L7.3 3.9H5.5L17.8 20Z" /></svg></a>
+                <a aria-label="واتساپ" href="#footer"><svg aria-hidden="true" viewBox="0 0 24 24"><path d="M20.5 3.5A11.8 11.8 0 0 0 2 17.7L.5 23.5l6-1.6a11.8 11.8 0 0 0 5.6 1.4h.1A11.8 11.8 0 0 0 20.5 3.5ZM12.2 21.3a9.8 9.8 0 0 1-5-1.4l-.4-.2-3.5.9.9-3.4-.2-.4a9.8 9.8 0 1 1 8.2 4.5Zm5.4-7.3c-.3-.2-1.8-.9-2.1-1s-.5-.2-.7.2-.8 1-1 1.2-.4.2-.7.1a8.1 8.1 0 0 1-2.4-1.5 9 9 0 0 1-1.7-2.1c-.2-.3 0-.5.1-.7l.5-.6.3-.5c.1-.2 0-.4 0-.6s-.7-1.7-1-2.3c-.2-.5-.5-.5-.7-.5H7.6c-.2 0-.6.1-.9.4s-1.2 1.2-1.2 2.8 1.2 3.2 1.4 3.4a11.8 11.8 0 0 0 4.5 4c.6.2 1.1.4 1.5.5.6.2 1.2.2 1.6.1.5-.1 1.8-.7 2-1.4s.3-1.3.2-1.4-.3-.2-.6-.4Z" /></svg></a>
+                <a aria-label="اینستاگرام" href="#footer"><svg aria-hidden="true" viewBox="0 0 24 24"><rect x="3" y="3" width="18" height="18" rx="5" fill="none" stroke="currentColor" stroke-width="2.1" /><circle cx="12" cy="12" r="4.2" fill="none" stroke="currentColor" stroke-width="2.1" /><circle cx="17.7" cy="6.5" r="1.3" /></svg></a>
+                <a aria-label="لینکدین" href="#footer"><svg aria-hidden="true" viewBox="0 0 24 24"><rect x="2" y="2" width="20" height="20" rx="2" /><path fill="#fff" d="M6 9h3v10H6zM7.5 4.8a1.7 1.7 0 1 1 0 3.4 1.7 1.7 0 0 1 0-3.4ZM11 9h2.9v1.4h.1A3.2 3.2 0 0 1 17 8.7c3.1 0 3.7 2 3.7 4.6V19h-3v-5c0-1.2 0-2.8-1.8-2.8s-2.1 1.3-2.1 2.7V19H11z" /></svg></a>
             </div>
-            <div class="footer-bottom">
-                <p>© ۱۴۰۲ بازار خودرو. تمامی حقوق محفوظ است.</p>
-            </div>
-        </footer>
+        </div>
+        <div class="footer-bottom">
+            <p>© ۱۴۰۲ بازار خودرو. تمامی حقوق محفوظ است.</p>
+        </div>
+    </footer>
     
-    <!-- 🔹 اسکریپت‌ها -->
-    <!-- Bootstrap JS -->
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
-
-    <!-- jQuery -->
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
-
-    <!-- Select2 JS (قبل از main.js) -->
     <script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/i18n/fa.js"></script>
-
-    <!-- JS سفارشی (بعد از Select2) -->
     <script src="{% static 'js/main.js' %}"></script>
-
     
     {% block extra_js %}{% endblock %}
- <script>
-$(document).ready(function() {
-    // 🔹 **دریافت CSRF Token**
-    function getCookie(name) {
-        let cookieValue = null;
-        if (document.cookie && document.cookie !== '') {
-            const cookies = document.cookie.split(';');
-            for (let i = 0; i < cookies.length; i++) {
-                const cookie = cookies[i].trim();
-                if (cookie.substring(0, name.length + 1) === (name + '=')) {
-                    cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
-                    break;
+    
+    <script>
+    $(document).ready(function() {
+        function getCookie(name) {
+            let cookieValue = null;
+            if (document.cookie && document.cookie !== '') {
+                const cookies = document.cookie.split(';');
+                for (let i = 0; i < cookies.length; i++) {
+                    const cookie = cookies[i].trim();
+                    if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                        cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                        break;
+                    }
                 }
             }
+            return cookieValue;
         }
-        return cookieValue;
-    }
-    
-    const csrftoken = getCookie('csrftoken');
-    
-    // 🔹 افزودن CSRF Token به همه درخواست‌های AJAX
-    $.ajaxSetup({
-        beforeSend: function(xhr, settings) {
-            if (!this.crossDomain) {
-                xhr.setRequestHeader("X-CSRFToken", csrftoken);
-            }
-        }
-    });
-    
-    // 🔹 **اصلاح شده: افزودن/حذف علاقه‌مندی**
-    $(document).on('click', '.favorite-btn', function(e) {
-        e.preventDefault();
+        const csrftoken = getCookie('csrftoken');
+        $.ajaxSetup({ beforeSend: function(xhr, settings) { if (!this.crossDomain) { xhr.setRequestHeader("X-CSRFToken", csrftoken); } } });
         
-        var btn = $(this);
-        var carId = btn.data('car-id');
-        
-        // ساخت URL صحیح
-        var url = "/car/" + carId + "/favorite/";
-        console.log('ارسال POST به:', url);
-        
-        $.ajax({
-            url: url,
-            type: 'POST',  // استفاده از type به جای method
-            contentType: 'application/json',
-            data: JSON.stringify({}),  // داده خالی
-            dataType: 'json',
-            success: function(data) {
-                console.log('پاسخ موفق:', data);
-                
-                if (data.status === 'added') {
-                    btn.removeClass('btn-outline-danger').addClass('btn-danger');
-                    btn.html('<i class="bi bi-heart-fill"></i> حذف از علاقه‌مندی‌ها');
-                    showAlert('success', data.message || 'به علاقه‌مندی‌ها اضافه شد');
-                } else if (data.status === 'removed') {
-                    btn.removeClass('btn-danger').addClass('btn-outline-danger');
-                    btn.html('<i class="bi bi-heart"></i> افزودن به علاقه‌مندی‌ها');
-                    showAlert('info', data.message || 'از علاقه‌مندی‌ها حذف شد');
-                }
-            },
-            error: function(xhr, status, error) {
-                console.error('خطای کامل:', xhr.status, xhr.responseText);
-                showAlert('danger', 'خطا: ' + xhr.status + ' - ' + error);
-            }
+        $(document).on('click', '.favorite-btn', function(e) {
+            e.preventDefault();
+            var btn = $(this);
+            var carId = btn.data('car-id');
+            var url = "/car/" + carId + "/favorite/";
+            $.ajax({
+                url: url, type: 'POST', contentType: 'application/json', data: JSON.stringify({}), dataType: 'json',
+                success: function(data) {
+                    if (data.status === 'added') {
+                        btn.removeClass('btn-outline-danger').addClass('btn-danger').html('<i class="bi bi-heart-fill"></i> حذف از علاقه‌مندی‌ها');
+                        showAlert('success', data.message || 'به علاقه‌مندی‌ها اضافه شد');
+                    } else if (data.status === 'removed') {
+                        btn.removeClass('btn-danger').addClass('btn-outline-danger').html('<i class="bi bi-heart"></i> افزودن به علاقه‌مندی‌ها');
+                        showAlert('info', data.message || 'از علاقه‌مندی‌ها حذف شد');
+                    }
+                },
+                error: function(xhr, status, error) { showAlert('danger', 'خطا: ' + xhr.status + ' - ' + error); }
+            });
         });
+        
+        function showAlert(type, message) {
+            $('.favorite-alert').remove();
+            var alertHtml = '<div class="alert alert-' + type + ' alert-dismissible fade show favorite-alert mt-3">' + message + '<button type="button" class="btn-close" data-bs-dismiss="alert"></button></div>';
+            $('.favorite-btn').first().after(alertHtml);
+            setTimeout(function() { $('.favorite-alert').alert('close'); }, 3000);
+        }
     });
-    
-    // تابع نمایش پیام
-    function showAlert(type, message) {
-        $('.favorite-alert').remove();
-        
-        var alertHtml = '<div class="alert alert-' + type + ' alert-dismissible fade show favorite-alert mt-3">' +
-                        message +
-                        '<button type="button" class="btn-close" data-bs-dismiss="alert"></button>' +
-                        '</div>';
-        
-        $('.favorite-btn').first().after(alertHtml);
-        
-        setTimeout(function() {
-            $('.favorite-alert').alert('close');
-        }, 3000);
-    }
-});
+    </script>
+    <script>
+    document.addEventListener('DOMContentLoaded', function() {
+        var btn = document.getElementById('mobile-menu-btn');
+        var menu = document.getElementById('main-nav-menu');
+        if(btn && menu) {
+            btn.addEventListener('click', function() {
+                menu.classList.toggle('show');
+            });
+        }
+    });
 </script>
 </body>
 </html>

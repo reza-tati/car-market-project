@@ -1,523 +1,133 @@
+{% extends 'base.html' %}
 {% load static %}
-<!DOCTYPE html>
-<!-- به مرورگر می‌گوید این سند از استاندارد HTML5 استفاده می‌کند. -->
-<html dir="rtl" lang="fa">
-<!-- زبان صفحه فارسی است و جهت پیش‌فرض نوشتار راست‌به‌چپ است. -->
 
-<head>
-    <!-- اطلاعات تنظیماتی صفحه در این بخش قرار می‌گیرند و مستقیماً در بدنه دیده نمی‌شوند. -->
-    <meta charset="utf-8" />
-    <!-- نمایش درست حروف فارسی و سایر نویسه‌های یونیکد را فعال می‌کند. -->
-    <meta content="width=device-width, initial-scale=1.0" name="viewport" />
-    <!-- اندازه صفحه را با عرض موبایل و تبلت هماهنگ می‌کند. -->
-    <meta content="بازار خودرو؛ مشاهده آگهی&zwnj;های خودرو، خودروهای سنگین و موتورسیکلت." name="description" />
-    <!-- توضیح کوتاه صفحه برای موتورهای جست‌وجو است. -->
-    <title>
-        بازار خودرو | خرید و فروش با اطمینان
-    </title>
-    <!-- عنوانی که در زبانه مرورگر دیده می‌شود. -->
-    
-    <link href="{% static 'css/index-style.css' %}" rel="stylesheet" />
-    <!-- فایل CSS خارجی را برای ظاهر صفحه بارگذاری می‌کند. -->
-</head>
-<!-- پایان بخش تنظیمات صفحه. -->
-
-<body>
-    <!-- تمام محتوایی که کاربر می‌بیند داخل body نوشته می‌شود. -->
-
-    <!-- ==================== سربرگ سایت ==================== -->
-    <header class="site-header" id="top">
-
-        <div class="header-inner container">
-
-            <!-- لوگوی تصویری هدر -->
-            <a class="brand-logo" href="#top" aria-label="بازگشت به صفحه اصلی بازار خودرو">
-
-                <img
-                    src="{% static 'assets/images/logo-header.svg' %}"
-                    alt="بازار خودرو"
-                    style="width: 160px; height: 56px; object-fit: contain;"
-                >
-
-            </a>
-
-
-            <!-- دکمه منوی موبایل -->
-            <button
-                class="menu-toggle"
-                type="button"
-                aria-label="باز کردن منو"
-                aria-expanded="false"
-            >
-                <span class="menu-lines" aria-hidden="true"></span>
-            </button>
-
-
-            <!-- منوی اصلی -->
-            <nav class="main-nav" aria-label="دسته‌بندی آگهی‌ها">
-
-                <a href="#cars">خودرو</a>
-
-                <a href="#trucks">سنگین</a>
-
-                <a href="#motorcycles">موتور</a>
-
-            </nav>
-
-
-            <!-- دکمه‌های سمت چپ هدر -->
-            <div class="header-actions">
-
-
-                <!-- =================================================
-                     ثبت آگهی
-                     ================================================= -->
-
-                <!--
-                    این checkbox مخفی وظیفه باز و بسته کردن
-                    منوی ثبت آگهی را بدون JavaScript انجام می‌دهد.
-                -->
-                <input
-                    type="checkbox"
-                    id="advertisement-toggle"
-                    class="advertisement-toggle"
-                >
-
-
-                <!--
-                    ظرف ثبت آگهی.
-                    منوی بازشونده نسبت به این قسمت قرار می‌گیرد.
-                -->
-                <div class="advertisement-wrapper">
-
-
-                    <!--
-                        label مثل همان دکمه ثبت آگهی عمل می‌کند.
-                        با کلیک روی آن checkbox تغییر وضعیت می‌دهد.
-                    -->
-                    <label
-                        class="button button-muted advertisement-button"
-                        for="advertisement-toggle"
-                    >
-
-                        <!-- آیکون فلش -->
-                        <svg
-                            viewBox="0 0 24 24"
-                            aria-hidden="true"
-                            style="width: 18px; height: 18px; fill: none; stroke: currentColor; stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round;"
-                        >
-                            <path d="m6 9 6 6 6-6" />
-                        </svg>
-
-                        <!-- متن -->
-                        <span>ثبت آگهی</span>
-
-                    </label>
-
-
-                    <!-- =================================================
-                         منوی سه گزینه‌ای
-                         ================================================= -->
-
-                    <div class="advertisement-menu">
-
-
-                        <!-- گزینه اول: خودرو -->
-                        <a
-                            class="advertisement-item"
-                            href="#car-ad"
-                        >
-
-                            <!-- آیکون خودرو -->
-                            <svg
-                                viewBox="0 0 24 24"
-                                aria-hidden="true"
-                            >
-
-                                <path d="M5 17h14" />
-
-                                <path d="M6 17V9.5l2-4h8l2 4V17" />
-
-                                <path d="M4 10h16" />
-
-                                <circle
-                                    cx="7"
-                                    cy="17"
-                                    r="2"
-                                />
-
-                                <circle
-                                    cx="17"
-                                    cy="17"
-                                    r="2"
-                                />
-
-                            </svg>
-
-                            <!-- متن -->
-                            <span>ثبت آگهی خودرو</span>
-
-                        </a>
-
-
-                        <!-- گزینه دوم: موتور -->
-                        <a
-                            class="advertisement-item"
-                            href="#motorcycle-ad"
-                        >
-
-                            <!-- آیکون موتور -->
-                            <svg
-                                viewBox="0 0 24 24"
-                                aria-hidden="true"
-                            >
-
-                                <circle
-                                    cx="6"
-                                    cy="17"
-                                    r="3"
-                                />
-
-                                <circle
-                                    cx="18"
-                                    cy="17"
-                                    r="3"
-                                />
-
-                                <path d="M9 17h5l2-5h-4l-2-3" />
-
-                                <path d="M12 9h3" />
-
-                                <path d="M16 12l2-3" />
-
-                            </svg>
-
-                            <!-- متن -->
-                            <span>ثبت آگهی موتور</span>
-
-                        </a>
-
-
-                        <!-- گزینه سوم: سنگین -->
-                        <a
-                            class="advertisement-item"
-                            href="#heavy-ad"
-                        >
-
-                            <!-- آیکون خودرو سنگین -->
-                            <svg
-                                viewBox="0 0 24 24"
-                                aria-hidden="true"
-                            >
-
-                                <rect
-                                    x="5"
-                                    y="4"
-                                    width="14"
-                                    height="15"
-                                    rx="2"
-                                />
-
-                                <path d="M5 11h14" />
-
-                                <path d="M8 19v2" />
-
-                                <path d="M16 19v2" />
-
-                                <circle
-                                    cx="8"
-                                    cy="16"
-                                    r="1"
-                                />
-
-                                <circle
-                                    cx="16"
-                                    cy="16"
-                                    r="1"
-                                />
-
-                            </svg>
-
-                            <!-- متن -->
-                            <span>ثبت آگهی سنگین</span>
-
-                        </a>
-
-
-                    </div>
-
-                </div>
-
-
-                <!-- =================================================
-                     دکمه پیام‌ها
-                     ================================================= -->
-
-                <button
-                    class="icon-button message-button"
-                    type="button"
-                    aria-label="پیام‌ها"
-                    title="پیام‌ها"
-                >
-
-                    <svg
-                        viewBox="0 0 24 24"
-                        width="24"
-                        height="24"
-                        fill="none"
-                        stroke="currentColor"
-                        stroke-width="1.8"
-                        stroke-linecap="round"
-                        stroke-linejoin="round"
-                        aria-hidden="true"
-                    >
-
-                        <path d="M20 11.5v2.2a5 5 0 0 1-5 5h-3l-2.5 2-2.5-2H6a4 4 0 0 1-4-4V8a5 5 0 0 1 5-5h6" />
-
-                        <circle
-                            cx="18"
-                            cy="5"
-                            r="3"
-                        />
-
-                    </svg>
-
-                </button>
-
-
-                <!-- =================================================
-                     ورود
-                     ================================================= -->
-
-                <a
-                    class="button button-primary login-button"
-                    href="#footer"
-                >
-                    ورود
-                </a>
-
-
-            </div>
-
+{% block title %}بازار خودرو | خرید و فروش با اطمینان{% endblock %}
+
+{% block content %}
+<!-- اسلایدر -->
+<section class="hero-slider" aria-label="بنرهای بازار خودرو" aria-roledescription="اسلایدر">
+    <div class="hero-slider-track">
+        <div class="hero-slide is-active" aria-label="بنر خرید و فروش خودرو" aria-hidden="false">
+            <img src="{% static 'assets/images/hero-banner-1.svg' %}" width="2256" height="960"
+                alt="خرید و فروش خودرو با اطمینان؛ مشاهده آگهی‌ها">
+            <a class="hero-slide-cta hero-slide-cta-car" href="#cars"
+                aria-label="مشاهده آگهی‌های خودرو"></a>
         </div>
+        <div class="hero-slide" aria-label="بنر خرید و فروش موتورسیکلت" aria-hidden="true" inert>
+            <img src="{% static 'assets/images/hero-banner-2.svg' %}" width="2256" height="960"
+                alt="خرید و فروش موتورسیکلت با بهترین شرایط؛ مشاهده آگهی‌ها" loading="lazy">
+            <a class="hero-slide-cta hero-slide-cta-left" href="#cars"
+                aria-label="مشاهده آگهی‌های موتورسیکلت" tabindex="-1"></a>
+        </div>
+        <div class="hero-slide" aria-label="بنر خرید و فروش خودروهای سنگین" aria-hidden="true" inert>
+            <img src="{% static 'assets/images/hero-banner-3.svg' %}" width="2256" height="960"
+                alt="خرید و فروش خودروهای سنگین؛ مشاهده آگهی‌ها" loading="lazy">
+            <a class="hero-slide-cta hero-slide-cta-left" href="#cars"
+                aria-label="مشاهده آگهی‌های خودروهای سنگین" tabindex="-1"></a>
+        </div>
+    </div>
+    <button class="hero-slider-arrow hero-slider-prev" type="button" aria-label="بنر قبلی">&#10095;</button>
+    <button class="hero-slider-arrow hero-slider-next" type="button" aria-label="بنر بعدی">&#10094;</button>
+    <div class="hero-slider-dots" role="group" aria-label="انتخاب بنر">
+        <button class="hero-slider-dot is-active" type="button" aria-label="نمایش بنر خودرو"
+            aria-pressed="true"></button>
+        <button class="hero-slider-dot" type="button" aria-label="نمایش بنر موتورسیکلت"
+            aria-pressed="false"></button>
+        <button class="hero-slider-dot" type="button" aria-label="نمایش بنر خودروهای سنگین"
+            aria-pressed="false"></button>
+    </div>
+</section>
 
-    </header>
-
-    <!-- پایان سربرگ. -->
-    <main>
-        <!-- محتوای اصلی صفحه؛ بهتر است هر صفحه فقط یک main اصلی داشته باشد. -->
-        <!-- ==================== بنر اصلی ==================== -->
-
-        <main>
-            <!-- main نشان می‌دهد محتوای زیر، محتوای اصلی این صفحه است. -->
-
-            <!-- اسلایدر سه‌بنری بازار خودرو؛ تصاویر دقیقاً 1128×480 پیکسل هستند. -->
-            <section class="hero-slider" aria-label="بنرهای بازار خودرو" aria-roledescription="اسلایدر">
-                <div class="hero-slider-track">
-                    <div class="hero-slide is-active" aria-label="بنر خرید و فروش خودرو" aria-hidden="false">
-                        <img src="{% static 'assets/images/hero-banner-1.svg' %}" width="2256" height="960"
-                            alt="خرید و فروش خودرو با اطمینان؛ مشاهده آگهی‌ها">
-                        <a class="hero-slide-cta hero-slide-cta-car" href="#cars"
-                            aria-label="مشاهده آگهی‌های خودرو"></a>
-                    </div>
-                    <div class="hero-slide" aria-label="بنر خرید و فروش موتورسیکلت" aria-hidden="true" inert>
-                        <img src="{% static 'assets//images/hero-banner-2.svg' %}" width="2256" height="960"
-                            alt="خرید و فروش موتورسیکلت با بهترین شرایط؛ مشاهده آگهی‌ها" loading="lazy">
-                        <a class="hero-slide-cta hero-slide-cta-left" href="#cars"
-                            aria-label="مشاهده آگهی‌های موتورسیکلت" tabindex="-1"></a>
-                    </div>
-                    <div class="hero-slide" aria-label="بنر خرید و فروش خودروهای سنگین" aria-hidden="true" inert>
-                        <img src="{% static 'assets//images/hero-banner-3.svg' %}" width="2256" height="960"
-                            alt="خرید و فروش خودروهای سنگین؛ مشاهده آگهی‌ها" loading="lazy">
-                        <a class="hero-slide-cta hero-slide-cta-left" href="#cars"
-                            aria-label="مشاهده آگهی‌های خودروهای سنگین" tabindex="-1"></a>
-                    </div>
-                </div>
-                <button class="hero-slider-arrow hero-slider-prev" type="button" aria-label="بنر قبلی">&#10095;</button>
-                <button class="hero-slider-arrow hero-slider-next" type="button" aria-label="بنر بعدی">&#10094;</button>
-                <div class="hero-slider-dots" role="group" aria-label="انتخاب بنر">
-                    <button class="hero-slider-dot is-active" type="button" aria-label="نمایش بنر خودرو"
-                        aria-pressed="true"></button>
-                    <button class="hero-slider-dot" type="button" aria-label="نمایش بنر موتورسیکلت"
-                        aria-pressed="false"></button>
-                    <button class="hero-slider-dot" type="button" aria-label="نمایش بنر خودروهای سنگین"
-                        aria-pressed="false"></button>
-                </div>
-            </section>
-
-
-
+<!-- برندها -->
 <div class="brand-strip" aria-label="برندهای خودرو">
     <div class="car-brands">
-
-        <!-- مجموعه اول -->
         <div class="brand-set">
             <img src="{% static 'assets/images/brand-strip.svg' %}" alt="برندهای خودرو">
             <img src="{% static 'assets/images/brand-stirp2.svg' %}" alt="" aria-hidden="true">
         </div>
-
-        <!-- مجموعه تکراری برای حذف فضای خالی -->
         <div class="brand-set" aria-hidden="true">
             <img src="{% static 'assets/images/brand-strip.svg' %}" alt="">
             <img src="{% static 'assets/images/brand-stirp2.svg' %}" alt="">
         </div>
-
     </div>
 </div>
 
-
-
-        
-            <!-- پایان ردیف برندها. -->
-            <!-- ==================== آگهی‌های خودرو ==================== -->
-            <section class="listing-section container" id="cars">
-                <!-- بخش آگهی خودرو؛ id برای لینک منو استفاده می‌شود. -->
-                <div class="section-heading">
-                    <h2>
-                        جدیدترین آگهی خودرو
-                    </h2>
-
-                    <a class="view-all" href="#cars">
-                        مشاهده همه آگهی‌ها &larr;
-                    </a>
-                </div>
-                <!-- پایان عنوان بخش. -->
-                <div class="vehicle-grid">
-                    {% for car in latest_cars %}
-                    <article class="vehicle-card">
-                        <div class="vehicle-image-wrap">
-                            {% if car.car_images.first %}
-                                <img src="{{ car.car_images.first.image.url }}" alt="{{ car.title }}" style="width:100%; height:100%; object-fit:cover;">
-                            {% else %}
-                                <img src="{% static 'assets/images/image1_2_2.webp' %}" alt="بدون عکس" style="width:100%; height:100%; object-fit:cover;">
-                            {% endif %}
-                            <span class="used-badge">{{ car.get_condition_display }}</span>
-                        </div>
-                        <h3><a href="{% url 'cars:car_detail' car.pk car.slug %}" style="color:inherit; text-decoration:none;">{{ car.title }}</a></h3>
-                        <p class="price-row"><span>قیمت:</span> <strong>{{ car.price }} تومان</strong></p>
-                        <div class="vehicle-meta">
-                            <span class="vehicle-meta-city">{{ car.city }}</span>
-                        </div>
-                    </article>
-                    {% endfor %}
-                </div>
-                <!-- پایان شبکه خودروها. -->
-            </section>
-            <!-- پایان بخش آگهی‌های خودرو. -->
-            <!-- ==================== آگهی‌های خودرو سنگین ==================== -->
-            <section class="listing-section container" id="trucks">
-                <!-- بخش آگهی کامیون و وسایل نقلیه سنگین. -->
-                <div class="section-heading">
-                    <h2>
-                        جدیدترین آگهی سنگین
-                    </h2>
-
-                    <a class="view-all" href="#cars">
-                        مشاهده همه آگهی‌ها &larr;
-                    </a>
-                </div>
-                <!-- عنوان بخش سنگین و لینک مشاهده همه. -->
-                <div class="vehicle-grid">
-                    {% for heavy in latest_heavies %}
-                    <article class="vehicle-card">
-                        <div class="vehicle-image-wrap">
-                            {% if heavy.heavy_images.first %}
-                                <img src="{{ heavy.heavy_images.first.image.url }}" alt="{{ heavy.title }}" style="width:100%; height:100%; object-fit:cover;">
-                            {% else %}
-                                <img src="{% static 'assets/images/image8_2_2.webp' %}" alt="بدون عکس" style="width:100%; height:100%; object-fit:cover;">
-                            {% endif %}
-                            <span class="used-badge">{{ heavy.get_condition_display }}</span>
-                        </div>
-                        <h3><a href="{% url 'cars:heavy_detail' heavy.pk heavy.slug %}" style="color:inherit; text-decoration:none;">{{ heavy.title }}</a></h3>
-                        <p class="price-row"><span>قیمت:</span> <strong>{{ heavy.price }} تومان</strong></p>
-                        <div class="vehicle-meta"><span class="vehicle-meta-city">{{ heavy.city }}</span></div>
-                    </article>
-                    {% endfor %}
-                </div>
-                <!-- پایان شبکه وسایل سنگین. -->
-            </section>
-            <!-- پایان بخش خودرو سنگین. -->
-            <!-- ==================== آگهی‌های موتورسیکلت ==================== -->
-            <section class="listing-section container" id="motorcycles">
-                <!-- بخش آگهی موتور؛ این شناسه از منوی بالای سایت استفاده می‌شود. -->
-                <div class="section-heading">
-                    <h2>
-                        جدیدترین آگهی موتور
-                    </h2>
-
-                    <a class="view-all" href="#cars">
-                        مشاهده همه آگهی‌ها &larr;
-                    </a>
-                </div>
-                <!-- عنوان بخش موتور و لینک مشاهده همه. -->
-                <div class="vehicle-grid">
-                    {% for moto in latest_motorcycles %}
-                    <article class="vehicle-card">
-                        <div class="vehicle-image-wrap">
-                            {% if moto.motorcycle_images.first %}
-                                <img src="{{ moto.motorcycle_images.first.image.url }}" alt="{{ moto.title }}" style="width:100%; height:100%; object-fit:cover;">
-                            {% else %}
-                                <img src="{% static 'assets/images/image12_2_2.webp' %}" alt="بدون عکس" style="width:100%; height:100%; object-fit:cover;">
-                            {% endif %}
-                            <span class="used-badge">{{ moto.get_condition_display }}</span>
-                        </div>
-                        <h3><a href="{% url 'cars:motorcycle_detail' moto.pk moto.slug %}" style="color:inherit; text-decoration:none;">{{ moto.title }}</a></h3>
-                        <p class="price-row"><span>قیمت:</span> <strong>{{ moto.price }} تومان</strong></p>
-                        <div class="vehicle-meta"><span class="vehicle-meta-city">{{ moto.city }}</span></div>
-                    </article>
-                    {% endfor %}
-                </div>
-                <!-- پایان شبکه موتورسیکلت‌ها. -->
-            </section>
-            <!-- پایان بخش موتورسیکلت. -->
-        </main>
-        <!-- پایان محتوای اصلی. -->
-        <!-- ==================== پایین صفحه ==================== -->
-        <footer class="site-footer" id="footer">
-            <div class="footer-main container">
-                <a class="footer-brand" href="#top" aria-label="بازگشت به بالای صفحه">
-                    <img src="{% static 'assets/images/logo-header.svg' %}" alt="بازار خودرو" width="190" height="58">
-                    <span>بازار خودروی انتخابی مطمئن برای خرید و فروش هوشمندانه</span>
-                </a>
-                <nav aria-label="پیوندهای پایین صفحه" class="footer-links">
-                    <a href="#footer">تماس با ما</a>
-                    <a href="#footer">درباره ما</a>
-                    <a href="#footer">قوانین و مقررات</a>
-                </nav>
-
-                <div class="footer-socials" aria-label="شبکه‌های اجتماعی">
-                    <a aria-label="شبکه اجتماعی ایکس" href="#footer"><svg aria-hidden="true" viewBox="0 0 24 24">
-                            <path
-                                d="M18.9 2H22l-6.8 7.8L23.2 22h-6.3L12 14.6 5.6 22H2.4l7.3-8.4L1.8 2h6.5l4.5 6.7L18.9 2Zm-1.1 18h1.7L7.3 3.9H5.5L17.8 20Z" />
-                        </svg></a>
-                    <a aria-label="واتساپ" href="#footer"><svg aria-hidden="true" viewBox="0 0 24 24">
-                            <path
-                                d="M20.5 3.5A11.8 11.8 0 0 0 2 17.7L.5 23.5l6-1.6a11.8 11.8 0 0 0 5.6 1.4h.1A11.8 11.8 0 0 0 20.5 3.5ZM12.2 21.3a9.8 9.8 0 0 1-5-1.4l-.4-.2-3.5.9.9-3.4-.2-.4a9.8 9.8 0 1 1 8.2 4.5Zm5.4-7.3c-.3-.2-1.8-.9-2.1-1s-.5-.2-.7.2-.8 1-1 1.2-.4.2-.7.1a8.1 8.1 0 0 1-2.4-1.5 9 9 0 0 1-1.7-2.1c-.2-.3 0-.5.1-.7l.5-.6.3-.5c.1-.2 0-.4 0-.6s-.7-1.7-1-2.3c-.2-.5-.5-.5-.7-.5H7.6c-.2 0-.6.1-.9.4s-1.2 1.2-1.2 2.8 1.2 3.2 1.4 3.4a11.8 11.8 0 0 0 4.5 4c.6.2 1.1.4 1.5.5.6.2 1.2.2 1.6.1.5-.1 1.8-.7 2-1.4s.3-1.3.2-1.4-.3-.2-.6-.4Z" />
-                        </svg></a>
-                    <a aria-label="اینستاگرام" href="#footer"><svg aria-hidden="true" viewBox="0 0 24 24">
-                            <rect x="3" y="3" width="18" height="18" rx="5" fill="none" stroke="currentColor"
-                                stroke-width="2.1" />
-                            <circle cx="12" cy="12" r="4.2" fill="none" stroke="currentColor" stroke-width="2.1" />
-                            <circle cx="17.7" cy="6.5" r="1.3" />
-                        </svg></a>
-                    <a aria-label="لینکدین" href="#footer"><svg aria-hidden="true" viewBox="0 0 24 24">
-                            <rect x="2" y="2" width="20" height="20" rx="2" />
-                            <path fill="#fff"
-                                d="M6 9h3v10H6zM7.5 4.8a1.7 1.7 0 1 1 0 3.4 1.7 1.7 0 0 1 0-3.4ZM11 9h2.9v1.4h.1A3.2 3.2 0 0 1 17 8.7c3.1 0 3.7 2 3.7 4.6V19h-3v-5c0-1.2 0-2.8-1.8-2.8s-2.1 1.3-2.1 2.7V19H11z" />
-                        </svg></a>
-                </div>
-
+<!-- آگهی‌های خودرو -->
+<section class="listing-section container" id="cars">
+    <div class="section-heading">
+        <h2>جدیدترین آگهی خودرو</h2>
+        <a class="view-all" href="{% url 'cars:car_list' %}">مشاهده همه آگهی‌ها &larr;</a>
+    </div>
+    <div class="vehicle-grid">
+        {% for car in latest_cars %}
+        <article class="vehicle-card">
+            <div class="vehicle-image-wrap">
+                {% if car.car_images.first %}
+                    <img src="{{ car.car_images.first.image.url }}" alt="{{ car.title }}" style="width:100%; height:100%; object-fit:cover;">
+                {% else %}
+                    <img src="{% static 'assets/images/image1_2_2.webp' %}" alt="بدون عکس" style="width:100%; height:100%; object-fit:cover;">
+                {% endif %}
+                <span class="used-badge">{{ car.get_condition_display }}</span>
             </div>
-            <div class="footer-bottom">
-                <p>© ۱۴۰۲ بازار خودرو. تمامی حقوق محفوظ است.</p>
-            </div>
-        </footer>
-        <!-- پایان فوتر. -->
-        <script defer="" src="js/script.js">
-        </script>
-        <!-- فایل JavaScript را بارگذاری می‌کند؛ defer اجرا را تا آماده‌شدن HTML عقب می‌اندازد. -->
-</body>
-<!-- پایان محتوای صفحه. -->
+            <h3><a href="{% url 'cars:car_detail' car.pk car.slug %}" style="color:inherit; text-decoration:none;">{{ car.title }}</a></h3>
+            <p class="price-row"><span>قیمت:</span> <strong>{{ car.price }} تومان</strong></p>
+            <div class="vehicle-meta"><span class="vehicle-meta-city">{{ car.city }}</span></div>
+        </article>
+        {% endfor %}
+    </div>
+</section>
 
-</html>
-<!-- پایان سند HTML. -->
+<!-- آگهی‌های سنگین -->
+<section class="listing-section container" id="trucks">
+    <div class="section-heading">
+        <h2>جدیدترین آگهی سنگین</h2>
+        <a class="view-all" href="{% url 'cars:heavy_list' %}">مشاهده همه آگهی‌ها &larr;</a>
+    </div>
+    <div class="vehicle-grid">
+        {% for heavy in latest_heavies %}
+        <article class="vehicle-card">
+            <div class="vehicle-image-wrap">
+                {% if heavy.heavy_images.first %}
+                    <img src="{{ heavy.heavy_images.first.image.url }}" alt="{{ heavy.title }}" style="width:100%; height:100%; object-fit:cover;">
+                {% else %}
+                    <img src="{% static 'assets/images/image8_2_2.webp' %}" alt="بدون عکس" style="width:100%; height:100%; object-fit:cover;">
+                {% endif %}
+                <span class="used-badge">{{ heavy.get_condition_display }}</span>
+            </div>
+            <h3><a href="{% url 'cars:heavy_detail' heavy.pk heavy.slug %}" style="color:inherit; text-decoration:none;">{{ heavy.title }}</a></h3>
+            <p class="price-row"><span>قیمت:</span> <strong>{{ heavy.price }} تومان</strong></p>
+            <div class="vehicle-meta"><span class="vehicle-meta-city">{{ heavy.city }}</span></div>
+        </article>
+        {% endfor %}
+    </div>
+</section>
+
+<!-- آگهی‌های موتور -->
+<section class="listing-section container" id="motorcycles">
+    <div class="section-heading">
+        <h2>`````````ترین آگهی موتور</h2>
+        <a class="view-all" href="{% url 'cars:motorcycle_list' %}">مشاهده همه آگهی‌ها &larr;</a>
+    </div>
+    <div class="vehicle-grid">
+        {% for moto in latest_motorcycles %}
+        <article class="vehicle-card">
+            <div class="vehicle-image-wrap">
+                {% if moto.motorcycle_images.first %}
+                    <img src="{{ moto.motorcycle_images.first.image.url }}" alt="{{ moto.title }}" style="width:100%; height:100%; object-fit:cover;">
+                {% else %}
+                    <img src="{% static 'assets/images/image12_2_2.webp' %}" alt="بدون عکس" style="width:100%; height:100%; object-fit:cover;">
+                {% endif %}
+                <span class="used-badge">{{ moto.get_condition_display }}</span>
+            </div>
+            <h3><a href="{% url 'cars:motorcycle_detail' moto.pk moto.slug %}" style="color:inherit; text-decoration:none;">{{ moto.title }}</a></h3>
+            <p class="price-row"><span>قیمت:</span> <strong>{{ moto.price }} تومان</strong></p>
+            <div class="vehicle-meta"><span class="vehicle-meta-city">{{ moto.city }}</span></div>
+        </article>
+        {% endfor %}
+    </div>
+</section>
+{% endblock %}
+
+{% block extra_css %}
+<link href="{% static 'css/index-style.css' %}" rel="stylesheet" />
+{% endblock %}

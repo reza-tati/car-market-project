@@ -24,50 +24,57 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     });
 });
+/* ============================================
+   📱 منوی همبرگری موبایل
+   ============================================ */
+document.addEventListener('DOMContentLoaded', function () {
+    var menuBtn = document.getElementById('mobile-menu-btn');
+    var header  = document.querySelector('.site-header');
 
-// ===== انتخاب رنگ با آیکون =====
-$(document).ready(function() {
-    console.log('🔍 Checking color field...');
-    console.log('Color element count:', $('#id_color').length);
-    
-    if ($('#id_color').length) {
-        const colorMap = {
-            'white': '#ffffff',
-            'black': '#000000',
-            'silver': '#c0c0c0',
-            'gray': '#808080',
-            'red': '#dc3545',
-            'blue': '#0d6efd',
-            'green': '#198754',
-            'brown': '#8b4513',
-            'yellow': '#ffc107',
-            'orange': '#fd7e14',
-        };
-        
-        function formatColor(option) {
-            if (!option.id) return option.text;
-            
-            const bgColor = colorMap[option.id] || '#ccc';
-            
-            return $(`
-                <div style="display: flex; align-items: center; gap: 8px;">
-                    <span style="width: 20px; height: 20px; border-radius: 50%; background: ${bgColor}; border: 2px solid #ddd; display: inline-block;"></span>
-                    <span>${option.text}</span>
-                </div>
-            `);
-        }
-        
-        $('#id_color').select2({
-            theme: 'bootstrap-5',
-            templateResult: formatColor,
-            templateSelection: formatColor,
-            language: 'fa',
-            placeholder: 'انتخاب رنگ',
-            allowClear: true,
-        });
-        
-        console.log('✅ Select2 applied to color field!');
-    } else {
-        console.log('❌ Color field not found!');
+    if (!menuBtn || !header) return;
+
+    /* باز/بسته کردن منو (forceClose = بستن اجباری) */
+    function toggleMenu(forceClose) {
+        var isOpen = (forceClose === true)
+            ? false
+            : header.classList.toggle('menu-open');
+
+        menuBtn.setAttribute('aria-expanded', isOpen ? 'true' : 'false');
+        menuBtn.setAttribute('aria-label', isOpen ? 'بستن منو' : 'باز کردن منو');
     }
+
+    /* کلیک روی دکمه همبرگری */
+    menuBtn.addEventListener('click', function (e) {
+        e.stopPropagation();
+        toggleMenu();
+    });
+
+    /* بستن منو بعد از کلیک روی هر لینک */
+    header.querySelectorAll('.main-nav a, .header-actions a').forEach(function (link) {
+        link.addEventListener('click', function () {
+            toggleMenu(true);
+        });
+    });
+
+    /* بستن منو با کلیک بیرون از هدر */
+    document.addEventListener('click', function (e) {
+        if (header.classList.contains('menu-open') && !header.contains(e.target)) {
+            toggleMenu(true);
+        }
+    });
+
+    /* بستن منو با دکمه Esc کیبورد */
+    document.addEventListener('keydown', function (e) {
+        if (e.key === 'Escape' && header.classList.contains('menu-open')) {
+            toggleMenu(true);
+        }
+    });
+
+    /* اگه صفحه بزرگ شد و به دسکتاپ برگشت، منو بسته بشه */
+    window.addEventListener('resize', function () {
+        if (window.innerWidth > 768 && header.classList.contains('menu-open')) {
+            toggleMenu(true);
+        }
+    });
 });
+
