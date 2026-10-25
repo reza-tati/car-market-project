@@ -78,3 +78,90 @@ document.addEventListener('DOMContentLoaded', function () {
     });
 });
 
+/* ============================================
+   🎠 اسلایدر بنرهای صفحه اصلی
+   ============================================ */
+document.addEventListener('DOMContentLoaded', function () {
+    var slider = document.querySelector('.hero-slider');
+    if (!slider) return;
+
+    var slides  = slider.querySelectorAll('.hero-slide');
+    var dots    = slider.querySelectorAll('.hero-slider-dot');
+    var prevBtn = slider.querySelector('.hero-slider-prev');
+    var nextBtn = slider.querySelector('.hero-slider-next');
+    var current = 0;
+    var total   = slides.length;
+    var autoTimer = null;
+    var AUTO_DELAY = 5000; // هر ۵ ثانیه بنر عوض می‌شه
+
+    function goTo(index) {
+        current = (index + total) % total; // چرخه‌ای: بعد از آخری، برگرد به اولی
+
+        slides.forEach(function (slide, i) {
+            var active = (i === current);
+            slide.classList.toggle('is-active', active);
+            slide.setAttribute('aria-hidden', active ? 'false' : 'true');
+            if (active) {
+                slide.removeAttribute('inert');
+            } else {
+                slide.setAttribute('inert', '');
+            }
+            slide.querySelectorAll('a').forEach(function (a) {
+                a.tabIndex = active ? 0 : -1;
+            });
+        });
+
+        dots.forEach(function (dot, i) {
+            var active = (i === current);
+            dot.classList.toggle('is-active', active);
+            dot.setAttribute('aria-pressed', active ? 'true' : 'false');
+        });
+    }
+
+    function nextSlide() { goTo(current + 1); }
+    function prevSlide() { goTo(current - 1); }
+
+    function startAuto() {
+        stopAuto();
+        autoTimer = setInterval(nextSlide, AUTO_DELAY);
+    }
+    function stopAuto() {
+        if (autoTimer) { clearInterval(autoTimer); autoTimer = null; }
+    }
+
+    /* فلش‌ها و دات‌ها */
+    if (nextBtn) nextBtn.addEventListener('click', function () { nextSlide(); startAuto(); });
+    if (prevBtn) prevBtn.addEventListener('click', function () { prevSlide(); startAuto(); });
+    dots.forEach(function (dot, i) {
+        dot.addEventListener('click', function () { goTo(i); startAuto(); });
+    });
+
+    /* هاور = توقف خودکار، خروج = ادامه */
+    slider.addEventListener('mouseenter', stopAuto);
+    slider.addEventListener('mouseleave', startAuto);
+
+    /* وقتی تب غیرفعاله، اسلایدر نخوابه CPU */
+    document.addEventListener('visibilitychange', function () {
+        if (document.hidden) { stopAuto(); } else { startAuto(); }
+    });
+
+    /* سوایپ لمسی برای موبایل */
+    var touchX = null;
+    slider.addEventListener('touchstart', function (e) {
+        touchX = e.touches[0].clientX;
+        stopAuto();
+    }, { passive: true });
+    slider.addEventListener('touchend', function (e) {
+        if (touchX === null) return;
+        var delta = e.changedTouches[0].clientX - touchX;
+        if (Math.abs(delta) > 50) {
+            if (delta < 0) { nextSlide(); } else { prevSlide(); }
+        }
+        touchX = null;
+        startAuto();
+    }, { passive: true });
+
+    /* شروع */
+    goTo(0);
+    startAuto();
+});
