@@ -1,39 +1,31 @@
 # cars/templatetags/custom_filters.py
 from django import template
 from cars.models import Favorite  # اضافه کردن ایمپورت
-
+_DIGIT_MAP = str.maketrans('0123456789', '۰۱۲۳۴۵۶۷۸۹')
 register = template.Library()
 
 @register.filter
 def intcomma(value):
-    """فرمت اعداد با جداکننده هزارگان"""
+    """عدد با جداکننده هزارگان و ارقام فارسی: 1234567 → ۱٬۲۳۴٬۵۶۷"""
     try:
-        value = int(value)
-        # جداکننده فارسی
-        return f"{value:,}".replace(',', '٬')
+        formatted = '{:,}'.format(int(value))
     except (ValueError, TypeError):
-        return str(value)
-
+        return value
+    return formatted.replace(',', '٬').translate(_DIGIT_MAP)
 
 @register.filter
-def is_favorited_by(car, user):
+def is_favorited_by(vehicle, user):
     """
-    فیلتر template برای بررسی آیا کاربر خودرو را پسندیده است
-    
-    استفاده در تمپلیت:
-    {% if car|is_favorited_by:user %}
+    بررسی اینکه آیا کاربر این آگهی را پسندیده است
+    استفاده: {% if car|is_favorited_by:request.user %}
     """
-    # بررسی اگر کاربر لاگین نکرده
     if not user or not user.is_authenticated:
         return False
-    
-    # بررسی وجود رکورد در جدول Favorite
-    # روش ۱: استفاده از exists() برای کارایی بهتر
-    return Favorite.objects.filter(car=car, user=user).exists()
-    
-    # روش ۲: استفاده از related_name (اگر می‌خواهید از رابطه استفاده کنید)
-    # return car.favorited_by.filter(user=user).exists()
-
+    return Favorite.objects.filter(
+        user=user,
+        vehicle_id=vehicle.id,
+        vehicle_type=vehicle.vehicle_type,   # ← خود آگهی نوعش رو می‌گه!
+    ).exists()
 
 @register.filter
 def truncatechars_fa(value, arg):
@@ -58,3 +50,8 @@ def get_choice_display(obj, field_name):
     if hasattr(obj, f'get_{field_name}_display'):
         return getattr(obj, f'get_{field_name}_display')()
     return getattr(obj, field_name, '')
+
+@register.filter
+def fa_digits(value):
+    """تبدیل همه ارقام انگلیسی یک متن به فارسی: 3 روز → ۳ روز"""
+    return str(value).translate(_DIGIT_MAP)

@@ -1,0 +1,158 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}بازار خودرو | خرید و فروش با اطمینان{% endblock %}
+
+{% block content %}
+<!-- اسلایدر -->
+<section class="hero-slider" aria-label="بنرهای بازار خودرو" aria-roledescription="اسلایدر">
+    
+     <!-- 🏅 بج آگهی اول رایگان — روی همه بنرها دیده می‌شه -->
+    <a class="hero-free-badge" href="{% url 'cars:car_create' %}"
+        aria-label="ثبت آگهی — آگهی اول شما رایگان است">
+        <svg viewBox="0 0 24 24" width="16" height="16" fill="currentColor" aria-hidden="true">
+            <path d="M12 2l2.4 5.4L20 8l-4 3.9.9 5.6L12 14.8 7.1 17.5 8 11.9 4 8l5.6-.6L12 2z"/>
+        </svg>
+        آگهی اول <strong>رایگان</strong>!
+    </a>
+    <div class="hero-slider-track">
+
+        <!-- اسلاید ۱: خودرو ← لیست آگهی‌های خودرو -->
+        <div class="hero-slide is-active" aria-label="بنر خرید و فروش خودرو" aria-hidden="false">
+            <img src="{% static 'assets/images/hero-banner-1.svg' %}" width="2256" height="960"
+                alt="خرید و فروش خودرو با اطمینان؛ مشاهده آگهی‌ها">
+            <a class="hero-slide-cta hero-slide-cta-car" href="{% url 'cars:car_list' %}?type=car"
+                aria-label="مشاهده آگهی‌های خودرو"></a>
+        </div>
+
+        <!-- اسلاید ۲: موتورسیکلت ← لیست آگهی‌های موتور -->
+        <div class="hero-slide" aria-label="بنر خرید و فروش موتورسیکلت" aria-hidden="true" inert>
+            <img src="{% static 'assets/images/hero-banner-2.svg' %}" width="2256" height="960"
+                alt="خرید و فروش موتورسیکلت با بهترین شرایط؛ مشاهده آگهی‌ها" loading="lazy">
+            <a class="hero-slide-cta hero-slide-cta-left" href="{% url 'cars:motorcycle_list' %}"
+                aria-label="مشاهده آگهی‌های موتورسیکلت" tabindex="-1"></a>
+        </div>
+
+        <!-- اسلاید ۳: خودروهای سنگین ← لیست آگهی‌های سنگین -->
+        <div class="hero-slide" aria-label="بنر خرید و فروش خودروهای سنگین" aria-hidden="true" inert>
+            <img src="{% static 'assets/images/hero-banner-3.svg' %}" width="2256" height="960"
+                alt="خرید و فروش خودروهای سنگین؛ مشاهده آگهی‌ها" loading="lazy">
+            <a class="hero-slide-cta hero-slide-cta-left" href="{% url 'cars:heavy_list' %}"
+                aria-label="مشاهده آگهی‌های خودروهای سنگین" tabindex="-1"></a>
+        </div>
+
+    </div>
+    <button class="hero-slider-arrow hero-slider-prev" type="button" aria-label="بنر قبلی">&#10095;</button>
+    <button class="hero-slider-arrow hero-slider-next" type="button" aria-label="بنر بعدی">&#10094;</button>
+    <div class="hero-slider-dots" role="group" aria-label="انتخاب بنر">
+        <button class="hero-slider-dot is-active" type="button" aria-label="نمایش بنر خودرو"
+            aria-pressed="true"></button>
+        <button class="hero-slider-dot" type="button" aria-label="نمایش بنر موتورسیکلت"
+            aria-pressed="false"></button>
+        <button class="hero-slider-dot" type="button" aria-label="نمایش بنر خودروهای سنگین"
+            aria-pressed="false"></button>
+    </div>
+</section>
+
+<!-- برندها -->
+<div class="brand-strip" aria-label="برندهای خودرو">
+    <div class="car-brands">
+        <div class="brand-set">
+            <img src="{% static 'assets/images/brand-strip.svg' %}" alt="برندهای خودرو">
+            <img src="{% static 'assets/images/brand-stirp2.svg' %}" alt="" aria-hidden="true">
+        </div>
+        <div class="brand-set" aria-hidden="true">
+            <img src="{% static 'assets/images/brand-strip.svg' %}" alt="">
+            <img src="{% static 'assets/images/brand-stirp2.svg' %}" alt="">
+        </div>
+    </div>
+</div>
+
+<!-- آگهی‌های خودرو -->
+<section class="listing-section container" id="cars">
+    <div class="section-heading">
+        <h2>جدیدترین آگهی خودرو</h2>
+        <a class="view-all" href="{% url 'cars:car_list' %}">مشاهده همه آگهی‌ها &larr;</a>
+    </div>
+    <div class="vehicle-grid">
+        {% for car in latest_cars %}
+        <article class="vehicle-card">
+            <div class="vehicle-image-wrap">
+                {% if car.car_images.first %}
+                    <img src="{{ car.car_images.first.image.url }}" alt="{{ car.title }}" style="width:100%; height:100%; object-fit:cover;">
+                {% else %}
+                    <img src="{% static 'assets/images/image1_2_2.webp' %}" alt="بدون عکس" style="width:100%; height:100%; object-fit:cover;">
+                {% endif %}
+                <span class="used-badge">{{ car.get_condition_display }}</span>
+            </div>
+            <h3><a href="{% url 'cars:car_detail' car.pk car.slug %}" style="color:inherit; text-decoration:none;">{{ car.title }}</a></h3>
+            <p class="price-row"><span>قیمت:</span> <strong>{{ car.price }} تومان</strong></p>
+            <div class="vehicle-meta">
+    <span class="vehicle-meta-city">{{ car.city }}</span>
+    <span class="vehicle-meta-time">🕐 {{ car.created_at|timesince|fa_digits }} پیش</span>
+</div>
+        </article>
+        {% endfor %}
+    </div>
+</section>
+
+<!-- آگهی‌های سنگین -->
+<section class="listing-section container" id="trucks">
+    <div class="section-heading">
+        <h2>جدیدترین آگهی سنگین</h2>
+        <a class="view-all" href="{% url 'cars:heavy_list' %}">مشاهده همه آگهی‌ها &larr;</a>
+    </div>
+    <div class="vehicle-grid">
+        {% for heavy in latest_heavies %}
+        <article class="vehicle-card">
+            <div class="vehicle-image-wrap">
+                {% if heavy.heavy_images.first %}
+                    <img src="{{ heavy.heavy_images.first.image.url }}" alt="{{ heavy.title }}" style="width:100%; height:100%; object-fit:cover;">
+                {% else %}
+                    <img src="{% static 'assets/images/image8_2_2.webp' %}" alt="بدون عکس" style="width:100%; height:100%; object-fit:cover;">
+                {% endif %}
+                <span class="used-badge">{{ heavy.get_condition_display }}</span>
+            </div>
+            <h3><a href="{% url 'cars:heavy_detail' heavy.pk heavy.slug %}" style="color:inherit; text-decoration:none;">{{ heavy.title }}</a></h3>
+            <p class="price-row"><span>قیمت:</span> <strong>{{ heavy.price }} تومان</strong></p>
+            <div class="vehicle-meta">
+    <span class="vehicle-meta-city">{{ heavy.city }}</span>
+    <span class="vehicle-meta-time">🕐 {{ heavy.created_at|timesince|fa_digits }} پیش</span>
+</div>
+        </article>
+        {% endfor %}
+    </div>
+</section>
+
+<!-- آگهی‌های موتور -->
+<section class="listing-section container" id="motorcycles">
+    <div class="section-heading">
+        <h2>جدیدترین آگهی موتور</h2>
+        <a class="view-all" href="{% url 'cars:motorcycle_list' %}">مشاهده همه آگهی‌ها &larr;</a>
+    </div>
+    <div class="vehicle-grid">
+        {% for moto in latest_motorcycles %}
+        <article class="vehicle-card">
+            <div class="vehicle-image-wrap">
+                {% if moto.motorcycle_images.first %}
+                    <img src="{{ moto.motorcycle_images.first.image.url }}" alt="{{ moto.title }}" style="width:100%; height:100%; object-fit:cover;">
+                {% else %}
+                    <img src="{% static 'assets/images/image12_2_2.webp' %}" alt="بدون عکس" style="width:100%; height:100%; object-fit:cover;">
+                {% endif %}
+                <span class="used-badge">{{ moto.get_condition_display }}</span>
+            </div>
+            <h3><a href="{% url 'cars:motorcycle_detail' moto.pk moto.slug %}" style="color:inherit; text-decoration:none;">{{ moto.title }}</a></h3>
+            <p class="price-row"><span>قیمت:</span> <strong>{{ moto.price }} تومان</strong></p>
+            <div class="vehicle-meta">
+    <span class="vehicle-meta-city">{{ moto.city }}</span>
+    <span class="vehicle-meta-time">🕐 {{ moto.created_at|timesince|fa_digits }} پیش</span>
+</div>
+        </article>
+        {% endfor %}
+    </div>
+</section>
+{% endblock %}
+
+{% block extra_css %}
+<link href="{% static 'css/index-style.css' %}" rel="stylesheet" />
+{% endblock %}

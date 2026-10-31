@@ -847,43 +847,63 @@ class HeavyVehicleDeleteView(LoginRequiredMixin, UserPassesTestMixin, DeleteView
         return self.request.user == heavy.seller
 # ============================================
 # افزودن/حذف علاقه‌مندی
-# ============================================@login_required
+# ============================================
+# ============================================
+# ❤️ علاقه‌مندی‌ها (قلب) — AJAX + سازگار با فرم‌های قدیمی
+# ============================================
+VEHICLE_MODELS = {
+    'car': Car,
+    'motorcycle': Motorcycle,
+    'heavy': HeavyVehicle,
+}
+
 def toggle_favorite(request, vehicle_id):
-    vehicle_type = request.POST.get('vehicle_type', 'car')
-    
-    if vehicle_type == 'car':
-        vehicle = get_object_or_404(Car, id=vehicle_id)
-    elif vehicle_type == 'motorcycle':
-        vehicle = get_object_or_404(Motorcycle, id=vehicle_id)
-    elif vehicle_type == 'heavy':
-        vehicle = get_object_or_404(HeavyVehicle, id=vehicle_id)
-    else:
-        return JsonResponse({'error': 'نوع نامعتبر'}, status=400)
-    
-    favorite = Favorite.objects.filter(
+    """کلیک روی قلب: افزودن/حذف علاقه‌مندی"""
+    vehicle_type = (
+        request.GET.get('type')
+        or request.POST.get('type')
+        or request.POST.get('vehicle_type')   # ← سازگار با فرم صفحات جزئیات
+    )
+    is_ajax = request.headers.get('X-Requested-With') == 'XMLHttpRequest'
+
+    # اگه نوع نفرستاده شده، خودمون کشفش می‌کنیم
+    if vehicle_type not in VEHICLE_MODELS:
+        vehicle_type = None
+        for vtype, vmodel in VEHICLE_MODELS.items():
+            if vmodel.objects.filter(pk=vehicle_id).exists():
+                vehicle_type = vtype
+                break
+        if vehicle_type is None:
+            if is_ajax:
+                return JsonResponse({'error': 'not_found'}, status=404)
+            return redirect('home')
+
+    Model = VEHICLE_MODELS[vehicle_type]
+    vehicle = get_object_or_404(Model, pk=vehicle_id)
+
+    # 👤 کاربر مهمان → هدایت به ورود
+    if not request.user.is_authenticated:
+        login_url = reverse('accounts:login')
+        if is_ajax:
+            return JsonResponse({'login_required': True, 'login_url': login_url})
+        next_url = request.META.get('HTTP_REFERER') or vehicle.get_absolute_url()
+        return redirect(f'{login_url}?next={next_url}')
+
+    # ❤️ Toggle: اگه هست حذف، اگه نیست اضافه
+    favorite, created = Favorite.objects.get_or_create(
         user=request.user,
         vehicle_id=vehicle.id,
-        vehicle_type=vehicle_type
-    ).first()
-    
-    if favorite:
-        favorite.delete()
-        messages.success(request, '❌ از علاقه‌مندی‌ها حذف شد.')
+        vehicle_type=vehicle_type,
+    )
+    if created:
+        favorited = True
     else:
-        Favorite.objects.create(
-            user=request.user,
-            vehicle_id=vehicle.id,
-            vehicle_type=vehicle_type
-        )
-        messages.success(request, '✅ به علاقه‌مندی‌ها اضافه شد.')
-    
-    # ✅ redirect بر اساس نوع وسیله نقلیه
-    if vehicle_type == 'car':
-        return redirect('cars:car_detail', pk=vehicle.pk, slug=vehicle.slug)
-    elif vehicle_type == 'motorcycle':
-        return redirect('cars:motorcycle_detail', pk=vehicle.pk, slug=vehicle.slug)
-    elif vehicle_type == 'heavy':
-        return redirect('cars:heavy_detail', pk=vehicle.pk, slug=vehicle.slug)
+        favorite.delete()
+        favorited = False
+
+    if is_ajax:
+        return JsonResponse({'favorited': favorited})
+    return redirect(request.META.get('HTTP_REFERER') or vehicle.get_absolute_url())
 # ============================================
 # API دریافت مدل‌های یک برند
 # ============================================

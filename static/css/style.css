@@ -599,3 +599,154 @@ body {
         padding: 6px 11px;
     }
 }
+/* چیدمان ردیف متادیتای کارت: شهر راست، زمان چپ */
+.vehicle-meta {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 8px;
+}
+
+.vehicle-meta-time {
+    color: #8a8a8a;
+    font-size: .82rem;
+    white-space: nowrap;
+}
+/* ============================================
+   ❤️ دکمه علاقه‌مندی (قلب) روی کارت آگهی
+   ============================================ */
+.fav-btn {
+    position: absolute;
+    top: 10px;
+    left: 10px;
+    z-index: 5;
+    width: 38px;
+    height: 38px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    background: rgba(255, 255, 255, .92);
+    border: none;
+    border-radius: 50%;
+    cursor: pointer;
+    color: #555;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, .18);
+    transition: transform .15s ease, color .2s ease;
+}
+
+.fav-btn svg {
+    fill: none;
+    stroke: currentColor;
+    stroke-width: 1.8;
+}
+
+.fav-btn:hover {
+    transform: scale(1.12);
+    color: #e0245e;
+}
+
+.fav-btn.is-fav {
+    color: #e0245e;
+    animation: favPop .3s ease;
+}
+
+.fav-btn.is-fav svg {
+    fill: currentColor;
+}
+
+@keyframes favPop {
+    0%   { transform: scale(1); }
+    50%  { transform: scale(1.35); }
+    100% { transform: scale(1); }
+}
+.vehicle-meta,
+.price-row {
+    direction: rtl;
+}
+
+.vehicle-meta-time {
+    direction: rtl;
+    unicode-bidi: isolate;
+}
+.vehicle-card h3 {
+  margin: 0.75rem 0 0.4rem;
+  color: var(--navy);
+  font-size: 1rem;
+  font-weight: 700;
+  line-height: 1.5;
+
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
+  overflow: hidden;
+}
+
+.vehicle-card .price-row {
+  display: flex;
+  align-items: baseline;
+  justify-content: flex-start;
+  flex-wrap: wrap;
+  gap: 0.4rem;
+  margin: 0 0 0.65rem;
+}
+
+.vehicle-card .price-row > span {
+  color: #718096;
+  font-size: 0.85rem;
+  font-weight: 500;
+}
+
+.vehicle-card .price-row strong {
+  color: var(--orange);
+  font-size: clamp(0.85rem, 3.5vw, 1rem);
+  font-weight: 800;
+}
+
+.vehicle-card .vehicle-meta {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 0.35rem 0.6rem;
+  color: #667085;
+  font-size: 0.8rem;
+}
+
+.vehicle-card .vehicle-meta-time {
+  color: #667085;
+  unicode-bidi: isolate;
+}
+.vehicle-card h3 {
+  color: #15243a !important;
+  font-size: 1rem;
+  font-weight: 700;
+  line-height: 1.5;
+  margin: 0.75rem 0 0.4rem;
+}
+
+.vehicle-card .price-row {
+  display: flex;
+  align-items: baseline;
+  justify-content: flex-start !important;
+  flex-wrap: wrap;
+  gap: 0.4rem;
+  margin: 0 0 0.65rem;
+}
+
+.vehicle-card .price-row > span {
+  color: #718096 !important;
+  font-size: 0.85rem;
+  font-weight: 500;
+}
+
+.vehicle-card .price-row strong {
+  color: #f47721 !important;
+  font-size: clamp(0.85rem, 3.5vw, 1rem);
+  font-weight: 800;
+}
+
+.vehicle-card .vehicle-meta {
+  color: #667085 !important;
+  font-size: 0.8rem;
+}
+

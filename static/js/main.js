@@ -165,3 +165,27 @@ document.addEventListener('DOMContentLoaded', function () {
     goTo(0);
     startAuto();
 });
+
+/* ============================================
+   ❤️ دکمه علاقه‌مندی — بدون رفرش صفحه
+   ============================================ */
+document.addEventListener('click', function (e) {
+    var btn = e.target.closest('.fav-btn');
+    if (!btn) return;
+    e.preventDefault();
+
+    fetch(btn.dataset.url, {
+        headers: { 'X-Requested-With': 'XMLHttpRequest' },
+        credentials: 'same-origin'
+    })
+    .then(function (res) { return res.json(); })
+    .then(function (data) {
+        if (data.login_required) {
+            window.location.href = data.login_url + '?next=' + encodeURIComponent(window.location.pathname);
+            return;
+        }
+        if (data.error) return;
+        btn.classList.toggle('is-fav', data.favorited);
+    })
+    .catch(function (err) { console.error('Favorite error:', err); });
+});
