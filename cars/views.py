@@ -107,23 +107,12 @@ class CarListView(ListView):
         
         if city:
             all_vehicles = [v for v in all_vehicles if city.lower() in v.city.lower()]
-        
-        # ===== ۴. صفحه‌بندی دستی =====
-        paginator = Paginator(all_vehicles, self.paginate_by)
-        page_number = self.request.GET.get('page', 1)
-        page_obj = paginator.get_page(page_number)
-        
-        self.page_obj = page_obj
-        
-        return page_obj.object_list
+        return all_vehicles
+
+      
     
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
-        
-        # اضافه کردن page_obj برای صفحه‌بندی
-        if hasattr(self, 'page_obj'):
-            context['page_obj'] = self.page_obj
-            context['is_paginated'] = self.page_obj.has_other_pages()
         
         # favorite_ids
         if self.request.user.is_authenticated:

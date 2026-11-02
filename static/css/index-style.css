@@ -3136,3 +3136,66 @@ button {
         display: flex;
     }
 }
+.home-detail-btn {
+    display: block;
+    margin: 10px 8px 8px;
+    padding: 9px 12px;
+    border-radius: 999px;
+    background-color: #f47721;
+    color: #fff;
+    text-align: center;
+    text-decoration: none;
+    font-weight: 700;
+    transition: background-color 0.2s ease;
+}
+
+.home-detail-btn:hover {
+    background-color: #df6515;
+    color: #fff;
+}
+
+.home-detail-btn i {
+    margin-left: 4px;
+}
+.vehicle-image-wrap {
+    position: relative;
+}
+
+.vehicle-type-badge {
+    position: absolute;
+    top: 10px;
+    left: 10px;
+    z-index: 3;
+    padding: 6px 10px;
+    border-radius: 999px;
+    background: #15243a;
+    color: #fff;
+    font-size: 12px;
+    font-weight: 700;
+}
+.vehicle-image-wrap .vehicle-type-badge {
+    top: 10px;
+    left: 10px;
+    right: auto;
+    z-index: 5;
+}
+
+.vehicle-image-wrap .fav-btn {
+    position: absolute;
+    top: 10px;
+    right: 10px;
+    left: auto;
+    z-index: 6;
+}
+.vehicle-specs {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px 12px;
+    margin: 8px 0;
+    color: #667085;
+    font-size: 12px;
+}
+
+.vehicle-specs span {
+    line-height: 1.8;
+}

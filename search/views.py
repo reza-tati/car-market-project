@@ -36,18 +36,20 @@ def search_view(request):
                 Q(title__icontains=query) |
                 Q(description__icontains=query) |
                 Q(brand__name__icontains=query) |
-                Q(model__name__icontains=query)
+                Q(model_name__icontains=query)
             )
             motorcycles = motorcycles.filter(
                 Q(title__icontains=query) |
                 Q(description__icontains=query) |
-                Q(brand__icontains=query) |
+                Q(model__name__icontains=query)
+ |
                 Q(model_name__icontains=query)
             )
             heavies = heavies.filter(
                 Q(title__icontains=query) |
                 Q(description__icontains=query) |
-                Q(brand__icontains=query) |
+                Q(model__name__icontains=query)
+ |
                 Q(model_name__icontains=query)
             )
         

@@ -119,29 +119,43 @@
             </div>
             {% endfor %}
         </div>
+        
 
         <!-- صفحه‌بندی -->
         {% if is_paginated %}
-        <nav class="mt-4">
-            <ul class="pagination justify-content-center">
-                {% if page_obj.has_previous %}
-                    <li class="page-item">
-                        <a class="page-link" href="?page={{ page_obj.previous_page_number }}">قبلی</a>
-                    </li>
-                {% endif %}
-                {% for num in page_obj.paginator.page_range %}
-                    <li class="page-item {% if page_obj.number == num %}active{% endif %}">
-                        <a class="page-link" href="?page={{ num }}">{{ num }}</a>
-                    </li>
-                {% endfor %}
-                {% if page_obj.has_next %}
-                    <li class="page-item">
-                        <a class="page-link" href="?page={{ page_obj.next_page_number }}">بعدی</a>
-                    </li>
-                {% endif %}
-            </ul>
-        </nav>
-        {% endif %}
+            <nav class="car-pagination mt-4" aria-label="صفحه‌بندی آگهی‌ها" dir="rtl">
+
+                <ul class="pagination justify-content-center">
+                    {% if page_obj.has_previous %}
+                        <li class="page-item">
+                            <a class="page-link"
+                            href="{% url 'cars:car_list' %}?page={{ page_obj.previous_page_number }}">
+                                قبلی
+                            </a>
+                        </li>
+                    {% endif %}
+
+                    {% for num in page_obj.paginator.page_range %}
+                        <li class="page-item {% if page_obj.number == num %}active{% endif %}">
+                            <a class="page-link"
+                            href="{% url 'cars:car_list' %}?page={{ num }}">
+                                {{ num }}
+                            </a>
+                        </li>
+                    {% endfor %}
+
+                    {% if page_obj.has_next %}
+                        <li class="page-item">
+                            <a class="page-link"
+                            href="{% url 'cars:car_list' %}?page={{ page_obj.next_page_number }}">
+                                بعدی
+                            </a>
+                        </li>
+                    {% endif %}
+                </ul>
+            </nav>
+            {% endif %}
+
 
     {% else %}
         <div class="alert alert-info text-center py-5">
