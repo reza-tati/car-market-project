@@ -80,6 +80,26 @@
                                 <div class="col-md-4">{{ form.is_imported|as_crispy_field }}</div>
                             </div>
                         </div>
+                        <div id="moto-estimate-card"
+                            class="alert alert-light border rounded-4 mt-4"
+                            data-url="{% url 'cars:estimate_vehicle_price' %}"
+                            dir="rtl">
+                            <h6 class="mb-2">
+                                <i class="bi bi-graph-up text-warning"></i>
+                                برآورد قیمت موتورسیکلت
+                            </h6>
+
+                            <p id="moto-estimate-message" class="text-muted small mb-2">
+                                برند، مدل و سال را انتخاب کنید.
+                            </p>
+
+                            <div id="moto-estimate-values" class="d-none">
+                                <div>حداقل: <strong id="moto-estimate-low"></strong> تومان</div>
+                                <div>قیمت میانه: <strong id="moto-estimate-median"></strong> تومان</div>
+                                <div>حداکثر: <strong id="moto-estimate-high"></strong> تومان</div>
+                                <small id="moto-estimate-sample" class="text-muted d-block mt-2"></small>
+                            </div>
+                        </div>
 
                         <!-- ===== تصاویر ===== -->
                         <div class="form-section mt-4">
@@ -227,6 +247,108 @@ document.addEventListener('DOMContentLoaded', function() {
             }
         });
     }
+        // ===== برآورد قیمت موتورسیکلت =====
+    const motoCard = document.getElementById('moto-estimate-card');
+
+    if (motoCard) {
+        const form = motoCard.closest('form');
+        const message = document.getElementById('moto-estimate-message');
+        const values = document.getElementById('moto-estimate-values');
+
+        const fields = {
+            brand: form.querySelector('[name="brand"]'),
+            model_name: form.querySelector('[name="model_name"]'),
+            year: form.querySelector('[name="year"]'),
+            city: form.querySelector('[name="city"]'),
+            mileage: form.querySelector('[name="mileage"]'),
+            engine_cc: form.querySelector('[name="engine_cc"]'),
+        };
+
+        let requestTimer;
+
+        function formatMotoPrice(value) {
+            return Number(value).toLocaleString('fa-IR');
+        }
+
+        async function loadMotoEstimate() {
+            const brandId = fields.brand?.value;
+            const modelName = fields.model_name?.value?.trim();
+            const year = fields.year?.value;
+
+            if (!brandId || !modelName || !year) {
+                values.classList.add('d-none');
+                message.textContent = 'برند، مدل و سال را انتخاب کنید.';
+                return;
+            }
+
+            message.textContent = 'در حال محاسبه برآورد قیمت…';
+            values.classList.add('d-none');
+
+            const payload = {
+                vehicle_type: 'motorcycle',
+                brand_id: brandId,
+                model_name: modelName,
+                year: year,
+                city: fields.city?.value || '',
+                mileage: fields.mileage?.value || '',
+                engine_cc: fields.engine_cc?.value || '',
+            };
+
+            try {
+                const response = await fetch(motoCard.dataset.url, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-CSRFToken': form.querySelector(
+                            '[name="csrfmiddlewaretoken"]'
+                        )?.value,
+                    },
+                    body: JSON.stringify(payload),
+                });
+
+                const result = await response.json();
+
+                if (!response.ok) {
+                    throw new Error(result.error || 'خطا در دریافت برآورد قیمت.');
+                }
+
+                if (!result.available) {
+                    message.textContent =
+                        result.message || 'آگهی مشابهی برای برآورد پیدا نشد.';
+                    return;
+                }
+
+                document.getElementById('moto-estimate-low').textContent =
+                    formatMotoPrice(result.low);
+                document.getElementById('moto-estimate-median').textContent =
+                    formatMotoPrice(result.median);
+                document.getElementById('moto-estimate-high').textContent =
+                    formatMotoPrice(result.high);
+                document.getElementById('moto-estimate-sample').textContent =
+                    `بر اساس ${formatMotoPrice(result.sample_size)} آگهی مشابه`;
+
+                message.textContent = 'بازه تقریبی قیمت:';
+                values.classList.remove('d-none');
+            } catch (error) {
+                message.textContent = error.message;
+            }
+        }
+
+        Object.values(fields).forEach(function(field) {
+            if (!field) return;
+
+            field.addEventListener('change', function() {
+                clearTimeout(requestTimer);
+                requestTimer = setTimeout(loadMotoEstimate, 400);
+            });
+
+            field.addEventListener('input', function() {
+                clearTimeout(requestTimer);
+                requestTimer = setTimeout(loadMotoEstimate, 600);
+            });
+        });
+    }
+
 });
 </script>
 {% endblock %}

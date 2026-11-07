@@ -107,7 +107,32 @@
                                 </div>
                             </div>
                         </div>
+                        <div
+                        id="price-estimate"
+                        class="price-estimate-card"
+                        data-estimate-url="{% url 'cars:estimate_car_price' %}"
+                        data-model-id="{{ form.model.id_for_label }}"
+                        data-year-id="{{ form.year.id_for_label }}"
+                        data-mileage-id="{{ form.mileage.id_for_label }}"
+                        data-city-id="{{ form.city.id_for_label }}"
+                        data-transmission-id="{{ form.transmission.id_for_label }}"
+                        data-condition-id="{{ form.condition.id_for_label }}"
+                        aria-live="polite"
+                        >
+                        <h6>تخمین قیمت خودرو</h6>
 
+                       <p class="estimate-message">
+                            مشخصات خودرو را کامل کنید تا بازهٔ قیمت تقریبی نمایش داده شود.
+                            </p>
+
+                            <div class="estimate-values" hidden>
+                            <p>حد پایین: <span class="estimate-low">—</span></p>
+                            <p>میانه: <span class="estimate-median">—</span></p>
+                            <p>حد بالا: <span class="estimate-high">—</span></p>
+                            </div>
+
+                        
+                        </div>
                         <!-- ===== تصاویر ===== -->
                         <div class="form-section mt-4">
                             <h5 class="form-section-title">
@@ -158,7 +183,7 @@
                                 </button>
                             </div>
                         </div>
-
+                        
                         <!-- ===== توضیحات ===== -->
                         <div class="form-section mt-4">
                             <h5 class="form-section-title">
@@ -166,6 +191,9 @@
                             </h5>
                             {{ form.description|as_crispy_field }}
                         </div>
+                        
+
+                        
 
                         <!-- ===== دکمه‌ها ===== -->
                         <div class="mt-4 d-flex gap-2">
@@ -187,6 +215,116 @@
 {% endblock %}
 
 {% block extra_js %}
+<script>
+document.addEventListener("DOMContentLoaded", function () {
+  const box = document.getElementById("price-estimate");
+  if (!box) return;
+
+  const message = box.querySelector(".estimate-message");
+  const values = box.querySelector(".estimate-values");
+
+  if (!message || !values) {
+    console.error("کلاس‌های estimate-message یا estimate-values در کارت موجود نیستند.");
+    return;
+  }
+
+  const fieldIds = {
+    model: box.dataset.modelId || "id_model",
+    year: box.dataset.yearId || "id_year",
+    mileage: box.dataset.mileageId || "id_mileage",
+    city: box.dataset.cityId || "id_city",
+    transmission: box.dataset.transmissionId || "id_transmission",
+    condition: box.dataset.conditionId || "id_condition",
+  };
+
+  const getValue = (name) =>
+    document.getElementById(fieldIds[name])?.value?.trim() || "";
+
+  const formatPrice = (value) =>
+    new Intl.NumberFormat("fa-IR").format(Number(value || 0)) + " تومان";
+
+  let timer;
+
+  async function updateEstimate() {
+    const data = {
+      model: getValue("model"),
+      year: getValue("year"),
+      mileage: getValue("mileage"),
+      city: getValue("city"),
+      transmission: getValue("transmission"),
+      condition: getValue("condition"),
+    };
+
+    const missing = Object.values(data).some((value) => !value);
+
+    if (missing) {
+      values.hidden = true;
+      message.textContent =
+        "مدل، سال، کارکرد، شهر، گیربکس و وضعیت بدنه را مشخص کنید.";
+      return;
+    }
+
+    if (!box.dataset.estimateUrl) {
+      message.textContent = "آدرس سرویس تخمین قیمت تنظیم نشده است.";
+      console.error("data-estimate-url روی #price-estimate تنظیم نشده است.");
+      return;
+    }
+
+    values.hidden = true;
+    message.textContent = "در حال محاسبهٔ تخمین قیمت…";
+
+    try {
+      const url = new URL(box.dataset.estimateUrl, window.location.origin);
+
+      // ویوی Django پارامتر «model» می‌خواهد، نه «model_id».
+      url.search = new URLSearchParams(data).toString();
+
+      const response = await fetch(url);
+      const payload = await response.json();
+      const result =
+        payload.response && typeof payload.response === "object"
+          ? payload.response
+          : payload;
+
+      if (!response.ok || !result.available) {
+        message.textContent =
+          result.message || "آگهی مشابهی برای تخمین پیدا نشد.";
+        console.log("پاسخ سرویس تخمین:", payload);
+        return;
+      }
+
+      box.querySelector(".estimate-low").textContent =
+        formatPrice(result.low);
+      box.querySelector(".estimate-median").textContent =
+        formatPrice(result.median);
+      box.querySelector(".estimate-high").textContent =
+        formatPrice(result.high);
+
+      const count = result.sample_size ?? result.sample_count ?? 0;
+      message.textContent =
+        `تخمین بر اساس ${new Intl.NumberFormat("fa-IR").format(count)} آگهی مشابه است.`;
+
+      values.hidden = false;
+    } catch (error) {
+      console.error("خطای سرویس تخمین:", error);
+      message.textContent = "ارتباط با سرویس تخمین قیمت برقرار نشد.";
+    }
+  }
+
+  function handleFieldChange(event) {
+    if (!Object.values(fieldIds).includes(event.target.id)) return;
+
+    clearTimeout(timer);
+    timer = setTimeout(updateEstimate, 400);
+  }
+
+  // فقط change تا برای هر تغییر، دو درخواست input و change ارسال نشود.
+  document.addEventListener("change", handleFieldChange, true);
+});
+</script>
+
+
+
 <script>
 document.addEventListener('DOMContentLoaded', function() {
     // ===== انتخاب برند → بارگذاری مدل‌ها =====
@@ -213,7 +351,7 @@ document.addEventListener('DOMContentLoaded', function() {
 
     // ===== افزودن فرم تصویر جدید با محدودیت =====
     const addBtn = document.getElementById('add-more');
-    const MAX_IMAGES = 10;  // ← حداکثر تعداد
+    const MAX_IMAGES = 7;  // ← حداکثر تعداد
     
     if (addBtn) {
         addBtn.addEventListener('click', function(e) {

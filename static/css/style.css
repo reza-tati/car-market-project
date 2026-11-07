@@ -834,4 +834,59 @@ body {
         margin: 8px 0;
     }
 }
+/* تخمین قیمت در فرم ثبت خودرو */
+.price-estimate-card {
+  margin-block: 1rem;
+  padding: 1rem;
+  color: var(--navy, #15243a);
+  background: #fff;
+  border: 1px solid #e5e9ef;
+  border-radius: 12px;
+}
+
+.price-estimate-card h6 {
+  margin-bottom: 0.5rem;
+  font-weight: 700;
+}
+
+.price-estimate-card .estimate-message {
+  margin: 0;
+  color: #687386;
+  font-size: 0.9rem;
+}
+
+.price-estimate-card .estimate-values {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 0.75rem;
+  margin-top: 1rem;
+}
+
+.price-estimate-card .estimate-values > div {
+  padding: 0.75rem;
+  background: #f6f7f9;
+  border-radius: 8px;
+  text-align: center;
+}
+
+.price-estimate-card .estimate-values span,
+.price-estimate-card .estimate-values strong {
+  display: block;
+}
+
+.price-estimate-card .estimate-values span {
+  margin-bottom: 0.35rem;
+  color: #687386;
+  font-size: 0.85rem;
+}
+
+.price-estimate-card .estimate-values strong {
+  color: var(--orange, #f47721);
+}
+
+@media (max-width: 575.98px) {
+  .price-estimate-card .estimate-values {
+    grid-template-columns: 1fr;
+  }
+}
 

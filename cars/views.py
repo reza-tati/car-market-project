@@ -1,4 +1,5 @@
 # cars/views.py
+import logging
 from django.shortcuts import render, get_object_or_404, redirect
 from django.views.generic import ListView, DetailView, CreateView, UpdateView, DeleteView, TemplateView
 from django.contrib.auth.mixins import LoginRequiredMixin, UserPassesTestMixin
@@ -11,6 +12,7 @@ from django.contrib.auth.models import User
 from itertools import chain
 import uuid
 from django.views import View
+from cars.services.price_estimator import estimate_car_price
 from django.utils import timezone
 from django.urls import reverse
 from cars.utils import can_post_free_listing, get_listing_price
@@ -23,7 +25,7 @@ from .forms import (
     CarForm, MotorcycleForm, HeavyVehicleForm,
     CarImageFormSet, MotorcycleImageFormSet, HeavyVehicleImageFormSet,
 )
-
+logger = logging.getLogger(__name__)
 # ============================================
 # لیست خودروها (سواری)
 # ============================================
@@ -945,3 +947,62 @@ class HomeView(ListView):
         context['latest_heavies'] = HeavyVehicle.objects.filter(is_active=True, is_verified=True, is_draft=False).order_by('-created_at')[:4]
         context['latest_motorcycles'] = Motorcycle.objects.filter(is_active=True, is_verified=True, is_draft=False).order_by('-created_at')[:4]
         return context
+
+
+class CarPriceEstimateView(View):
+        def get(self, request):
+            try:
+                model_id = int(request.GET.get("model", ""))
+                year = int(request.GET.get("year", ""))
+                mileage = int(request.GET.get("mileage", ""))
+            except (TypeError, ValueError):
+                return JsonResponse(
+                    {"available": False, "message": "مدل، سال و کارکرد را وارد کنید."},
+                    status=400,
+                )
+
+            # در فرم شما city فیلد متنی است، پس مقدارش نام شهر است.
+            city = request.GET.get("city", "").strip()
+            transmission = request.GET.get("transmission", "").strip()
+            condition = request.GET.get("condition", "").strip()
+
+            if not city or not transmission or not condition:
+                return JsonResponse({
+                    "available": False,
+                    "message": "شهر، گیربکس و وضعیت بدنه را هم مشخص کنید.",
+                })
+
+            try:
+                result = estimate_car_price(
+                    model_id=model_id,
+                    year=year,
+                    mileage=mileage,
+                    transmission=transmission,
+                    condition=condition,
+                    city=city,
+                )
+            except Exception:
+                logger.exception("خطا هنگام تخمین قیمت خودرو")
+                return JsonResponse(
+                    {
+                        "available": False,
+                        "message": "تخمین قیمت در حال حاضر در دسترس نیست.",
+                    },
+                    status=503,
+                )
+
+            # سرویس شما وقتی کمتر از ۳ آگهی مشابه باشد، قیمت‌ها را None برمی‌گرداند.
+            if not result or result.get("low") is None:
+                return JsonResponse({
+                    "available": False,
+                    "message": "آگهی مشابه کافی برای تخمین قیمت پیدا نشد.",
+                    "sample_count": result.get("sample_count", 0) if result else 0,
+                })
+
+            return JsonResponse({
+                "available": True,
+                "low": result["low"],
+                "median": result["median"],
+                "high": result["high"],
+                "sample_count": result["sample_count"],
+            })

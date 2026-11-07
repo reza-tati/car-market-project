@@ -2,6 +2,9 @@
 app_name = 'cars'
 from django.urls import path
 from . import views
+from .views import CarPriceEstimateView
+from .api_urls import VehiclePriceEstimateView
+
 
 app_name = 'cars'
 
@@ -10,7 +13,8 @@ urlpatterns = [
     path('', views.CarListView.as_view(), name='car_list'),
     path('motorcycles/', views.MotorcycleListView.as_view(), name='motorcycle_list'),
     path('heavy-vehicles/', views.HeavyVehicleListView.as_view(), name='heavy_list'),
-    
+    path("estimate-car-price/", CarPriceEstimateView.as_view(), name="estimate_car_price"),
+
     # ===== ✅ ایجاد (قبل از car_detail) =====
     path('car/new/', views.CarCreateView.as_view(), name='car_create'),
     path('motorcycle/new/', views.MotorcycleCreateView.as_view(), name='motorcycle_create'),
@@ -32,7 +36,12 @@ urlpatterns = [
     path('car/<int:pk>/<slug:slug>/', views.CarDetailView.as_view(), name='car_detail'),
     path('motorcycle/<int:pk>/<slug:slug>/', views.MotorcycleDetailView.as_view(), name='motorcycle_detail'),
     path('heavy-vehicle/<int:pk>/<slug:slug>/', views.HeavyVehicleDetailView.as_view(), name='heavy_detail'),
+    path(
+    "estimate-vehicle-price/",
+    VehiclePriceEstimateView.as_view(),
+    name="estimate_vehicle_price",
+),
+
+
     
-    # ===== API =====
-    path('api/get-models/', views.get_models, name='get_models'),
 ]
