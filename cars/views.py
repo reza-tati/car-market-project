@@ -25,6 +25,12 @@ from .forms import (
     CarForm, MotorcycleForm, HeavyVehicleForm,
     CarImageFormSet, MotorcycleImageFormSet, HeavyVehicleImageFormSet,
 )
+from django.views.generic import ListView
+from django.contrib import messages
+from django.contrib.auth.decorators import login_required
+from django.shortcuts import get_object_or_404, redirect
+from django.views.decorators.http import require_POST
+from .models import Car, Motorcycle, HeavyVehicle
 logger = logging.getLogger(__name__)
 # ============================================
 # لیست خودروها (سواری)
@@ -44,6 +50,7 @@ class CarListView(ListView):
             cars = Car.objects.filter(
                 is_active=True, 
                 is_verified=True,
+                is_sold=False,
                 is_draft=False  # ← Draftها رو نشون نده
             ).select_related('brand', 'model', 'seller').prefetch_related('car_images')
             all_vehicles = list(cars)
@@ -71,6 +78,7 @@ class CarListView(ListView):
             cars = Car.objects.filter(
                 is_active=True, 
                 is_verified=True,
+                is_sold=False,
                 is_draft=False  # ← Draftها رو نشون نده
             ).select_related('brand', 'model', 'seller').prefetch_related('car_images')
             
@@ -132,7 +140,8 @@ class CarListView(ListView):
         context['total_cars'] = Car.objects.filter(
             is_active=True, 
             is_verified=True,
-            is_draft=False
+            is_draft=False,
+            is_sold=False,
         ).count()
         
         context['transmission_choices'] = Car.TRANSMISSION_CHOICES
@@ -231,6 +240,7 @@ class CarDetailView(DetailView):
             brand=car.brand,
             model=car.model,
             is_active=True,
+            is_sold=False,
             is_verified=True
         ).exclude(id=car.id)[:4]
 
@@ -239,6 +249,7 @@ class CarDetailView(DetailView):
             more_cars = Car.objects.filter(
                 brand=car.brand,
                 is_active=True,
+                is_sold=False,
                 is_verified=True
             ).exclude(id=car.id).exclude(
                 id__in=similar_cars.values_list('id', flat=True)
@@ -250,6 +261,7 @@ class CarDetailView(DetailView):
         if len(similar_cars) < 4:
             more_cars = Car.objects.filter(
                 is_active=True,
+                is_sold=False,
                 is_verified=True
             ).exclude(id=car.id).exclude(
                 id__in=[c.id for c in similar_cars]
@@ -927,12 +939,10 @@ def brands_processor(request):
         'featured_cars': Car.objects.filter(
             is_active=True,
             is_verified=True,
+            is_sold=False,
             is_featured=True
         )[:6] if not request.path.startswith('/admin/') else [],
     }
-
-
-from django.views.generic import ListView
 
 class HomeView(ListView):
     model = Car
@@ -940,14 +950,13 @@ class HomeView(ListView):
     context_object_name = 'latest_cars'
     
     def get_queryset(self):
-        return Car.objects.filter(is_active=True, is_verified=True, is_draft=False).order_by('-created_at')[:4]
+        return Car.objects.filter(is_active=True, is_verified=True, is_sold=False, is_draft=False).order_by('-created_at')[:4]
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
         context['latest_heavies'] = HeavyVehicle.objects.filter(is_active=True, is_verified=True, is_draft=False).order_by('-created_at')[:4]
         context['latest_motorcycles'] = Motorcycle.objects.filter(is_active=True, is_verified=True, is_draft=False).order_by('-created_at')[:4]
         return context
-
 
 class CarPriceEstimateView(View):
         def get(self, request):
@@ -1069,3 +1078,30 @@ def catalog_variants(request):
             for item in variants
         ]
     })
+
+@login_required
+@require_POST
+def mark_vehicle_sold(request, vehicle_type, pk):
+    vehicle_models = {
+        "car": Car,
+        "motorcycle": Motorcycle,
+        "heavy": HeavyVehicle,
+    }
+
+    model_class = vehicle_models.get(vehicle_type)
+    if model_class is None:
+        return redirect("cars:car_list")
+
+    # فقط مالک آگهی اجازهٔ تغییر وضعیت آن را دارد.
+    vehicle = get_object_or_404(
+        model_class,
+        pk=pk,
+        seller=request.user,
+    )
+
+    vehicle.is_sold = True
+    vehicle.is_active = False
+    vehicle.save(update_fields=["is_sold", "is_active"])
+
+    messages.success(request, "آگهی به‌عنوان فروخته‌شده ثبت شد.")
+    return redirect("cars:car_list")

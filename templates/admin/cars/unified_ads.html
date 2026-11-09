@@ -1,0 +1,64 @@
+{% extends "admin/base_site.html" %}
+
+{% block content %}
+<h1>همه آگهی‌ها</h1>
+
+<div class="module">
+    <table>
+        <thead>
+            <tr>
+                <th>نوع وسیله</th>
+                <th>عنوان</th>
+                <th>مدل</th>
+                <th>عملیات</th>
+                <th>شهر</th>
+                <th>قیمت</th>
+                <th>وضعیت</th>
+                <th>تاریخ ثبت</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for ad in page_obj %}
+                <tr>
+                    <td>{{ ad.type }}</td>
+                    <td>
+                        <a href="{{ ad.change_url }}">{{ ad.title }}</a>
+                    </td>
+                    <td>{{ ad.model }}</td>
+                    <td>{{ ad.city }}</td>
+                    <td>{{ ad.price }}</td>
+                    <td>{{ ad.status }}</td>
+                    <td>
+                        <form method="post" action="{{ ad.approve_url }}">
+                            {% csrf_token %}
+                            <button type="submit" class="button">
+                                تأیید و انتشار
+                            </button>
+                        </form>
+                    </td>
+
+                    <td>{{ ad.created|default:"—" }}</td>
+                </tr>
+            {% empty %}
+                <tr>
+                    <td colspan="7">آگهی‌ای پیدا نشد.</td>
+                </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+
+{% if page_obj.has_other_pages %}
+    <p>
+        {% if page_obj.has_previous %}
+            <a href="?page={{ page_obj.previous_page_number }}">صفحهٔ قبلی</a>
+        {% endif %}
+
+        صفحهٔ {{ page_obj.number }} از {{ page_obj.paginator.num_pages }}
+
+        {% if page_obj.has_next %}
+            <a href="?page={{ page_obj.next_page_number }}">صفحهٔ بعدی</a>
+        {% endif %}
+    </p>
+{% endif %}
+{% endblock %}

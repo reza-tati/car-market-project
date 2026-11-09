@@ -168,6 +168,19 @@
                         <a href="{% url 'cars:motorcycle_delete' motorcycle.pk %}" class="btn btn-outline-danger w-100 rounded-pill py-2">
                             <i class="bi bi-trash"></i> حذف
                         </a>
+                        {% if motorcycle.is_active and not motorcycle.is_sold %}
+                            <form method="post"
+                                action="{% url 'cars:mark_vehicle_sold' 'motorcycle' motorcycle.pk %}"
+                                class="mb-2"
+                                onsubmit="return confirm('آیا مطمئن هستید که این موتورسیکلت فروخته شده است؟');">
+                                {% csrf_token %}
+                                <button type="submit"
+                                        class="btn btn-outline-warning w-100 rounded-pill py-2">
+                                    <i class="bi bi-check-circle"></i> اعلام فروش
+                                </button>
+                            </form>
+                        {% endif %}
+
                     {% endif %}
                 </div>
             </div>

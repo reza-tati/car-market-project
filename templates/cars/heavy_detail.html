@@ -157,14 +157,31 @@
                             <i class="bi bi-chat-dots"></i> چت با فروشنده (ورود)
                         </a>
                     {% endif %}
-                    {% if user == heavy.seller %}
-                        <a href="{% url 'cars:heavy_update' heavy.pk %}" class="btn btn-warning w-100 rounded-pill py-2 mb-2">
+                    {% if user.is_authenticated and user == heavy.seller %}
+                        <a href="{% url 'cars:heavy_update' heavy.pk %}"
+                        class="btn btn-warning w-100 rounded-pill py-2 mb-2">
                             <i class="bi bi-pencil"></i> ویرایش
                         </a>
-                        <a href="{% url 'cars:heavy_delete' heavy.pk %}" class="btn btn-outline-danger w-100 rounded-pill py-2">
+
+                        {% if heavy.is_active and not heavy.is_sold %}
+                            <form method="post"
+                                action="{% url 'cars:mark_vehicle_sold' 'heavy' heavy.pk %}"
+                                class="mb-2"
+                                onsubmit="return confirm('آیا مطمئن هستید که این وسیله فروخته شده است؟');">
+                                {% csrf_token %}
+                                <button type="submit"
+                                        class="btn btn-outline-warning w-100 rounded-pill py-2">
+                                    <i class="bi bi-check-circle"></i> اعلام فروش
+                                </button>
+                            </form>
+                        {% endif %}
+
+                        <a href="{% url 'cars:heavy_delete' heavy.pk %}"
+                        class="btn btn-outline-danger w-100 rounded-pill py-2">
                             <i class="bi bi-trash"></i> حذف
                         </a>
                     {% endif %}
+
                 </div>
             </div>
 

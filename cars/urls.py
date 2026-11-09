@@ -41,6 +41,14 @@ urlpatterns = [
     VehiclePriceEstimateView.as_view(),
     name="estimate_vehicle_price",
 ),
+path(
+    "ads/<str:vehicle_type>/<int:pk>/mark-sold/",
+    views.mark_vehicle_sold,
+    name="mark_vehicle_sold",
+),
+
+
+
 
 
     
