@@ -19,7 +19,7 @@ from cars.utils import can_post_free_listing, get_listing_price
 from .models import (
     Car, Motorcycle, HeavyVehicle,
     CarImage, MotorcycleImage, HeavyVehicleImage,
-    Brand, CarModel, Favorite,
+    Brand, CarModel, Favorite, BaseVehicle, VehicleCatalogModel, VehicleVariant
 )
 from .forms import (
     CarForm, MotorcycleForm, HeavyVehicleForm,
@@ -952,7 +952,7 @@ class HomeView(ListView):
 class CarPriceEstimateView(View):
         def get(self, request):
             try:
-                model_id = int(request.GET.get("model", ""))
+                catalog_model_id = int(request.GET.get("model", ""))
                 year = int(request.GET.get("year", ""))
                 mileage = int(request.GET.get("mileage", ""))
             except (TypeError, ValueError):
@@ -974,7 +974,7 @@ class CarPriceEstimateView(View):
 
             try:
                 result = estimate_car_price(
-                    model_id=model_id,
+                    catalog_model_id=catalog_model_id,
                     year=year,
                     mileage=mileage,
                     transmission=transmission,
@@ -1006,3 +1006,66 @@ class CarPriceEstimateView(View):
                 "high": result["high"],
                 "sample_count": result["sample_count"],
             })
+
+def catalog_brands(request):
+    vehicle_type = request.GET.get("vehicle_type")
+    valid_types = {value for value, _ in BaseVehicle.VEHICLE_TYPE_CHOICES}
+
+    if vehicle_type not in valid_types:
+        return JsonResponse({"error": "نوع وسیله معتبر نیست."}, status=400)
+
+    rows = (
+        VehicleCatalogModel.objects
+        .filter(vehicle_type=vehicle_type, is_active=True)
+        .values("brand_id", "brand__name")
+        .distinct()
+        .order_by("brand__name")
+    )
+
+    return JsonResponse({
+        "brands": [
+            {"id": row["brand_id"], "name": row["brand__name"]}
+            for row in rows
+        ]
+    })
+
+
+def catalog_models(request):
+    vehicle_type = request.GET.get("vehicle_type")
+    brand_id = request.GET.get("brand_id")
+    valid_types = {value for value, _ in BaseVehicle.VEHICLE_TYPE_CHOICES}
+
+    if vehicle_type not in valid_types or not brand_id:
+        return JsonResponse({"error": "نوع وسیله یا برند ارسال نشده است."}, status=400)
+
+    models = VehicleCatalogModel.objects.filter(
+        vehicle_type=vehicle_type,
+        brand_id=brand_id,
+        is_active=True,
+    ).order_by("name")
+
+    return JsonResponse({
+        "models": [
+            {"id": item.id, "name": item.name, "category": item.category}
+            for item in models
+        ]
+    })
+
+
+def catalog_variants(request):
+    catalog_model_id = request.GET.get("catalog_model_id")
+    if not catalog_model_id:
+        return JsonResponse({"error": "مدل ارسال نشده است."}, status=400)
+
+    variants = VehicleVariant.objects.filter(
+        catalog_model_id=catalog_model_id,
+        catalog_model__is_active=True,
+        is_active=True,
+    ).order_by("name")
+
+    return JsonResponse({
+        "variants": [
+            {"id": item.id, "name": item.name}
+            for item in variants
+        ]
+    })

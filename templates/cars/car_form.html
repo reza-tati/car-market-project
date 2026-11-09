@@ -63,22 +63,29 @@
                                 <div class="col-md-12">
                                     {{ form.title|as_crispy_field }}
                                 </div>
-                                <div class="col-md-4">
+                                <div class="col-12 col-md-3">
                                     {{ form.brand|as_crispy_field }}
                                 </div>
-                                <div class="col-md-4">
-                                    {{ form.model|as_crispy_field }}
+                                <div class="col-12 col-md-3">
+                                    {{ form.catalog_model|as_crispy_field }}
+                                    
+
                                 </div>
-                                <div class="col-md-4">
+                                <div class="col-12 col-md-3">
+                                    
+                                    {{ form.catalog_variant|as_crispy_field }}
+
+                                </div>
+                                <div class="col-12 col-md-3">
                                     {{ form.year|as_crispy_field }}
                                 </div>
-                                <div class="col-md-4">
+                                <div class="col-12 col-md-3">
                                     {{ form.price|as_crispy_field }}
                                 </div>
-                                <div class="col-md-4">
+                                <div class="col-12 col-md-3">
                                     {{ form.mileage|as_crispy_field }}
                                 </div>
-                                <div class="col-md-4">
+                                <div class="col-12 col-md-3">
                                     {{ form.city|as_crispy_field }}
                                 </div>
                             </div>
@@ -229,7 +236,8 @@ document.addEventListener("DOMContentLoaded", function () {
   }
 
   const fieldIds = {
-    model: box.dataset.modelId || "id_model",
+    model: box.dataset.modelId || "id_catalog_model",
+
     year: box.dataset.yearId || "id_year",
     mileage: box.dataset.mileageId || "id_mileage",
     city: box.dataset.cityId || "id_city",
@@ -326,83 +334,131 @@ document.addEventListener("DOMContentLoaded", function () {
 
 
 <script>
-document.addEventListener('DOMContentLoaded', function() {
-    // ===== انتخاب برند → بارگذاری مدل‌ها =====
-    const brandSelect = document.getElementById('id_brand');
-    const modelSelect = document.getElementById('id_model');
+document.addEventListener("DOMContentLoaded", function () {
+  const brandSelect = document.getElementById("id_brand");
+  const modelSelect = document.getElementById("id_catalog_model");
+  const variantSelect = document.getElementById("id_catalog_variant");
 
-    if (brandSelect && modelSelect) {
-        brandSelect.addEventListener('change', function() {
-            const brandId = this.value;
-            if (brandId) {
-                fetch(`/api/get-models/?brand_id=${brandId}`)
-                    .then(response => response.json())
-                    .then(data => {
-                        modelSelect.innerHTML = '<option value="">انتخاب مدل</option>';
-                        data.models.forEach(model => {
-                            modelSelect.innerHTML += `<option value="${model.id}">${model.name}</option>`;
-                        });
-                    });
-            } else {
-                modelSelect.innerHTML = '<option value="">انتخاب مدل</option>';
-            }
-        });
-    }
+  function resetSelect(select, text) {
+    if (select) select.replaceChildren(new Option(text, ""));
+  }
 
-    // ===== افزودن فرم تصویر جدید با محدودیت =====
-    const addBtn = document.getElementById('add-more');
-    const MAX_IMAGES = 7;  // ← حداکثر تعداد
-    
-    if (addBtn) {
-        addBtn.addEventListener('click', function(e) {
-            e.preventDefault();
-            
-            const totalForms = document.getElementById('id_car_images-TOTAL_FORMS');
-            const formIdx = parseInt(totalForms.value);
-            
-            // ✅ چک کردن محدودیت
-            if (formIdx >= MAX_IMAGES) {
-                alert(`حداکثر ${MAX_IMAGES} تصویر مجاز است!`);
-                return;
-            }
-            
-            const container = document.getElementById('image-forms');
-            const firstForm = container.querySelector('.image-form');
-            if (!firstForm) return;
-            
-            const newForm = firstForm.cloneNode(true);
-            
-            // پاک کردن مقادیر
-            newForm.querySelectorAll('input').forEach(input => {
-                if (input.type === 'file') input.value = '';
-                if (input.type === 'checkbox') input.checked = false;
-                if (input.type === 'hidden' && input.name.includes('id')) input.value = '';
-            });
-            
-            // به‌روزرسانی name و id
-            newForm.querySelectorAll('[name]').forEach(el => {
-                const name = el.getAttribute('name').replace(/-0-/g, `-${formIdx}-`);
-                el.setAttribute('name', name);
-                el.id = `id_${name}`;
-            });
-            
-            newForm.querySelectorAll('label').forEach(label => {
-                const forAttr = label.getAttribute('for');
-                if (forAttr) {
-                    label.setAttribute('for', forAttr.replace(/-0-/g, `-${formIdx}-`));
-                }
-            });
-            
-            container.appendChild(newForm);
-            totalForms.value = formIdx + 1;
-            
-            // اگه به محدودیت رسید، دکمه رو غیرفعال کن
-            if (formIdx + 1 >= MAX_IMAGES) {
-                addBtn.disabled = true;
-                addBtn.textContent = 'حداکثر تعداد تصویر رسیده';
-            }
+  if (brandSelect && modelSelect && variantSelect) {
+    brandSelect.addEventListener("change", async function () {
+      resetSelect(modelSelect, "در حال دریافت مدل‌ها...");
+      resetSelect(variantSelect, "ابتدا مدل را انتخاب کنید");
+      variantSelect.required = false;
+
+      if (!this.value) {
+        resetSelect(modelSelect, "ابتدا برند را انتخاب کنید");
+        return;
+      }
+
+      try {
+        const response = await fetch(
+          `/api/catalog/models/?vehicle_type=car&brand_id=${encodeURIComponent(this.value)}`
+        );
+        const data = await response.json();
+
+        if (!response.ok) throw new Error(data.error || "خطا در دریافت مدل‌ها");
+
+        resetSelect(modelSelect, "انتخاب مدل");
+        data.models.forEach(item => {
+          modelSelect.add(new Option(item.name, item.id));
         });
-    }
+      } catch (error) {
+        console.error(error);
+        resetSelect(modelSelect, "خطا در دریافت مدل‌ها");
+      }
+    });
+
+    modelSelect.addEventListener("change", async function () {
+      resetSelect(variantSelect, "در حال دریافت تیپ‌ها...");
+      variantSelect.required = false;
+
+      if (!this.value) {
+        resetSelect(variantSelect, "ابتدا مدل را انتخاب کنید");
+        return;
+      }
+
+      try {
+        const response = await fetch(
+          `/api/catalog/variants/?catalog_model_id=${encodeURIComponent(this.value)}`
+        );
+        const data = await response.json();
+
+        if (!response.ok) throw new Error(data.error || "خطا در دریافت تیپ‌ها");
+
+        resetSelect(
+          variantSelect,
+          data.variants.length ? "انتخاب تیپ" : "این مدل واریانت ندارد"
+        );
+
+        data.variants.forEach(item => {
+          variantSelect.add(new Option(item.name, item.id));
+        });
+
+        variantSelect.required = data.variants.length > 0;
+      } catch (error) {
+        console.error(error);
+        resetSelect(variantSelect, "خطا در دریافت تیپ‌ها");
+      }
+    });
+  }
+
+  const addBtn = document.getElementById("add-more");
+  const MAX_IMAGES = 7;
+
+  if (addBtn) {
+    addBtn.addEventListener("click", function (e) {
+      e.preventDefault();
+
+      const totalForms = document.getElementById("id_car_images-TOTAL_FORMS");
+      const container = document.getElementById("image-forms");
+      if (!totalForms || !container) return;
+
+      const formIdx = parseInt(totalForms.value, 10);
+      if (formIdx >= MAX_IMAGES) {
+        alert(`حداکثر ${MAX_IMAGES} تصویر مجاز است!`);
+        return;
+      }
+
+      const firstForm = container.querySelector(".image-form");
+      if (!firstForm) return;
+
+      const newForm = firstForm.cloneNode(true);
+
+      newForm.querySelectorAll("input").forEach(input => {
+        if (input.type === "file") input.value = "";
+        if (input.type === "checkbox") input.checked = false;
+        if (input.type === "hidden" && input.name.includes("id")) {
+          input.value = "";
+        }
+      });
+
+      newForm.querySelectorAll("[name]").forEach(el => {
+        const name = el.getAttribute("name").replace(/-0-/g, `-${formIdx}-`);
+        el.setAttribute("name", name);
+        el.id = `id_${name}`;
+      });
+
+      newForm.querySelectorAll("label").forEach(label => {
+        const forAttr = label.getAttribute("for");
+        if (forAttr) {
+          label.setAttribute("for", forAttr.replace(/-0-/g, `-${formIdx}-`));
+        }
+      });
+
+      container.appendChild(newForm);
+      totalForms.value = formIdx + 1;
+
+      if (formIdx + 1 >= MAX_IMAGES) {
+        addBtn.disabled = true;
+        addBtn.textContent = "حداکثر تعداد تصویر رسیده";
+      }
+    });
+  }
 });
 </script>
+
 {% endblock %}

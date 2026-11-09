@@ -4,11 +4,8 @@ from rest_framework.routers import DefaultRouter
 from .api import BrandViewSet, CarModelViewSet, CarViewSet, CarImageViewSet
 from . import views
 import json
-
 from django.http import JsonResponse
-
 from django.views import View
-
 from cars.services.price_estimator import (
     estimate_motorcycle_price,
     estimate_heavy_vehicle_price,
@@ -69,11 +66,13 @@ class VehiclePriceEstimateView(View):
 
 urlpatterns = [
     path("get-models/", views.get_models, name="get_models"),
-    path('', include(router.urls)),
+    path("catalog/brands/", views.catalog_brands, name="catalog_brands"),
+    path("catalog/models/", views.catalog_models, name="catalog_models"),
+    path("catalog/variants/", views.catalog_variants, name="catalog_variants"),
+    path("", include(router.urls)),
     path(
-    "estimate-vehicle-price/",
-    VehiclePriceEstimateView.as_view(),
-    name="estimate_vehicle_price",
-),
-
+        "estimate-vehicle-price/",
+        VehiclePriceEstimateView.as_view(),
+        name="estimate_vehicle_price",
+    ),
 ]

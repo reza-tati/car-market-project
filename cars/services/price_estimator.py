@@ -4,19 +4,19 @@ from cars.models import Motorcycle, HeavyVehicle, Car
 
 def estimate_car_price(
     *,
-    model_id,
+    catalog_model_id,
     year,
     mileage,
     transmission=None,
     condition=None,
     city=None,
 ):
-    if not model_id or not year or mileage is None:
+    if not catalog_model_id or not year or mileage is None:
         return None
 
     base_qs = (
         Car.objects.filter(
-            model_id=model_id,
+            catalog_model_id=catalog_model_id,
             is_active=True,
             is_verified=True,
             is_sold=False,

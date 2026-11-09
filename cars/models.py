@@ -131,7 +131,23 @@ class BaseVehicle(models.Model):
         null=True,
         verbose_name='کد پیگیری پرداخت'
     )
-    
+    catalog_model = models.ForeignKey(
+        'cars.VehicleCatalogModel',
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name='%(app_label)s_%(class)s_ads',
+        verbose_name='مدل کاتالوگ',
+    )
+    catalog_variant = models.ForeignKey(
+        'cars.VehicleVariant',
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name='%(app_label)s_%(class)s_ads',
+        verbose_name='تیپ یا واریانت',
+    )
+
     class Meta:
         abstract = True
         ordering = ['-created_at']
@@ -420,6 +436,7 @@ class HeavyVehicleImage(models.Model):
 
 class Favorite(models.Model):
     user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='favorites', verbose_name='کاربر')
+
     vehicle_id = models.PositiveIntegerField(verbose_name='شناسه وسیله نقلیه')
     vehicle_type = models.CharField(max_length=20, choices=BaseVehicle.VEHICLE_TYPE_CHOICES, verbose_name='نوع وسیله نقلیه')
     created_at = models.DateTimeField(auto_now_add=True, verbose_name='تاریخ افزودن')
@@ -431,3 +448,92 @@ class Favorite(models.Model):
 
     def __str__(self):
         return f"{self.user.username} - {self.vehicle_type} - {self.vehicle_id}"
+
+
+
+class VehicleCatalogModel(models.Model):
+    vehicle_type = models.CharField(
+        max_length=20,
+        choices=BaseVehicle.VEHICLE_TYPE_CHOICES,
+        verbose_name='نوع وسیله نقلیه',
+    )
+    brand = models.ForeignKey(
+        Brand,
+        on_delete=models.PROTECT,
+        related_name='vehicle_catalog_models',
+        verbose_name='برند',
+    )
+    name = models.CharField(max_length=100, verbose_name='نام مدل')
+    category = models.CharField(
+        max_length=50,
+        blank=True,
+        verbose_name='دسته‌بندی',
+    )
+    production_start_year = models.PositiveSmallIntegerField(
+        null=True,
+        blank=True,
+        verbose_name='سال شروع تولید',
+    )
+    production_end_year = models.PositiveSmallIntegerField(
+        null=True,
+        blank=True,
+        verbose_name='سال پایان تولید',
+    )
+    is_current = models.BooleanField(
+        default=False,
+        verbose_name='همچنان تولید می‌شود',
+    )
+    is_active = models.BooleanField(default=True, verbose_name='فعال')
+
+    class Meta:
+        verbose_name = 'مدل وسیله نقلیه'
+        verbose_name_plural = 'مدل‌های وسایل نقلیه'
+        ordering = ['vehicle_type', 'brand__name', 'name']
+        constraints = [
+            models.UniqueConstraint(
+                fields=['vehicle_type', 'brand', 'name'],
+                name='uniq_vehicle_catalog_model',
+            ),
+        ]
+
+    def __str__(self):
+        return f'{self.brand.name} {self.name}'
+
+
+class VehicleVariant(models.Model):
+    catalog_model = models.ForeignKey(
+        VehicleCatalogModel,
+        on_delete=models.PROTECT,
+        related_name='variants',
+        verbose_name='مدل',
+    )
+    name = models.CharField(max_length=100, verbose_name='تیپ یا نسخه')
+    production_start_year = models.PositiveSmallIntegerField(
+        null=True,
+        blank=True,
+        verbose_name='سال شروع تولید',
+    )
+    production_end_year = models.PositiveSmallIntegerField(
+        null=True,
+        blank=True,
+        verbose_name='سال پایان تولید',
+    )
+    is_current = models.BooleanField(
+        default=False,
+        verbose_name='همچنان تولید می‌شود',
+    )
+    is_active = models.BooleanField(default=True, verbose_name='فعال')
+
+    class Meta:
+        verbose_name = 'تیپ وسیله نقلیه'
+        verbose_name_plural = 'تیپ‌های وسایل نقلیه'
+        ordering = ['catalog_model', 'name']
+        constraints = [
+            models.UniqueConstraint(
+                fields=['catalog_model', 'name'],
+                name='uniq_vehicle_catalog_variant',
+            ),
+        ]
+
+    def __str__(self):
+        return f'{self.catalog_model} - {self.name}'

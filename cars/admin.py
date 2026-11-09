@@ -2,7 +2,7 @@
 from django.contrib import admin
 from .models import (
     Brand, CarModel, Car, Motorcycle, HeavyVehicle,
-    CarImage, MotorcycleImage, HeavyVehicleImage, Favorite
+    CarImage, MotorcycleImage, HeavyVehicleImage, Favorite, VehicleCatalogModel, VehicleVariant
 )
 
 
@@ -123,3 +123,29 @@ class FavoriteAdmin(admin.ModelAdmin):
     list_filter = ('vehicle_type', 'created_at')
     search_fields = ('user__username',)
     readonly_fields = ('created_at',)
+
+class VehicleVariantInline(admin.TabularInline):
+    model = VehicleVariant
+    extra = 1
+
+
+@admin.register(VehicleCatalogModel)
+class VehicleCatalogModelAdmin(admin.ModelAdmin):
+    list_display = (
+        'name',
+        'brand',
+        'vehicle_type',
+        'category',
+        'is_current',
+        'is_active',
+    )
+    list_filter = ('vehicle_type', 'brand', 'is_current', 'is_active')
+    search_fields = ('name', 'brand__name')
+    inlines = (VehicleVariantInline,)
+
+
+@admin.register(VehicleVariant)
+class VehicleVariantAdmin(admin.ModelAdmin):
+    list_display = ('name', 'catalog_model', 'production_start_year', 'production_end_year', 'is_active')
+    list_filter = ('is_active',)
+    search_fields = ('name', 'catalog_model__name', 'catalog_model__brand__name')
