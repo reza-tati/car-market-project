@@ -434,7 +434,7 @@ body {
 .menu-lines::after  { top:  7px; }
 
 /* تبدیل آیکون به ضربدر وقتی منو بازه */
-.site-header.menu-open .menu-lines {
+.menu-open .menu-lines {
     background-color: transparent;
 }
 
@@ -442,7 +442,7 @@ body {
     top: 0;
     transform: rotate(45deg);
 }
-
+.site-header
 .site-header.menu-open .menu-lines::after {
     top: 0;
     transform: rotate(-45deg);
@@ -888,5 +888,41 @@ body {
   .price-estimate-card .estimate-values {
     grid-template-columns: 1fr;
   }
+}
+
+.vpn-modal-overlay {
+  display: none;
+  position: fixed;
+  inset: 0;
+  z-index: 99999;
+  align-items: center;
+  justify-content: center;
+  padding: 16px;
+  background: rgba(0, 0, 0, 0.4);
+}
+
+.vpn-modal-overlay.is-visible {
+  display: flex;
+}
+
+.vpn-modal-box {
+  width: min(480px, 100%);
+  padding: 28px 38px;
+  border-radius: 8px;
+  background: #fff;
+  text-align: center;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2);
+  font-size: 18px;
+}
+
+.vpn-modal-box button {
+  width: 100%;
+  padding: 14px;
+  border: 0;
+  border-radius: 5px;
+  background: #c52d2d;
+  color: #fff;
+  font-size: 17px;
+  cursor: pointer;
 }
 

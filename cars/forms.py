@@ -2,7 +2,7 @@
 from django import forms
 from django.forms import inlineformset_factory
 from .models import Car, Motorcycle, HeavyVehicle, CarImage, Brand, CarModel, MotorcycleImage, HeavyVehicleImage, VehicleVariant, VehicleCatalogModel
-
+from cars.models import VehicleCatalogModel
 
 class CarForm(forms.ModelForm):
     catalog_model = forms.ModelChoiceField(
@@ -110,6 +110,19 @@ class CarForm(forms.ModelForm):
         return car
 
 class MotorcycleForm(forms.ModelForm):
+    catalog_model = forms.ModelChoiceField(
+            queryset=VehicleCatalogModel.objects.none(),
+            label="مدل",
+            widget=forms.Select(attrs={"class": "form-select"}),
+        )
+
+    catalog_variant = forms.ModelChoiceField(
+            queryset=VehicleVariant.objects.none(),
+            required=False,
+            label="تیپ",
+            widget=forms.Select(attrs={"class": "form-select"}),
+        )
+
     class Meta:
         model = Motorcycle
         # ✅ همه فیلدهای خودکار و غیرضروری رو exclude کن
@@ -131,6 +144,8 @@ class MotorcycleForm(forms.ModelForm):
             'payment_amount',        # ← جدید (مشکل اینجا بود!)
             'payment_date',          # ← جدید
             'payment_tracking_code', # ← جدید      # پیش‌فرض False
+            'model_name',
+
         ]
         widgets = {
             'title': forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'مثال: هوندا CB400'}),
@@ -153,12 +168,53 @@ class MotorcycleForm(forms.ModelForm):
             vehicle_catalog_models__is_active=True,
         ).distinct().order_by("name")
 
+        
+
+        model_qs = VehicleCatalogModel.objects.filter(
+            vehicle_type="motorcycle",
+            is_active=True,
+        ).select_related("brand")
+
+        brand_id = self.data.get("brand") or getattr(self.instance, "brand_id", None)
+
+        if brand_id:
+            self.fields["catalog_model"].queryset = model_qs.filter(
+                brand_id=brand_id
+            )
+        else:
+            self.fields["catalog_model"].queryset = VehicleCatalogModel.objects.none()
+
+        catalog_model_id = (
+            self.data.get("catalog_model")
+            or getattr(self.instance, "catalog_model_id", None)
+        )
+
+        if catalog_model_id:
+            variants = VehicleVariant.objects.filter(
+                catalog_model_id=catalog_model_id,
+                is_active=True,
+            )
+            self.fields["catalog_variant"].queryset = variants
+            self.fields["catalog_variant"].required = variants.exists()
+    
+    def save(self, commit=True):
+        obj = super().save(commit=False)
+
+        if obj.catalog_model_id:
+            obj.model_name = str(obj.catalog_model)
+
+        if commit:
+            obj.save()
+            self.save_m2m()
+
+        return obj
+
 class HeavyVehicleForm(forms.ModelForm):
     class Meta:
         model = HeavyVehicle
         exclude = [
             'seller', 'vehicle_type', 'slug', 'views', 'phone_views',
-            'created_at', 'updated_at',
+            'created_at', 'updated_at','model_name',
             'is_sold', 'is_active', 'is_verified', 'is_featured','is_draft',              # ← جدید
             'draft_token',           # ← جدید
             'is_paid',               # ← جدید
@@ -187,13 +243,24 @@ class HeavyVehicleForm(forms.ModelForm):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.fields["description"].help_text = (
-    "واضح بنویسید تا خریداران سؤال تکراری کمتری بپرسند."
-)
+            "واضح بنویسید تا خریداران سؤال تکراری کمتری بپرسند."
+        )
 
         self.fields["brand"].queryset = Brand.objects.filter(
             vehicle_catalog_models__vehicle_type="heavy",
             vehicle_catalog_models__is_active=True,
         ).distinct().order_by("name")
+    def save(self, commit=True):
+        obj = super().save(commit=False)
+
+        if obj.catalog_model_id:
+            obj.model_name = str(obj.catalog_model)
+
+        if commit:
+            obj.save()
+            self.save_m2m()
+
+        return obj
 
 # ===== فرم‌های تصویر =====
 class CarImageForm(forms.ModelForm):

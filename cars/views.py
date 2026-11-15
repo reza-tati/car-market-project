@@ -16,6 +16,8 @@ from cars.services.price_estimator import estimate_car_price
 from django.utils import timezone
 from django.urls import reverse
 from cars.utils import can_post_free_listing, get_listing_price
+from django.views.decorators.http import require_GET
+
 from .models import (
     Car, Motorcycle, HeavyVehicle,
     CarImage, MotorcycleImage, HeavyVehicleImage,
@@ -31,7 +33,10 @@ from django.contrib.auth.decorators import login_required
 from django.shortcuts import get_object_or_404, redirect
 from django.views.decorators.http import require_POST
 from .models import Car, Motorcycle, HeavyVehicle
+
+
 logger = logging.getLogger(__name__)
+
 # ============================================
 # لیست خودروها (سواری)
 # ============================================
@@ -1105,3 +1110,77 @@ def mark_vehicle_sold(request, vehicle_type, pk):
 
     messages.success(request, "آگهی به‌عنوان فروخته‌شده ثبت شد.")
     return redirect("cars:car_list")
+
+@require_GET
+def motorcycle_catalog_models(request):
+    brand_id = request.GET.get("brand_id")
+
+    models = VehicleCatalogModel.objects.filter(
+        vehicle_type="motorcycle",
+        is_active=True,
+        brand_id=brand_id,
+    ).order_by("name")
+
+    return JsonResponse({
+        "models": [
+            {"id": item.pk, "name": item.name}
+            for item in models
+        ]
+    })
+
+@require_GET
+def motorcycle_catalog_variants(request):
+    model_id = request.GET.get("catalog_model_id")
+
+    variants = VehicleVariant.objects.filter(
+        catalog_model_id=model_id,
+        is_active=True,
+    )
+
+    return JsonResponse({
+        "variants": [
+            {"id": item.pk, "name": str(item)}
+            for item in variants
+        ]
+    })
+
+@require_GET
+def heavy_catalog_models(request):
+    brand_id = request.GET.get("brand_id")
+
+    if not brand_id:
+        return JsonResponse({"models": []})
+
+    models = VehicleCatalogModel.objects.filter(
+        vehicle_type="heavy",
+        is_active=True,
+        brand_id=brand_id,
+    ).order_by("name")
+
+    return JsonResponse({
+        "models": [
+            {"id": item.pk, "name": item.name}
+            for item in models
+        ]
+    })
+
+
+
+@require_GET
+def heavy_catalog_variants(request):
+    model_id = request.GET.get("model_id")
+
+    if not model_id:
+        return JsonResponse({"results": []})
+
+    variants = VehicleVariant.objects.filter(
+        catalog_model_id=model_id,
+        catalog_model__vehicle_type="heavy",
+    ).order_by("name")
+
+    return JsonResponse({
+        "results": [
+            {"id": variant.pk, "text": str(variant)}
+            for variant in variants
+        ]
+    })

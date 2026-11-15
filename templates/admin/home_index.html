@@ -1,0 +1,11 @@
+{% extends "admin/index.html" %}
+
+{% block content %}
+  <p>
+    <a class="button" href="{% url 'admin:cars_car_unified_ads' %}">
+      صف بررسی همهٔ آگهی‌ها
+    </a>
+  </p>
+
+  {{ block.super }}
+{% endblock %}

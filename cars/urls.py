@@ -1,12 +1,13 @@
 # cars/urls.py
-app_name = 'cars'
 from django.urls import path
 from . import views
 from .views import CarPriceEstimateView
 from .api_urls import VehiclePriceEstimateView
+from django.contrib import admin
 
 
 app_name = 'cars'
+admin.site.index_template = "admin/home_index.html"
 
 urlpatterns = [
     # ===== لیست‌ها =====
@@ -39,13 +40,38 @@ urlpatterns = [
     path(
     "estimate-vehicle-price/",
     VehiclePriceEstimateView.as_view(),
-    name="estimate_vehicle_price",
-),
-path(
-    "ads/<str:vehicle_type>/<int:pk>/mark-sold/",
-    views.mark_vehicle_sold,
-    name="mark_vehicle_sold",
-),
+    name="estimate_vehicle_price",),
+    path(
+        "ads/<str:vehicle_type>/<int:pk>/mark-sold/",
+        views.mark_vehicle_sold,
+        name="mark_vehicle_sold",
+    ),
+   
+    path(
+        "ajax/motorcycle-models/",
+        views.motorcycle_catalog_models,
+        name="motorcycle_catalog_models",
+    ),
+    path(
+        "ajax/motorcycle-variants/",
+        views.motorcycle_catalog_variants,
+        name="motorcycle_catalog_variants",
+    ),
+
+    path(
+        "ajax/heavy-models/",
+        views.heavy_catalog_models,
+        name="heavy_catalog_models",
+    ),
+
+    path(
+        "ajax/heavy/catalog-variants/",
+        views.heavy_catalog_variants,
+        name="heavy_catalog_variants",
+    ),
+
+
+
 
 
 

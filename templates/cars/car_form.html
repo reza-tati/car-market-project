@@ -51,7 +51,7 @@
                     <!-- ✅✅✅ پایان کد ✅✅✅ -->
 
   
-                    <form method="post" enctype="multipart/form-data" novalidate>
+                    <form class="{% if not form.instance.pk %}payment-warning-form{% endif %}" method="post" enctype="multipart/form-data" novalidate>
                         {% csrf_token %}
 
                         <!-- ===== اطلاعات اصلی ===== -->
@@ -214,6 +214,12 @@
                         </div>
 
                     </form>
+                    <div id="vpn-modal" class="vpn-modal-overlay">
+                        <div class="vpn-modal-box" dir="rtl">
+                            <p>برای اینکه پرداخت بدون مشکل انجام شود، لطفاً VPN را خاموش کرده و ادامه دهید.</p>
+                            <button type="button" id="vpn-confirm">متوجه شدم</button>
+                        </div>
+                    </div>
                 </div>
             </div>
         </div>
@@ -330,9 +336,6 @@ document.addEventListener("DOMContentLoaded", function () {
   document.addEventListener("change", handleFieldChange, true);
 });
 </script>
-
-
-
 <script>
 document.addEventListener("DOMContentLoaded", function () {
   const brandSelect = document.getElementById("id_brand");
@@ -460,5 +463,44 @@ document.addEventListener("DOMContentLoaded", function () {
   }
 });
 </script>
+<script>
+document.addEventListener("DOMContentLoaded", function () {
+  const forms = document.querySelectorAll(".payment-warning-form");
+  const modal = document.getElementById("vpn-modal");
+  const confirmButton = document.getElementById("vpn-confirm");
+
+  if (!forms.length || !modal || !confirmButton) {
+    console.error("فرم یا پیام پرداخت پیدا نشد.");
+    return;
+  }
+
+  let formToSubmit = null;
+  let allowSubmit = false;
+
+  forms.forEach(function (form) {
+    form.addEventListener("submit", function (event) {
+      if (allowSubmit) {
+        allowSubmit = false;
+        return;
+      }
+
+      event.preventDefault();
+      formToSubmit = form;
+      modal.classList.add("is-visible");
+    });
+  });
+
+  confirmButton.addEventListener("click", function () {
+    if (!formToSubmit) return;
+
+    const form = formToSubmit;
+    formToSubmit = null;
+    modal.classList.remove("is-visible");
+    allowSubmit = true;
+    form.requestSubmit();
+  });
+});
+</script>
+
 
 {% endblock %}

@@ -6,11 +6,13 @@ from . import views
 import json
 from django.http import JsonResponse
 from django.views import View
+from cars.models import VehicleCatalogModel
+
 from cars.services.price_estimator import (
     estimate_motorcycle_price,
     estimate_heavy_vehicle_price,
 )
-
+from cars.models import VehicleCatalogModel
 router = DefaultRouter()
 router.register(r'brands', BrandViewSet)
 router.register(r'models', CarModelViewSet)
@@ -23,18 +25,38 @@ class VehiclePriceEstimateView(View):
             vehicle_type = data.get("vehicle_type")
 
             if vehicle_type == "motorcycle":
+                try:
+                    catalog_model_id = int(data["catalog_model_id"])
+                    catalog_model = VehicleCatalogModel.objects.get(
+                        pk=catalog_model_id,
+                        vehicle_type="motorcycle",
+                        is_active=True,
+                    )
+                except (KeyError, TypeError, ValueError):
+                    return JsonResponse(
+                        {"error": "شناسهٔ مدل معتبر نیست."},
+                        status=400,
+                    )
+                except VehicleCatalogModel.DoesNotExist:
+                    return JsonResponse(
+                        {"error": "مدل موتورسیکلت پیدا نشد."},
+                        status=404,
+                    )
+
+ 
+
                 result = estimate_motorcycle_price(
-                    brand_id=data.get("brand_id"),
-                    model_name=(data.get("model_name") or "").strip(),
+                    brand_id=catalog_model.brand_id,
+                    model_name=str(catalog_model),
                     year=int(data["year"]) if data.get("year") else None,
                     city=data.get("city") or None,
                     mileage=int(data["mileage"]) if data.get("mileage") else None,
                     engine_cc=int(data["engine_cc"]) if data.get("engine_cc") else None,
                 )
+
             elif vehicle_type == "heavy":
                 result = estimate_heavy_vehicle_price(
-                    brand_id=data.get("brand_id"),
-                    model_name=(data.get("model_name") or "").strip(),
+                    catalog_model_id=int(data.get("catalog_model_id")),
                     year=int(data["year"]) if data.get("year") else None,
                     city=data.get("city") or None,
                     heavy_type=data.get("heavy_type") or None,
@@ -44,6 +66,7 @@ class VehiclePriceEstimateView(View):
                         else None
                     ),
                 )
+
             else:
                 return JsonResponse(
                     {"error": "نوع وسیله معتبر نیست."},

@@ -48,9 +48,9 @@
                             {% endif %}
                             <!-- ✅ پایان کد -->
 
-                    <form method="post" enctype="multipart/form-data" novalidate>
+                      <form id="motorcycle-form" class="{% if not form.instance.pk %}payment-warning-form{% endif %}" method="post" 
+ enctype="multipart/form-data" novalidate data-models-url="{% url 'cars:motorcycle_catalog_models' %}" data-variants-url="{% url 'cars:motorcycle_catalog_variants' %}">
                         {% csrf_token %}
-
                         <!-- ===== اطلاعات اصلی ===== -->
                         <div class="form-section">
                             <h5 class="form-section-title">
@@ -59,7 +59,8 @@
                             <div class="row g-3">
                                 <div class="col-md-12">{{ form.title|as_crispy_field }}</div>
                                 <div class="col-md-4">{{ form.brand|as_crispy_field }}</div>
-                                <div class="col-md-4">{{ form.model_name|as_crispy_field }}</div>
+                                <div class="col-md-4">{{ form.catalog_model|as_crispy_field }}</div>
+                                <div class="col-md-4">{{ form.catalog_variant|as_crispy_field }}</div>
                                 <div class="col-md-4">{{ form.year|as_crispy_field }}</div>
                                 <div class="col-md-4">{{ form.price|as_crispy_field }}</div>
                                 <div class="col-md-4">{{ form.mileage|as_crispy_field }}</div>
@@ -172,6 +173,13 @@
                         </div>
 
                     </form>
+                    <div id="vpn-modal" class="vpn-modal-overlay">
+                        <div class="vpn-modal-box" dir="rtl">
+                            <p>برای اینکه پرداخت بدون مشکل انجام شود، لطفاً VPN را خاموش کرده و ادامه دهید.</p>
+                            <button type="button" id="vpn-confirm">متوجه شدم</button>
+                        </div>
+                    </div>
+                    
                 </div>
             </div>
         </div>
@@ -180,6 +188,86 @@
 {% endblock %}
 
 {% block extra_js %}
+<script>
+document.addEventListener("DOMContentLoaded", function () {
+  const form = document.querySelector("form[data-models-url]");
+  const brand = document.getElementById("id_brand");
+  const model = document.getElementById("id_catalog_model");
+  const variant = document.getElementById("id_catalog_variant");
+
+  if (!form || !brand || !model || !variant) {
+    console.error("فرم یا یکی از فیلدهای برند، مدل و تیپ پیدا نشد.");
+    return;
+  }
+
+  brand.addEventListener("change", async function () {
+    model.replaceChildren(new Option("در حال بارگذاری مدل‌ها…", ""));
+    variant.replaceChildren(new Option("ابتدا مدل را انتخاب کنید", ""));
+
+    if (!brand.value) {
+      model.replaceChildren(new Option("ابتدا برند را انتخاب کنید", ""));
+      return;
+    }
+
+    try {
+      const url = new URL(form.dataset.modelsUrl, window.location.origin);
+      url.searchParams.set("brand_id", brand.value);
+
+      const response = await fetch(url);
+      if (!response.ok) throw new Error(`HTTP ${response.status}`);
+
+      const data = await response.json();
+      model.replaceChildren(new Option("مدل را انتخاب کنید", ""));
+
+      data.models.forEach(item => {
+        model.add(new Option(item.name, item.id));
+      });
+
+      if (window.jQuery) window.jQuery(model).trigger("change");
+    } catch (error) {
+      console.error("خطا در دریافت مدل‌ها:", error);
+      model.replaceChildren(new Option("بارگذاری مدل‌ها ناموفق بود", ""));
+    }
+  });
+
+  model.addEventListener("change", async function () {
+    variant.replaceChildren(new Option("در حال بارگذاری تیپ‌ها…", ""));
+
+    if (!model.value) {
+      variant.replaceChildren(new Option("ابتدا مدل را انتخاب کنید", ""));
+      return;
+    }
+
+    try {
+      const url = new URL(form.dataset.variantsUrl, window.location.origin);
+      url.searchParams.set("catalog_model_id", model.value);
+
+      const response = await fetch(url);
+      if (!response.ok) throw new Error(`HTTP ${response.status}`);
+
+      const data = await response.json();
+      variant.replaceChildren(
+        new Option(
+          data.variants.length
+            ? "تیپ را انتخاب کنید"
+            : "برای این مدل تیپی ثبت نشده",
+          ""
+        )
+      );
+
+      data.variants.forEach(item => {
+        variant.add(new Option(item.name, item.id));
+      });
+
+      variant.required = data.variants.length > 0;
+      if (window.jQuery) window.jQuery(variant).trigger("change");
+    } catch (error) {
+      console.error("خطا در دریافت تیپ‌ها:", error);
+      variant.replaceChildren(new Option("بارگذاری تیپ‌ها ناموفق بود", ""));
+    }
+  });
+});
+</script>
 <script>
 document.addEventListener('DOMContentLoaded', function() {
     // ===== افزودن فرم تصویر جدید =====
@@ -256,8 +344,7 @@ document.addEventListener('DOMContentLoaded', function() {
         const values = document.getElementById('moto-estimate-values');
 
         const fields = {
-            brand: form.querySelector('[name="brand"]'),
-            model_name: form.querySelector('[name="model_name"]'),
+            model: form.querySelector('[name="catalog_model"]'),
             year: form.querySelector('[name="year"]'),
             city: form.querySelector('[name="city"]'),
             mileage: form.querySelector('[name="mileage"]'),
@@ -271,11 +358,10 @@ document.addEventListener('DOMContentLoaded', function() {
         }
 
         async function loadMotoEstimate() {
-            const brandId = fields.brand?.value;
-            const modelName = fields.model_name?.value?.trim();
+            const catalogModelId = fields.model?.value;
             const year = fields.year?.value;
 
-            if (!brandId || !modelName || !year) {
+            if (!catalogModelId || !year) {
                 values.classList.add('d-none');
                 message.textContent = 'برند، مدل و سال را انتخاب کنید.';
                 return;
@@ -286,8 +372,7 @@ document.addEventListener('DOMContentLoaded', function() {
 
             const payload = {
                 vehicle_type: 'motorcycle',
-                brand_id: brandId,
-                model_name: modelName,
+                catalog_model_id: catalogModelId,
                 year: year,
                 city: fields.city?.value || '',
                 mileage: fields.mileage?.value || '',
@@ -337,18 +422,81 @@ document.addEventListener('DOMContentLoaded', function() {
         Object.values(fields).forEach(function(field) {
             if (!field) return;
 
-            field.addEventListener('change', function() {
-                clearTimeout(requestTimer);
-                requestTimer = setTimeout(loadMotoEstimate, 400);
-            });
+            const eventName = field.tagName === 'SELECT' ? 'change' : 'input';
 
-            field.addEventListener('input', function() {
+            field.addEventListener(eventName, function() {
                 clearTimeout(requestTimer);
-                requestTimer = setTimeout(loadMotoEstimate, 600);
+                requestTimer = setTimeout(loadMotoEstimate, 500);
             });
         });
     }
 
 });
 </script>
+<script>
+document.addEventListener("DOMContentLoaded", function () {
+  const form = document.getElementById("motorcycle-form");
+  const modal = document.getElementById("vpn-modal");
+  const confirmButton = document.getElementById("vpn-confirm");
+
+  if (!form || !modal || !confirmButton) {
+    console.error("فرم یا پیام پرداخت پیدا نشد.");
+    return;
+  }
+
+  let confirmed = false;
+
+  form.addEventListener("submit", function (event) {
+    if (confirmed) return;
+
+    event.preventDefault();
+    modal.classList.add("is-visible");
+  });
+
+  confirmButton.addEventListener("click", function () {
+    confirmed = true;
+    modal.classList.remove("is-visible");
+    form.requestSubmit();
+  });
+});
+</script>
+<script>
+document.addEventListener("DOMContentLoaded", function () {
+  const forms = document.querySelectorAll(".payment-warning-form");
+  const modal = document.getElementById("vpn-modal");
+  const confirmButton = document.getElementById("vpn-confirm");
+
+  if (!forms.length || !modal || !confirmButton) {
+    console.error("فرم یا پیام پرداخت پیدا نشد.");
+    return;
+  }
+
+  let formToSubmit = null;
+  let allowSubmit = false;
+
+  forms.forEach(function (form) {
+    form.addEventListener("submit", function (event) {
+      if (allowSubmit) {
+        allowSubmit = false;
+        return;
+      }
+
+      event.preventDefault();
+      formToSubmit = form;
+      modal.classList.add("is-visible");
+    });
+  });
+
+  confirmButton.addEventListener("click", function () {
+    if (!formToSubmit) return;
+
+    const form = formToSubmit;
+    formToSubmit = null;
+    modal.classList.remove("is-visible");
+    allowSubmit = true;
+    form.requestSubmit();
+  });
+});
+</script>
+
 {% endblock %}

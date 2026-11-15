@@ -161,24 +161,53 @@ def estimate_motorcycle_price(
 
 
 def estimate_heavy_vehicle_price(
-    *, brand_id, model_name, year=None, city=None,
-    heavy_type=None, load_capacity=None
+    *,
+    catalog_model_id,
+    year=None,
+    city=None,
+    heavy_type=None,
+    load_capacity=None,
 ):
-    candidates = _base_candidates(
-        HeavyVehicle, brand_id, model_name, year, city
+    if not catalog_model_id:
+        return None
+
+    base_candidates = HeavyVehicle.objects.filter(
+        catalog_model_id=catalog_model_id,
+        is_active=True,
+        is_draft=False,
+        price__gt=0,
     )
 
-    if heavy_type:
-        same_type = candidates.filter(heavy_type=heavy_type)
-        if same_type.count() >= 3:
-            candidates = same_type
+    candidates = base_candidates
 
-    if load_capacity is not None:
-        similar_capacity = candidates.filter(
-            load_capacity__gte=load_capacity * 0.8,
-            load_capacity__lte=load_capacity * 1.2,
+    if year:
+        year = int(year)
+        candidates = base_candidates.filter(
+            year__range=(year - 2, year + 2)
         )
-        if similar_capacity.count() >= 3:
-            candidates = similar_capacity
+
+        if candidates.count() < 3:
+            candidates = base_candidates.filter(
+                year__range=(year - 5, year + 5)
+            )
+
+    if city:
+        city_candidates = candidates.filter(city=city)
+        if city_candidates.count() >= 3:
+            candidates = city_candidates
+
+    if heavy_type:
+        type_candidates = candidates.filter(heavy_type=heavy_type)
+        if type_candidates.count() >= 3:
+            candidates = type_candidates
+
+    if load_capacity:
+        capacity = float(load_capacity)
+        capacity_candidates = candidates.filter(
+            load_capacity__gte=capacity * 0.8,
+            load_capacity__lte=capacity * 1.2,
+        )
+        if capacity_candidates.count() >= 3:
+            candidates = capacity_candidates
 
     return _price_range(candidates)
