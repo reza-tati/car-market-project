@@ -125,40 +125,7 @@
                     </div>
                 </div>
 
-                <!-- ===== نوع حساب کاربری ===== -->
-                <div class="form-group mt-4">
-                    <label class="form-label mb-3">
-                        <i class="bi bi-person-badge-fill text-primary"></i>
-                        نوع حساب کاربری
-                    </label>
-                    <div class="user-type-cards">
-                        {% for choice in form.user_type %}
-                            <div class="user-type-card">
-                                {{ choice.tag }}
-                                <label for="{{ choice.id_for_label }}" class="card-label">
-                                    <div class="card-icon">
-                                        {% if choice.choice_label == 'فروشنده' %}
-                                            <i class="bi bi-shop text-primary"></i>
-                                        {% else %}
-                                            <i class="bi bi-cart-check-fill text-success"></i>
-                                        {% endif %}
-                                    </div>
-                                    <div class="card-title">{{ choice.choice_label }}</div>
-                                    <div class="card-desc">
-                                        {% if choice.choice_label == 'فروشنده' %}
-                                            برای فروش خودرو
-                                        {% else %}
-                                            برای خرید خودرو
-                                        {% endif %}
-                                    </div>
-                                </label>
-                            </div>
-                        {% endfor %}
-                    </div>
-                    {% if form.user_type.errors %}
-                        <div class="text-danger small mt-1">{{ form.user_type.errors }}</div>
-                    {% endif %}
-                </div>
+                
 
                 <!-- ===== قوانین ===== -->
                 <div class="form-group mt-4">

@@ -22,7 +22,10 @@
                 <tr>
                     <td>{{ ad.type }}</td>
                     <td>
-                        <a href="{{ ad.change_url }}">{{ ad.title }}</a>
+                        <a href="{{ ad.preview_url }}" target="_blank" rel="noopener">
+                            {{ ad.title }}
+                        </a>
+
                     </td>
                     <td>{{ ad.model }}</td>
                     <td>{{ ad.city }}</td>

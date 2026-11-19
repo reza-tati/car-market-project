@@ -51,7 +51,13 @@
                     <!-- ✅✅✅ پایان کد ✅✅✅ -->
 
   
-                    <form class="{% if not form.instance.pk %}payment-warning-form{% endif %}" method="post" enctype="multipart/form-data" novalidate>
+                    <form
+                      class="{% if not form.instance.pk and show_vpn_warning %}payment-warning-form{% endif %}"
+                      method="post"
+                      enctype="multipart/form-data"
+                      novalidate
+                    >
+
                         {% csrf_token %}
 
                         <!-- ===== اطلاعات اصلی ===== -->
@@ -214,12 +220,14 @@
                         </div>
 
                     </form>
+                    {% if show_vpn_warning %}
                     <div id="vpn-modal" class="vpn-modal-overlay">
                         <div class="vpn-modal-box" dir="rtl">
                             <p>برای اینکه پرداخت بدون مشکل انجام شود، لطفاً VPN را خاموش کرده و ادامه دهید.</p>
                             <button type="button" id="vpn-confirm">متوجه شدم</button>
                         </div>
                     </div>
+                    {% endif %}
                 </div>
             </div>
         </div>
@@ -243,10 +251,10 @@ document.addEventListener("DOMContentLoaded", function () {
 
   const fieldIds = {
     model: box.dataset.modelId || "id_catalog_model",
-
     year: box.dataset.yearId || "id_year",
     mileage: box.dataset.mileageId || "id_mileage",
     city: box.dataset.cityId || "id_city",
+    engine_cc: box.dataset.engineCcId || "id_engine_capacity",
     transmission: box.dataset.transmissionId || "id_transmission",
     condition: box.dataset.conditionId || "id_condition",
   };
@@ -257,24 +265,31 @@ document.addEventListener("DOMContentLoaded", function () {
   const formatPrice = (value) =>
     new Intl.NumberFormat("fa-IR").format(Number(value || 0)) + " تومان";
 
+  function getCookie(name) {
+    const cookie = document.cookie
+      .split("; ")
+      .find((item) => item.startsWith(name + "="));
+
+    return cookie ? decodeURIComponent(cookie.split("=")[1]) : "";
+  }
+
   let timer;
 
   async function updateEstimate() {
     const data = {
-      model: getValue("model"),
+      catalog_model_id: getValue("model"),
       year: getValue("year"),
       mileage: getValue("mileage"),
       city: getValue("city"),
+      engine_cc: getValue("engine_cc"),
       transmission: getValue("transmission"),
       condition: getValue("condition"),
     };
 
-    const missing = Object.values(data).some((value) => !value);
-
-    if (missing) {
+    // فقط مدل و سال اجباری‌اند.
+    if (!data.catalog_model_id || !data.year) {
       values.hidden = true;
-      message.textContent =
-        "مدل، سال، کارکرد، شهر، گیربکس و وضعیت بدنه را مشخص کنید.";
+      message.textContent = "مدل و سال خودرو را مشخص کنید.";
       return;
     }
 
@@ -288,12 +303,23 @@ document.addEventListener("DOMContentLoaded", function () {
     message.textContent = "در حال محاسبهٔ تخمین قیمت…";
 
     try {
-      const url = new URL(box.dataset.estimateUrl, window.location.origin);
+      const formToken = box
+        .closest("form")
+        ?.querySelector('[name="csrfmiddlewaretoken"]')
+        ?.value;
 
-      // ویوی Django پارامتر «model» می‌خواهد، نه «model_id».
-      url.search = new URLSearchParams(data).toString();
+      const csrfToken = formToken || getCookie("csrftoken");
 
-      const response = await fetch(url);
+      const response = await fetch(box.dataset.estimateUrl, {
+        method: "POST",
+        credentials: "same-origin",
+        headers: {
+          "Content-Type": "application/x-www-form-urlencoded;charset=UTF-8",
+          "X-CSRFToken": csrfToken,
+        },
+        body: new URLSearchParams(data),
+      });
+
       const payload = await response.json();
       const result =
         payload.response && typeof payload.response === "object"
@@ -314,7 +340,7 @@ document.addEventListener("DOMContentLoaded", function () {
       box.querySelector(".estimate-high").textContent =
         formatPrice(result.high);
 
-      const count = result.sample_size ?? result.sample_count ?? 0;
+      const count = result.sample_size ?? 0;
       message.textContent =
         `تخمین بر اساس ${new Intl.NumberFormat("fa-IR").format(count)} آگهی مشابه است.`;
 
@@ -332,10 +358,10 @@ document.addEventListener("DOMContentLoaded", function () {
     timer = setTimeout(updateEstimate, 400);
   }
 
-  // فقط change تا برای هر تغییر، دو درخواست input و change ارسال نشود.
   document.addEventListener("change", handleFieldChange, true);
 });
 </script>
+
 <script>
 document.addEventListener("DOMContentLoaded", function () {
   const brandSelect = document.getElementById("id_brand");

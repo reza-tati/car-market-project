@@ -72,3 +72,24 @@ def get_listing_price(user):
     if can_post_free_listing(user):
         return 0
     return getattr(settings, 'LISTING_PRICE', 50000)
+
+def should_show_vpn_warning(request):
+    if not request.user.is_authenticated:
+        return request.session.get("has_submitted_vehicle_ad", False)
+
+    
+
+    return (
+        Car.objects.filter(
+            seller=request.user,
+            is_draft=False,
+        ).exists()
+        or Motorcycle.objects.filter(
+            seller=request.user,
+            is_draft=False,
+        ).exists()
+        or HeavyVehicle.objects.filter(
+            seller=request.user,
+            is_draft=False,
+        ).exists()
+    )

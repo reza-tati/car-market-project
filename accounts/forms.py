@@ -31,17 +31,10 @@ class PhoneRegisterForm(UserCreationForm):
             'placeholder': 'محمدی'
         })
     )
-    user_type = forms.ChoiceField(
-        choices=UserProfile.USER_TYPE_CHOICES,
-        required=True,
-        label='نوع حساب کاربری',
-        widget=forms.RadioSelect(attrs={
-            'class': 'form-check-input'
-        })
-    )
+    
     class Meta:
         model = User
-        fields = ['username','first_name', 'last_name', 'phone', 'password1', 'password2', 'user_type']
+        fields = ['username','first_name', 'last_name', 'phone', 'password1', 'password2']
     
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
@@ -82,13 +75,9 @@ class PhoneRegisterForm(UserCreationForm):
             # ایجاد یا به‌روزرسانی پروفایل
             profile = user.profile
             profile.phone = self.cleaned_data['phone']
-            profile.user_type = self.cleaned_data['user_type']
-            
-            # اگر کاربر نوع فروشنده رو انتخاب کرده
-            if self.cleaned_data['user_type'] == 'seller':
-                profile.is_seller = True
-            else:
-                profile.is_seller = False
+            profile.user_type = 'seller'
+            profile.is_seller = True
+
             
             profile.save()
         return user

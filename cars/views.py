@@ -15,8 +15,9 @@ from django.views import View
 from cars.services.price_estimator import estimate_car_price
 from django.utils import timezone
 from django.urls import reverse
-from cars.utils import can_post_free_listing, get_listing_price
+from cars.utils import can_post_free_listing, get_listing_price, should_show_vpn_warning
 from django.views.decorators.http import require_GET
+from django.db import transaction
 
 from .models import (
     Car, Motorcycle, HeavyVehicle,
@@ -32,7 +33,6 @@ from django.contrib import messages
 from django.contrib.auth.decorators import login_required
 from django.shortcuts import get_object_or_404, redirect
 from django.views.decorators.http import require_POST
-from .models import Car, Motorcycle, HeavyVehicle
 
 
 logger = logging.getLogger(__name__)
@@ -210,18 +210,45 @@ class HeavyVehicleListView(ListView):
 # ============================================
 # جزئیات خودرو (سواری)
 # ============================================
+def can_preview_unpublished(user, model):
+        opts = model._meta
+        return user.is_staff and (
+            user.has_perm(f"{opts.app_label}.view_{opts.model_name}")
+            or user.has_perm(f"{opts.app_label}.change_{opts.model_name}")
+        )
 class CarDetailView(DetailView):
     model = Car
     template_name = 'cars/car_detail.html'
     context_object_name = 'car'
+
     
+
     def get_queryset(self):
-        return Car.objects.filter(
-            is_draft=False  # ← Draftها رو نشون نده
+        queryset = Car.objects.filter(
+            is_draft=False
         ).select_related(
             'seller__profile', 'brand', 'model'
         ).prefetch_related('car_images')
-    
+
+        
+        if not can_preview_unpublished(self.request.user, Car):
+            visible_ads = Q(
+                is_active=True,
+                is_sold=False,
+                is_verified=True,
+            )
+
+            if self.request.user.is_authenticated:
+                visible_ads |= Q(
+                    seller=self.request.user,
+                    is_active=True,
+                    is_sold=False,
+                )
+
+            queryset = queryset.filter(visible_ads)
+
+        return queryset
+
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
         car = self.get_object()
@@ -283,17 +310,45 @@ class CarDetailView(DetailView):
 # ============================================
 # جزئیات موتورسیکلت
 # ============================================
+def can_preview_unpublished(user, model):
+        opts = model._meta
+        return user.is_staff and (
+            user.has_perm(f"{opts.app_label}.view_{opts.model_name}")
+            or user.has_perm(f"{opts.app_label}.change_{opts.model_name}")
+        )
+
 class MotorcycleDetailView(DetailView):
     model = Motorcycle
     template_name = 'cars/motorcycle_detail.html'
     context_object_name = 'motorcycle'
+
     
     def get_queryset(self):
-        # ✅ Draftها رو نشون نده
-        return Motorcycle.objects.filter(
+        queryset = Motorcycle.objects.filter(
             is_draft=False
-        ).select_related('seller__profile').prefetch_related('motorcycle_images')
-    
+        ).select_related(
+            'seller__profile'
+        ).prefetch_related('motorcycle_images')
+
+        if not can_preview_unpublished(self.request.user, Motorcycle):
+            visible_ads = Q(
+                is_active=True,
+                is_sold=False,
+                is_verified=True,
+            )
+
+            if self.request.user.is_authenticated:
+                visible_ads |= Q(
+                    seller=self.request.user,
+                    is_active=True,
+                    is_sold=False,
+                )
+
+            queryset = queryset.filter(visible_ads)
+
+
+        return queryset
+
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
         motorcycle = self.get_object()
@@ -318,16 +373,44 @@ class MotorcycleDetailView(DetailView):
 # ============================================
 # جزئیات ماشین سنگین
 # ============================================
+def can_preview_unpublished(user, model):
+        opts = model._meta
+        return user.is_staff and (
+            user.has_perm(f"{opts.app_label}.view_{opts.model_name}")
+            or user.has_perm(f"{opts.app_label}.change_{opts.model_name}")
+        )
+
 class HeavyVehicleDetailView(DetailView):
     model = HeavyVehicle
     template_name = 'cars/heavy_detail.html'
     context_object_name = 'heavy'
-    
+
     def get_queryset(self):
-        # ✅ Draftها رو نشون نده
-        return HeavyVehicle.objects.filter(
+        queryset = HeavyVehicle.objects.filter(
             is_draft=False
-        ).select_related('seller__profile').prefetch_related('heavy_images')
+        ).select_related(
+            'seller__profile'
+        ).prefetch_related('heavy_images')
+
+        
+        if not can_preview_unpublished(self.request.user, HeavyVehicle):
+            visible_ads = Q(
+                is_active=True,
+                is_sold=False,
+                is_verified=True,
+            )
+
+            if self.request.user.is_authenticated:
+                visible_ads |= Q(
+                    seller=self.request.user,
+                    is_active=True,
+                    is_sold=False,
+                )
+
+            queryset = queryset.filter(visible_ads)
+
+
+        return queryset
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
@@ -371,6 +454,8 @@ class CarCreateView(View):
             'formset': formset,
             'can_post_free': can_post_free_listing(request.user) if request.user.is_authenticated else False,
             'listing_price': get_listing_price(request.user) if request.user.is_authenticated else 0,
+            'show_vpn_warning': should_show_vpn_warning(request),
+
         }
         
         return render(request, 'cars/car_form.html', context)
@@ -393,6 +478,8 @@ class CarCreateView(View):
         return render(request, 'cars/car_form.html', {
             'form': form,
             'formset': formset,
+            'show_vpn_warning': should_show_vpn_warning(request),
+
         })
     
     def _save_draft(self, request, form, formset):
@@ -417,6 +504,8 @@ class CarCreateView(View):
         # ✅ ذخیره توکن توی Session
         request.session['draft_token'] = draft_token
         request.session['draft_type'] = 'car'
+        request.session["has_submitted_vehicle_ad"] = True
+
         
         messages.success(
             request,
@@ -483,6 +572,8 @@ class MotorcycleCreateView(View):
             'formset': formset,
             'can_post_free': can_post_free_listing(request.user) if request.user.is_authenticated else False,
             'listing_price': get_listing_price(request.user) if request.user.is_authenticated else 0,
+            'show_vpn_warning': should_show_vpn_warning(request),
+
         }
         
         return render(request, 'cars/motorcycle_form.html', context)
@@ -512,6 +603,8 @@ class MotorcycleCreateView(View):
         return render(request, 'cars/motorcycle_form.html', {
             'form': form,
             'formset': formset,
+            'show_vpn_warning': should_show_vpn_warning(request),
+
         })
     
     def _save_draft(self, request, form, formset):
@@ -593,6 +686,8 @@ class HeavyVehicleCreateView(View):
             'formset': formset,
             'can_post_free': can_post_free_listing(request.user) if request.user.is_authenticated else False,
             'listing_price': get_listing_price(request.user) if request.user.is_authenticated else 0,
+            'show_vpn_warning': should_show_vpn_warning(request),
+
         }
         
         return render(request, 'cars/heavy_form.html', context)
@@ -625,6 +720,8 @@ class HeavyVehicleCreateView(View):
         return render(request, 'cars/heavy_form.html', {
             'form': form,
             'formset': formset,
+            'show_vpn_warning': should_show_vpn_warning(request),
+
         })
     
     def _save_draft(self, request, form, formset):
@@ -690,28 +787,32 @@ class CarUpdateView(LoginRequiredMixin, UserPassesTestMixin, UpdateView):
         return self.request.user == car.seller or self.request.user.is_staff
     
     def form_valid(self, form):
-        self.object = form.save()
-        
         formset = CarImageFormSet(
             self.request.POST,
             self.request.FILES,
-            instance=self.object
+            instance=form.instance,
         )
-        
-        if formset.is_valid():
+
+        is_valid = formset.is_valid()
+       
+        if not is_valid:
+            return self.form_invalid(form)
+
+        with transaction.atomic():
+            response = super().form_valid(form)
+
+            formset.instance = self.object
             formset.save()
-            
+
             if not self.object.car_images.filter(is_main=True).exists():
                 first_image = self.object.car_images.first()
                 if first_image:
                     first_image.is_main = True
                     first_image.save()
-        else:
-            return self.form_invalid(form)
-        
-        messages.success(self.request, 'آگهی با موفقیت به‌روزرسانی شد!')
-        return super().form_valid(form)
-    
+
+        messages.success(self.request, "آگهی خودرو با موفقیت به‌روزرسانی شد!")
+        return response
+
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
         if self.request.POST:
@@ -749,28 +850,38 @@ class MotorcycleUpdateView(LoginRequiredMixin, UserPassesTestMixin, UpdateView):
         return self.request.user == motorcycle.seller or self.request.user.is_staff
     
     def form_valid(self, form):
-        self.object = form.save()
-        
         formset = MotorcycleImageFormSet(
             self.request.POST,
             self.request.FILES,
-            instance=self.object
+            instance=form.instance,
         )
-        
-        if formset.is_valid():
+
+        formset_valid = formset.is_valid()
+        print("MOTORCYCLE FORMSET VALID:", formset_valid)
+        print("MOTORCYCLE FORMSET ERRORS:", formset.errors)
+        print("MOTORCYCLE NON-FORM ERRORS:", formset.non_form_errors())
+
+        if not formset_valid:
+            return self.form_invalid(form)
+
+        with transaction.atomic():
+            response = super().form_valid(form)
+
+            formset.instance = self.object
             formset.save()
-            
+
             if not self.object.motorcycle_images.filter(is_main=True).exists():
                 first_image = self.object.motorcycle_images.first()
                 if first_image:
                     first_image.is_main = True
                     first_image.save()
-        else:
-            return self.form_invalid(form)
-        
-        messages.success(self.request, 'موتورسیکلت با موفقیت به‌روزرسانی شد!')
-        return super().form_valid(form)
-    
+
+        messages.success(
+            self.request,
+            "موتورسیکلت با موفقیت به‌روزرسانی شد!",
+        )
+        return response
+
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
         if self.request.POST:
@@ -808,28 +919,40 @@ class HeavyVehicleUpdateView(LoginRequiredMixin, UserPassesTestMixin, UpdateView
         return self.request.user == heavy.seller or self.request.user.is_staff
     
     def form_valid(self, form):
-        self.object = form.save()
-        
         formset = HeavyVehicleImageFormSet(
             self.request.POST,
             self.request.FILES,
-            instance=self.object
+            instance=form.instance,
         )
+
+        formset_valid = formset.is_valid()
+        print("FORMSET VALID:", formset_valid)
+        print("FORMSET ERRORS:", formset.errors)
+        print("FORMSET NON-FORM ERRORS:", formset.non_form_errors())
+
+        if not formset_valid:
+            return self.form_invalid(form)
+
         
-        if formset.is_valid():
+
+        with transaction.atomic():
+            response = super().form_valid(form)
+
+            formset.instance = self.object
             formset.save()
-            
+
             if not self.object.heavy_images.filter(is_main=True).exists():
                 first_image = self.object.heavy_images.first()
                 if first_image:
                     first_image.is_main = True
                     first_image.save()
-        else:
-            return self.form_invalid(form)
-        
-        messages.success(self.request, 'ماشین سنگین با موفقیت به‌روزرسانی شد!')
-        return super().form_valid(form)
-    
+
+        messages.success(
+            self.request,
+            "ماشین سنگین با موفقیت به‌روزرسانی شد!",
+        )
+        return response
+
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
         if self.request.POST:
@@ -964,62 +1087,66 @@ class HomeView(ListView):
         return context
 
 class CarPriceEstimateView(View):
-        def get(self, request):
-            try:
-                catalog_model_id = int(request.GET.get("model", ""))
-                year = int(request.GET.get("year", ""))
-                mileage = int(request.GET.get("mileage", ""))
-            except (TypeError, ValueError):
-                return JsonResponse(
-                    {"available": False, "message": "مدل، سال و کارکرد را وارد کنید."},
-                    status=400,
-                )
+    def post(self, request):
+        try:
+            catalog_model_id = int(
+                request.POST.get("catalog_model_id", "")
+            )
+            year = int(request.POST.get("year", ""))
 
-            # در فرم شما city فیلد متنی است، پس مقدارش نام شهر است.
-            city = request.GET.get("city", "").strip()
-            transmission = request.GET.get("transmission", "").strip()
-            condition = request.GET.get("condition", "").strip()
+            mileage_raw = request.POST.get("mileage", "").strip()
+            engine_cc_raw = request.POST.get("engine_cc", "").strip()
 
-            if not city or not transmission or not condition:
-                return JsonResponse({
+            mileage = int(mileage_raw) if mileage_raw else None
+            engine_cc = int(engine_cc_raw) if engine_cc_raw else None
+
+        except (TypeError, ValueError):
+            return JsonResponse(
+                {
                     "available": False,
-                    "message": "شهر، گیربکس و وضعیت بدنه را هم مشخص کنید.",
-                })
+                    "message": "مدل و سال را درست وارد کنید.",
+                },
+                status=400,
+            )
 
-            try:
-                result = estimate_car_price(
-                    catalog_model_id=catalog_model_id,
-                    year=year,
-                    mileage=mileage,
-                    transmission=transmission,
-                    condition=condition,
-                    city=city,
-                )
-            except Exception:
-                logger.exception("خطا هنگام تخمین قیمت خودرو")
-                return JsonResponse(
-                    {
-                        "available": False,
-                        "message": "تخمین قیمت در حال حاضر در دسترس نیست.",
-                    },
-                    status=503,
-                )
+        city = request.POST.get("city", "").strip() or None
+        transmission = request.POST.get("transmission", "").strip() or None
+        condition = request.POST.get("condition", "").strip() or None
 
-            # سرویس شما وقتی کمتر از ۳ آگهی مشابه باشد، قیمت‌ها را None برمی‌گرداند.
-            if not result or result.get("low") is None:
-                return JsonResponse({
+        try:
+            result = estimate_car_price(
+                catalog_model_id=catalog_model_id,
+                year=year,
+                mileage=mileage,
+                engine_cc=engine_cc,
+                transmission=transmission,
+                condition=condition,
+                city=city,
+            )
+        except Exception:
+            logger.exception("خطا هنگام تخمین قیمت خودرو")
+            return JsonResponse(
+                {
                     "available": False,
-                    "message": "آگهی مشابه کافی برای تخمین قیمت پیدا نشد.",
-                    "sample_count": result.get("sample_count", 0) if result else 0,
-                })
+                    "message": "تخمین قیمت در حال حاضر در دسترس نیست.",
+                },
+                status=503,
+            )
 
+        if not result or result.get("low") is None:
             return JsonResponse({
-                "available": True,
-                "low": result["low"],
-                "median": result["median"],
-                "high": result["high"],
-                "sample_count": result["sample_count"],
+                "available": False,
+                "message": "آگهی مشابه کافی برای تخمین قیمت پیدا نشد.",
+                "sample_size": result.get("sample_size", 0) if result else 0,
             })
+
+        return JsonResponse({
+            "available": True,
+            "low": result["low"],
+            "median": result["median"],
+            "high": result["high"],
+            "sample_size": result["sample_size"],
+        })
 
 def catalog_brands(request):
     vehicle_type = request.GET.get("vehicle_type")

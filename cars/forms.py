@@ -8,12 +8,15 @@ class CarForm(forms.ModelForm):
     catalog_model = forms.ModelChoiceField(
         queryset=VehicleCatalogModel.objects.none(),
         label="مدل",
+        widget=forms.Select(attrs={"class": "form-select"}),
     )
     catalog_variant = forms.ModelChoiceField(
         queryset=VehicleVariant.objects.none(),
         required=False,
         label="تیپ",
+        widget=forms.Select(attrs={"class": "form-select"}),
     )
+
 
     class Meta:
         model = Car
@@ -52,8 +55,8 @@ class CarForm(forms.ModelForm):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.fields["description"].help_text = (
-    "واضح بنویسید تا خریداران سؤال تکراری کمتری بپرسند."
-)
+            "واضح بنویسید تا خریداران سؤال تکراری کمتری بپرسند."
+        )
 
         self.fields["brand"].queryset = Brand.objects.filter(
             vehicle_catalog_models__vehicle_type="car",
@@ -67,7 +70,15 @@ class CarForm(forms.ModelForm):
             ).select_related("brand")
         )
 
-        brand_id = self.data.get("brand") or self.instance.brand_id
+        if self.is_bound:
+            brand_id = self.data.get(self.add_prefix("brand"))
+            catalog_model_id = self.data.get(
+                self.add_prefix("catalog_model")
+            )
+        else:
+            brand_id = self.instance.brand_id
+            catalog_model_id = self.instance.catalog_model_id
+
         if brand_id:
             self.fields["catalog_model"].queryset = (
                 self.fields["catalog_model"].queryset.filter(
@@ -79,11 +90,7 @@ class CarForm(forms.ModelForm):
                 VehicleCatalogModel.objects.none()
             )
 
-        catalog_model_id = (
-            self.data.get("catalog_model")
-            or self.instance.catalog_model_id
-        )
-
+        
         if catalog_model_id:
             variants = VehicleVariant.objects.filter(
                 catalog_model_id=catalog_model_id,

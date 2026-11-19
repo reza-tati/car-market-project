@@ -79,14 +79,15 @@ class CarAdmin(admin.ModelAdmin):
             raise PermissionDenied
 
         vehicle_models = [
-            (Car, "سواری"),
-            (Motorcycle, "موتورسیکلت"),
-            (HeavyVehicle, "ماشین سنگین"),
+            (Car, "سواری", "cars:car_detail"),
+            (Motorcycle, "موتورسیکلت", "cars:motorcycle_detail"),
+            (HeavyVehicle, "ماشین سنگین", "cars:heavy_detail"),
         ]
+
 
         ads = []
 
-        for model_class, type_label in vehicle_models:
+        for model_class, type_label, detail_route in vehicle_models:
             for obj in model_class.objects.filter(
                     is_verified=False,
                     is_draft=False,
@@ -143,6 +144,11 @@ class CarAdmin(admin.ModelAdmin):
                             obj.pk,
                         ],
                     ),
+                    "preview_url": reverse(
+                        detail_route,
+                        kwargs={"pk": obj.pk, "slug": obj.slug},
+                    ),
+
                 })
 
         ads.sort(key=lambda ad: ad["sort_value"], reverse=True)

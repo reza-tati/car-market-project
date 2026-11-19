@@ -6,12 +6,13 @@ def estimate_car_price(
     *,
     catalog_model_id,
     year,
-    mileage,
+    mileage=None,
+    engine_cc=None,
     transmission=None,
     condition=None,
     city=None,
 ):
-    if not catalog_model_id or not year or mileage is None:
+    if not catalog_model_id or not year:
         return None
 
     base_qs = (
@@ -23,27 +24,34 @@ def estimate_car_price(
             is_draft=False,
         )
         .exclude(price__lte=0)
-        .only("price", "year", "mileage", "transmission", "condition", "city")
+        .only(
+            "price",
+            "year",
+            "mileage",
+            "engine_capacity",
+            "transmission",
+            "condition",
+            "city",
+        )
     )
 
-    year_tolerance = 2
     candidates = list(
-        base_qs.filter(
-            year__range=(year - year_tolerance, year + year_tolerance)
-        )[:500]
+        base_qs.filter(year__range=(year - 2, year + 2))[:500]
     )
 
     if len(candidates) < 3:
-        year_tolerance = 5
         candidates = list(
-            base_qs.filter(
-                year__range=(year - year_tolerance, year + year_tolerance)
-            )[:500]
+            base_qs.filter(year__range=(year - 5, year + 5))[:500]
         )
 
-
     def similarity_score(car):
-        score = abs(car.year - year) + abs(car.mileage - mileage) / 50_000
+        score = abs(car.year - year)
+
+        if mileage is not None and car.mileage is not None:
+            score += abs(car.mileage - mileage) / 50_000
+
+        if engine_cc is not None and car.engine_capacity is not None:
+            score += abs(car.engine_capacity - engine_cc) / 1_000
 
         if transmission and car.transmission != transmission:
             score += 1
@@ -59,13 +67,12 @@ def estimate_car_price(
     candidates.sort(key=similarity_score)
     selected = candidates[:20]
 
-    # با کمتر از ۳ آگهی مشابه، تخمین قابل اتکا نیست.
     if len(selected) < 3:
         return {
             "low": None,
             "median": None,
             "high": None,
-            "sample_count": len(selected),
+            "sample_size": len(selected),
         }
 
     prices = sorted(int(car.price) for car in selected)
@@ -75,7 +82,7 @@ def estimate_car_price(
         "low": round(low),
         "median": round(median(prices)),
         "high": round(high),
-        "sample_count": len(prices),
+        "sample_size": len(prices),
     }
 
 

@@ -47,8 +47,8 @@
                                 {% endif %}
                             {% endif %}
                             <!-- ✅ پایان کد -->
-
-                      <form id="motorcycle-form" class="{% if not form.instance.pk %}payment-warning-form{% endif %}" method="post" 
+                    
+                      <form id="motorcycle-form" class="{% if not form.instance.pk and show_vpn_warning %}payment-warning-form{% endif %}" method="post" 
  enctype="multipart/form-data" novalidate data-models-url="{% url 'cars:motorcycle_catalog_models' %}" data-variants-url="{% url 'cars:motorcycle_catalog_variants' %}">
                         {% csrf_token %}
                         <!-- ===== اطلاعات اصلی ===== -->
@@ -173,13 +173,14 @@
                         </div>
 
                     </form>
+                    {% if show_vpn_warning %}
                     <div id="vpn-modal" class="vpn-modal-overlay">
                         <div class="vpn-modal-box" dir="rtl">
                             <p>برای اینکه پرداخت بدون مشکل انجام شود، لطفاً VPN را خاموش کرده و ادامه دهید.</p>
                             <button type="button" id="vpn-confirm">متوجه شدم</button>
                         </div>
                     </div>
-                    
+                    {% endif %}
                 </div>
             </div>
         </div>
